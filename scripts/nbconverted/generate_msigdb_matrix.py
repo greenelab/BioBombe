@@ -54,8 +54,9 @@ def make_template_matrix(msigdb_file, blacklist, checkblacklist=True):
         for row in msigdb_reader:
             signature_name = row[0]
             signature_genes = row[2:]
-            if signature_name.startswith(blacklist):
-                continue
+            if checkblacklist:
+                if signature_name.startswith(blacklist):
+                    continue
 
             for gene in signature_genes:
                 big_msigdb_df.at[gene, signature_name] = 1

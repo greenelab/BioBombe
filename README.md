@@ -10,6 +10,7 @@ These data are used in methods to assign biology to compressed gene expression f
 ## Data Access
 
 Download individual MSigDB gene sets (version 6.1) from data from [GSEA downloads](http://software.broadinstitute.org/gsea/downloads.jsp).
+Also download the full gene set: `msigdb.v6.1.symbols.gmt`.
 Note that you will have to [register](http://software.broadinstitute.org/gsea/register.jsp?next=index.jsp) first.
 Place these genesets in the `data/` folder.
 The genesets consist of 8 different collections:

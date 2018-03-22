@@ -24,7 +24,7 @@ def make_template_matrix(msigdb_file, blacklist, checkblacklist=True):
     Retrieve all genes and pathways from given msigdb .gmt file
     
     Output:
-    sorted gene by pathways pandas dataframe of zeros
+    sorted gene by pathways pandas dataframe. Entries indicate membership
     """
     all_db_pathways = []
     all_db_genes = []

@@ -11,4 +11,4 @@ dependencies:
 - conda-forge::nb_conda_kernels=2.1.0
 - conda-forge::openpyxl=2.5.1
 - pip:
-  - hetio==0.2.3
+  - hetio==0.2.8

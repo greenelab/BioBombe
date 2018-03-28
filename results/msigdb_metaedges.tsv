@@ -1,0 +1,14 @@
+metaedge	abbreviation	edges	source_nodes	target_nodes
+Gene - participates - Cancer-Hallmarks	GpH	7213	4302	50
+Gene - participates - Computational-Gene-Sets-CGN	GpC4-CGN	41044	4684	427
+Gene - participates - Computational-Gene-Sets-CM	GpC4-CM	47057	8000	431
+Gene - participates - Curated-Gene-Sets-CPG	GpC2-CPG	322507	16963	3381
+Gene - participates - Curated-Gene-Sets-REACTOME	GpC2-CP-REACTOME	35197	5683	674
+Gene - participates - GO-Gene-Sets-BP	GpC5-BP	379405	14166	4355
+Gene - participates - GO-Gene-Sets-CC	GpC5-CC	59887	9779	561
+Gene - participates - GO-Gene-Sets-MF	GpC5-MF	67562	12599	883
+Gene - participates - Immunologic-Gene-Sets	GpC7	886581	17091	4872
+Gene - participates - Motif-Gene-Sets-MIR	GpC3-MIR	32574	7011	221
+Gene - participates - Motif-Gene-Sets-TFT	GpC3-TFT	129340	11323	598
+Gene - participates - Oncogenic-Gene-Sets	GpC6	29236	10253	189
+Gene - participates - Positional-Gene-Sets	GpC1	17615	17437	326

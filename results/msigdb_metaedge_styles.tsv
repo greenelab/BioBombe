@@ -1,0 +1,27 @@
+metaedge	unicode_metaedge	standard_metaedge	abbreviation	standard_abbreviation	source	target	inverted
+Cancer-Hallmarks - participates - Gene	Cancer-Hallmarks–participates–Gene	Gene - participates - Cancer-Hallmarks	HpG	GpH	Cancer-Hallmarks	Gene	1
+Computational-Gene-Sets-CGN - participates - Gene	Computational-Gene-Sets-CGN–participates–Gene	Gene - participates - Computational-Gene-Sets-CGN	C4-CGNpG	GpC4-CGN	Computational-Gene-Sets-CGN	Gene	1
+Computational-Gene-Sets-CM - participates - Gene	Computational-Gene-Sets-CM–participates–Gene	Gene - participates - Computational-Gene-Sets-CM	C4-CMpG	GpC4-CM	Computational-Gene-Sets-CM	Gene	1
+Curated-Gene-Sets-CPG - participates - Gene	Curated-Gene-Sets-CPG–participates–Gene	Gene - participates - Curated-Gene-Sets-CPG	C2-CPGpG	GpC2-CPG	Curated-Gene-Sets-CPG	Gene	1
+Curated-Gene-Sets-REACTOME - participates - Gene	Curated-Gene-Sets-REACTOME–participates–Gene	Gene - participates - Curated-Gene-Sets-REACTOME	C2-CP-REACTOMEpG	GpC2-CP-REACTOME	Curated-Gene-Sets-REACTOME	Gene	1
+GO-Gene-Sets-BP - participates - Gene	GO-Gene-Sets-BP–participates–Gene	Gene - participates - GO-Gene-Sets-BP	C5-BPpG	GpC5-BP	GO-Gene-Sets-BP	Gene	1
+GO-Gene-Sets-CC - participates - Gene	GO-Gene-Sets-CC–participates–Gene	Gene - participates - GO-Gene-Sets-CC	C5-CCpG	GpC5-CC	GO-Gene-Sets-CC	Gene	1
+GO-Gene-Sets-MF - participates - Gene	GO-Gene-Sets-MF–participates–Gene	Gene - participates - GO-Gene-Sets-MF	C5-MFpG	GpC5-MF	GO-Gene-Sets-MF	Gene	1
+Gene - participates - Cancer-Hallmarks	Gene–participates–Cancer-Hallmarks	Gene - participates - Cancer-Hallmarks	GpH	GpH	Gene	Cancer-Hallmarks	0
+Gene - participates - Computational-Gene-Sets-CGN	Gene–participates–Computational-Gene-Sets-CGN	Gene - participates - Computational-Gene-Sets-CGN	GpC4-CGN	GpC4-CGN	Gene	Computational-Gene-Sets-CGN	0
+Gene - participates - Computational-Gene-Sets-CM	Gene–participates–Computational-Gene-Sets-CM	Gene - participates - Computational-Gene-Sets-CM	GpC4-CM	GpC4-CM	Gene	Computational-Gene-Sets-CM	0
+Gene - participates - Curated-Gene-Sets-CPG	Gene–participates–Curated-Gene-Sets-CPG	Gene - participates - Curated-Gene-Sets-CPG	GpC2-CPG	GpC2-CPG	Gene	Curated-Gene-Sets-CPG	0
+Gene - participates - Curated-Gene-Sets-REACTOME	Gene–participates–Curated-Gene-Sets-REACTOME	Gene - participates - Curated-Gene-Sets-REACTOME	GpC2-CP-REACTOME	GpC2-CP-REACTOME	Gene	Curated-Gene-Sets-REACTOME	0
+Gene - participates - GO-Gene-Sets-BP	Gene–participates–GO-Gene-Sets-BP	Gene - participates - GO-Gene-Sets-BP	GpC5-BP	GpC5-BP	Gene	GO-Gene-Sets-BP	0
+Gene - participates - GO-Gene-Sets-CC	Gene–participates–GO-Gene-Sets-CC	Gene - participates - GO-Gene-Sets-CC	GpC5-CC	GpC5-CC	Gene	GO-Gene-Sets-CC	0
+Gene - participates - GO-Gene-Sets-MF	Gene–participates–GO-Gene-Sets-MF	Gene - participates - GO-Gene-Sets-MF	GpC5-MF	GpC5-MF	Gene	GO-Gene-Sets-MF	0
+Gene - participates - Immunologic-Gene-Sets	Gene–participates–Immunologic-Gene-Sets	Gene - participates - Immunologic-Gene-Sets	GpC7	GpC7	Gene	Immunologic-Gene-Sets	0
+Gene - participates - Motif-Gene-Sets-MIR	Gene–participates–Motif-Gene-Sets-MIR	Gene - participates - Motif-Gene-Sets-MIR	GpC3-MIR	GpC3-MIR	Gene	Motif-Gene-Sets-MIR	0
+Gene - participates - Motif-Gene-Sets-TFT	Gene–participates–Motif-Gene-Sets-TFT	Gene - participates - Motif-Gene-Sets-TFT	GpC3-TFT	GpC3-TFT	Gene	Motif-Gene-Sets-TFT	0
+Gene - participates - Oncogenic-Gene-Sets	Gene–participates–Oncogenic-Gene-Sets	Gene - participates - Oncogenic-Gene-Sets	GpC6	GpC6	Gene	Oncogenic-Gene-Sets	0
+Gene - participates - Positional-Gene-Sets	Gene–participates–Positional-Gene-Sets	Gene - participates - Positional-Gene-Sets	GpC1	GpC1	Gene	Positional-Gene-Sets	0
+Immunologic-Gene-Sets - participates - Gene	Immunologic-Gene-Sets–participates–Gene	Gene - participates - Immunologic-Gene-Sets	C7pG	GpC7	Immunologic-Gene-Sets	Gene	1
+Motif-Gene-Sets-MIR - participates - Gene	Motif-Gene-Sets-MIR–participates–Gene	Gene - participates - Motif-Gene-Sets-MIR	C3-MIRpG	GpC3-MIR	Motif-Gene-Sets-MIR	Gene	1
+Motif-Gene-Sets-TFT - participates - Gene	Motif-Gene-Sets-TFT–participates–Gene	Gene - participates - Motif-Gene-Sets-TFT	C3-TFTpG	GpC3-TFT	Motif-Gene-Sets-TFT	Gene	1
+Oncogenic-Gene-Sets - participates - Gene	Oncogenic-Gene-Sets–participates–Gene	Gene - participates - Oncogenic-Gene-Sets	C6pG	GpC6	Oncogenic-Gene-Sets	Gene	1
+Positional-Gene-Sets - participates - Gene	Positional-Gene-Sets–participates–Gene	Gene - participates - Positional-Gene-Sets	C1pG	GpC1	Positional-Gene-Sets	Gene	1

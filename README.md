@@ -14,7 +14,7 @@ Also download the full gene set: `msigdb.v6.1.symbols.gmt`.
 
 See [download_msigdb.ipynb](download_msigdb.ipynb) for specific details.
  
-The genesets consist of 8 different collections, with many have sub-collections:
+The genesets consist of 8 different collections; many also have sub-collections:
 
 | Name | Collection | License |
 | :--: | :--------: | ------: |

@@ -2,3 +2,8 @@ hetnets/msigdb_nodes.tsv filter=lfs diff=lfs merge=lfs -text
 hetnets/msigdb_hetnet.json.bz2 filter=lfs diff=lfs merge=lfs -text
 hetnets/msigdb_edges.sif.gz filter=lfs diff=lfs merge=lfs -text
 results/msigdb_node_degrees.xlsx filter=lfs diff=lfs merge=lfs -text
+hetnets/permuted/msigdb_hetnet_perm-1.json.bz2 filter=lfs diff=lfs merge=lfs -text
+hetnets/permuted/msigdb_hetnet_perm-2.json.bz2 filter=lfs diff=lfs merge=lfs -text
+hetnets/permuted/msigdb_hetnet_perm-3.json.bz2 filter=lfs diff=lfs merge=lfs -text
+hetnets/permuted/msigdb_hetnet_perm-4.json.bz2 filter=lfs diff=lfs merge=lfs -text
+hetnets/permuted/msigdb_hetnet_perm-5.json.bz2 filter=lfs diff=lfs merge=lfs -text

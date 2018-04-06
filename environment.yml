@@ -10,5 +10,10 @@ dependencies:
 - conda-forge::ipykernel=4.8.1
 - conda-forge::nb_conda_kernels=2.1.0
 - conda-forge::openpyxl=2.5.1
+- conda-forge::r-dplyr=0.7.4
+- conda-forge::r-tidyr=0.8.0
+- conda-forge::r-readr=1.1.1
+- conda-forge::r-ggplot2=2.2.1
+- conda-forge::r-irkernel=0.8.11
 - pip:
   - hetio==0.2.8

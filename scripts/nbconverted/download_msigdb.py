@@ -21,6 +21,7 @@ import pandas as pd
 
 # MSigDB version
 version = '6.1'
+gene_id = 'entrez'
 
 
 # In[3]:
@@ -30,7 +31,7 @@ version = '6.1'
 # NOTE - This fill is not added to the repository because it contains
 # gene sets with restrictive licenses
 url_prefix = 'https://www.broadinstitute.org/gsea/resources/msigdb/'
-url = '{}{}/msigdb.v{}.symbols.gmt'.format(url_prefix, version, version)
+url = '{}{}/msigdb.v{}.{}.gmt'.format(url_prefix, version, version, gene_id)
 get_ipython().system(" wget --timestamping --no-verbose --directory-prefix 'data' $url")
 
 
@@ -54,6 +55,6 @@ msigdb_dict = {
 }
 
 for gene_set in msigdb_dict:
-    url = '{}{}/{}.v{}.symbols.gmt'.format(url_prefix, version, gene_set, version)
+    url = '{}{}/{}.v{}.{}.gmt'.format(url_prefix, version, gene_set, version, gene_id)
     get_ipython().system(" wget --timestamping --no-verbose --directory-prefix 'data' $url")
 

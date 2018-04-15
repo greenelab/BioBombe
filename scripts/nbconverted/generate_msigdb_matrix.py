@@ -68,7 +68,7 @@ def make_template_matrix(msigdb_file, blacklist, checkblacklist=True):
 
 
 # Store .gmt files
-full_msigdb_file = os.path.join('data', 'msigdb.v6.1.symbols.gmt')
+full_msigdb_file = os.path.join('data', 'msigdb.v6.1.entrez.gmt')
 
 # Resources with restrictive licenses
 blacklist = ('KEGG', 'BIOCARTA', 'ST_')

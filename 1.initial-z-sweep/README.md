@@ -31,9 +31,9 @@ We sweep over the following parameter combinations for Tybalt and ADAGE models:
 | Variable | Tybalt Values | ADAGE Values |
 | :------- | :------------ | :----------- |
 | Dimensionality | 5, 25, 50, 75, 100, 125 | 5, 25, 50, 75, 100, 125 |
-| Learning Rate | 0.0005, 0.001, 0.0015, 0.002, 0.0025 | 0.0005, 0.001, 0.0015, 0.002, 0.0025 |
+| Learning Rate | 0.0005, 0.001, 0.0015, 0.002, 0.0025 | 0.00005, 0.00001, 0.0005, 0.001, 0.0015, 0.002 |
 | Batch Size | 50, 100, 150 | 50, 100 |
-| Epochs | 50, 100 | 50, 100 |
+| Epochs | 50, 100 | 100 |
 | Kappa | 0, 0.5, 1 | |
 | Sparsity | | 0, 0.000001, 0.001 |
 | Noise | | 0, 0.1, 0.5 |
@@ -108,16 +108,15 @@ For ADAGE, the optimal hyperparameters across dimensionality estimates are:
 
 | Dimensions | Sparsity | Noise | Epochs | Batch Size | Learning Rate | End Loss |
 | :--------- | :------- | :---- | :----- | :--------- | :------------ | :------- |
-| 5 | 0 | 0.5 | 100 | 100 | 0.0005 | 0.021 |
-| 25 | 0 | 0.5 | 100 | 100 | 0.0005 | 0.012 |
-| 50 | 0.000001 | 0 | 100 | 50 | 0.0005 | 0.011 |
-| 75 | 0 | 0.1 | 50 | 100  | 0.0005 | 0.010 |
-| 100 | 0 | 0.1 | 100 | 100 | 0.0005 | 0.010 |
-| 125 | 0 | 0.1 | 100 | 50 | 0.0005 | 0.009 |
+| 5 | 0 | 0.0 | 100 | 50 | 0.0005 | 0.022 |
+| 25 | 0 | 0.0 | 100 | 50 | 0.0005 | 0.013 |
+| 50 | 0.0 | 0 | 100 | 50 | 0.0005 | 0.011 |
+| 75 | 0 | 0.0 | 100 | 50  | 0.0005 | 0.010 |
+| 100 | 0 | 0.0 | 100 | 50 | 0.0005 | 0.009 |
+| 125 | 0 | 0.0 | 100 | 50 | 0.0005 | 0.008 |
 
-It appears that `learning rate` is globally optimal at 0.0005.
-`batch_size` and `epochs` are also generally consistent at 100.
-Also, the lower the dimensionality, the more regularization required, whether it is `noise` or `sparsity` added.
+It appears that `learning rate` is globally optimal at 0.0005; epochs at 100; batch size at 50; and noise and sparsity at 0.
+See https://github.com/greenelab/tybalt/issues/127 for more details about zero noise.
 
 ![](figures/z_param_adage_tied_weights/z_parameter_adage_best_tiedweights.png?raw=true)
 

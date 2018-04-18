@@ -1,0 +1,7 @@
+learning_rate	batch_size	epochs	noise	sparsity	num_components	end_loss
+Learn: 0.001	50	100	Noise: 0	0.0	5	0.021978886203259856
+Learn: 5e-04	50	100	Noise: 0	0.0	25	0.013073026891762166
+Learn: 5e-04	50	100	Noise: 0	0.0	50	0.0106988197164058
+Learn: 5e-04	100	100	Noise: 0	0.0	75	0.009661575574534688
+Learn: 5e-04	50	100	Noise: 0	0.0	100	0.00885350425259333
+Learn: 5e-04	50	100	Noise: 0	0.0	125	0.008482837366620453

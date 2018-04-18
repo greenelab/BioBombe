@@ -1,0 +1,123 @@
+{
+  "metanode_kinds": [
+    "Cancer-Hallmarks",
+    "Computational-Gene-Sets-CGN",
+    "Computational-Gene-Sets-CM",
+    "Curated-Gene-Sets-CPG",
+    "Curated-Gene-Sets-REACTOME",
+    "GO-Gene-Sets-BP",
+    "GO-Gene-Sets-CC",
+    "GO-Gene-Sets-MF",
+    "Gene",
+    "Immunologic-Gene-Sets",
+    "Motif-Gene-Sets-MIR",
+    "Motif-Gene-Sets-TFT",
+    "Oncogenic-Gene-Sets",
+    "Positional-Gene-Sets",
+    "xCell-Cell-Type"
+  ],
+  "metaedge_tuples": [
+    [
+      "Gene",
+      "Cancer-Hallmarks",
+      "participates",
+      "both"
+    ],
+    [
+      "Gene",
+      "Computational-Gene-Sets-CGN",
+      "participates",
+      "both"
+    ],
+    [
+      "Gene",
+      "Computational-Gene-Sets-CM",
+      "participates",
+      "both"
+    ],
+    [
+      "Gene",
+      "Curated-Gene-Sets-CPG",
+      "participates",
+      "both"
+    ],
+    [
+      "Gene",
+      "Curated-Gene-Sets-REACTOME",
+      "participates",
+      "both"
+    ],
+    [
+      "Gene",
+      "GO-Gene-Sets-BP",
+      "participates",
+      "both"
+    ],
+    [
+      "Gene",
+      "GO-Gene-Sets-CC",
+      "participates",
+      "both"
+    ],
+    [
+      "Gene",
+      "GO-Gene-Sets-MF",
+      "participates",
+      "both"
+    ],
+    [
+      "Gene",
+      "Immunologic-Gene-Sets",
+      "participates",
+      "both"
+    ],
+    [
+      "Gene",
+      "Motif-Gene-Sets-MIR",
+      "participates",
+      "both"
+    ],
+    [
+      "Gene",
+      "Motif-Gene-Sets-TFT",
+      "participates",
+      "both"
+    ],
+    [
+      "Gene",
+      "Oncogenic-Gene-Sets",
+      "participates",
+      "both"
+    ],
+    [
+      "Gene",
+      "Positional-Gene-Sets",
+      "participates",
+      "both"
+    ],
+    [
+      "Gene",
+      "xCell-Cell-Type",
+      "participates",
+      "both"
+    ]
+  ],
+  "kind_to_abbrev": {
+    "Gene": "G",
+    "Cancer-Hallmarks": "H",
+    "Positional-Gene-Sets": "C1",
+    "Curated-Gene-Sets-CPG": "C2-CPG",
+    "Curated-Gene-Sets-REACTOME": "C2-CP-REACTOME",
+    "Motif-Gene-Sets-MIR": "C3-MIR",
+    "Motif-Gene-Sets-TFT": "C3-TFT",
+    "Computational-Gene-Sets-CGN": "C4-CGN",
+    "Computational-Gene-Sets-CM": "C4-CM",
+    "GO-Gene-Sets-BP": "C5-BP",
+    "GO-Gene-Sets-CC": "C5-CC",
+    "GO-Gene-Sets-MF": "C5-MF",
+    "Oncogenic-Gene-Sets": "C6",
+    "Immunologic-Gene-Sets": "C7",
+    "xCell-Cell-Type": "XCELL",
+    "participates": "p"
+  }
+}

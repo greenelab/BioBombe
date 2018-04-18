@@ -25,5 +25,6 @@ do
           --config_file $PMACS_FILE \
           --algorithm $alg \
           --python_path $PYTHON_PATH \
-          --param_folder 'z_param_sweep_'$alg
+          --param_folder 'z_param_sweep_'$alg \
+          --local
 done

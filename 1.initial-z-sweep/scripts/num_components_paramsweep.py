@@ -57,8 +57,11 @@ combination of hyper parameters.
 """
 
 import os
+import sys
 import argparse
 import pandas as pd
+
+sys.path.insert(0, '../scripts/util')
 from bsub_helper import bsub_help
 
 

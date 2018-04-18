@@ -1,5 +1,5 @@
-hetnets/msigdb_nodes.tsv filter=lfs diff=lfs merge=lfs -text
-hetnets/msigdb_hetnet.json.bz2 filter=lfs diff=lfs merge=lfs -text
-hetnets/msigdb_edges.sif.gz filter=lfs diff=lfs merge=lfs -text
-results/msigdb_node_degrees.xlsx filter=lfs diff=lfs merge=lfs -text
+hetnets/interpret_nodes.tsv filter=lfs diff=lfs merge=lfs -text
+hetnets/interpret_hetnet.json.bz2 filter=lfs diff=lfs merge=lfs -text
+hetnets/interpret_edges.sif.gz filter=lfs diff=lfs merge=lfs -text
+results/interpret_node_degrees.xlsx filter=lfs diff=lfs merge=lfs -text
 *.bz2 filter=lfs diff=lfs merge=lfs -text

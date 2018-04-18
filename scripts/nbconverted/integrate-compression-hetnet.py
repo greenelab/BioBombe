@@ -1,13 +1,16 @@
 
 # coding: utf-8
 
-# # Create a hetnet of MSigDB genesets
+# # Create a hetnet of genesets for automatic gene expression compression interpretation
 # 
 # This script was modified from https://github.com/dhimmel/integrate.
 # 
-# ## For the automatic interpretation of gene expression compression features
+# The script creates a hetnet as described in the eLIFE publication _"Systematic integration of biomedical knowledge prioritizes drugs for repurposing"_ by [Himmelstein et al. 2017](https://doi.org/10.7554/eLife.26726)
 # 
-# The script creates an MSigDB hetnet as described in the eLIFE publication _"Systematic integration of biomedical knowledge prioritizes drugs for repurposing"_ by [Himmelstein et al. 2017](https://doi.org/10.7554/eLife.26726)
+# ## Datasets
+# 
+# 1. [MSigDb](https://doi.org/10.1073/pnas.0506580102 "Gene set enrichment analysis: A knowledge-based approach for interpreting genome-wide expression profiles") - Curated genesets that represent various biological processes
+# 2. [xCell](https://doi.org/10.1186/s13059-017-1349-1, "xCell: digitally portraying the tissue cellular heterogeneity landscape") - Curated genesets that describe profiles of different cell-types
 
 # In[1]:
 
@@ -38,6 +41,7 @@ kind_to_abbev = {
     # metanodes
     'Gene': 'G',
 
+    # MSigDB Nodes
     'Cancer-Hallmarks': 'H',
     'Positional-Gene-Sets': 'C1',
     'Curated-Gene-Sets-CPG': 'C2-CPG',
@@ -52,11 +56,15 @@ kind_to_abbev = {
     'Oncogenic-Gene-Sets': 'C6',
     'Immunologic-Gene-Sets': 'C7',
     
+    # xCell Nodes
+    'xCell-Cell-Type': 'XCELL',
+    
     # metaedges
     'participates': 'p',
 }
 
 metaedge_tuples = [
+    # MSigDB metaedges
     ('Gene', 'Cancer-Hallmarks', 'participates', 'both'),
     ('Gene', 'Positional-Gene-Sets', 'participates', 'both'),
     ('Gene', 'Curated-Gene-Sets-CPG', 'participates', 'both'),
@@ -70,6 +78,9 @@ metaedge_tuples = [
     ('Gene', 'GO-Gene-Sets-MF', 'participates', 'both'),
     ('Gene', 'Oncogenic-Gene-Sets', 'participates', 'both'),
     ('Gene', 'Immunologic-Gene-Sets', 'participates', 'both'),
+    
+    # xCell metaedges
+    ('Gene', 'xCell-Cell-Type', 'participates', 'both'),
 ]
 
 
@@ -81,35 +92,9 @@ metagraph = hetio.hetnet.MetaGraph.from_edge_tuples(metaedge_tuples, kind_to_abb
 graph = hetio.hetnet.Graph(metagraph)
 
 
-# ## Get all genes found in MSigDB
-
-# In[5]:
-
-
-full_msigdb_file = os.path.join('data', 'full_msigdb_binary_matrix.tsv.bz2')
-msigdb_df = pd.read_table(full_msigdb_file, index_col=0)
-
-print(msigdb_df.shape)
-msigdb_df.head()
-
-
-# In[6]:
-
-
-# Ask the distribution of pathway sizes
-msigdb_df.sum(axis=1).sort_values().hist(bins=30);
-
-
-# In[7]:
-
-
-# What about the distribution of gene participation?
-msigdb_df.sum(axis=0).sort_values().hist(bins=30);
-
-
 # ## Gene Nodes
 
-# In[8]:
+# In[5]:
 
 
 # Load curated gene names from versioned resource 
@@ -120,61 +105,34 @@ gene_df = pd.read_table(url)
 # Only consider protein-coding genes
 gene_df = (
     gene_df.query("gene_type == 'protein-coding'")
-    .drop_duplicates('symbol')
+    .drop_duplicates('entrez_gene_id')
 )
 
-coding_genes = set(gene_df['symbol'])
+coding_genes = set(gene_df['entrez_gene_id'].astype(int))
 print(gene_df.shape)
 gene_df.head(2)
-
-
-# In[9]:
-
-
-# Subset the msigdb genes to the gene curation above
-common_subset_genes = set(gene_df['symbol']).intersection(set(msigdb_df.index))
-msigdb_subset_genes_df = msigdb_df.loc[common_subset_genes, :]
-
-# What is the new distribution of pathway sizes?
-msigdb_subset_genes_df.sum(axis=1).sort_values().hist(bins=30);
-
-
-# In[10]:
-
-
-# What is the new distribution of gene representation?
-msigdb_subset_genes_df.sum(axis=0).sort_values().hist(bins=30);
-
-
-# In[11]:
-
-
-# The genes that were removed from MSigDB participate mostly in few pathways
-diff_genes = set(msigdb_df.index).difference(gene_df['symbol'])
-msigdb_other_genes_df = msigdb_df.loc[diff_genes, :]
-msigdb_other_genes_df.sum(axis=1).sort_values().hist(bins=30);
 
 
 # ## Add genes as nodes to the graph
 # 
 # Use the gene-symbol identifier for easier interpretation
 
-# In[12]:
+# In[6]:
 
 
-get_ipython().run_cell_magic('time', '', "for i, row in gene_df.iterrows():\n    # Build dictionary of descriptive elements for each gene\n    meta_data = {\n        'description': row['description'],\n        'source': 'Entrez Gene',\n        'url': 'http://identifiers.org/ncbigene/{}'.format(row['entrez_gene_id']),\n        'license': 'CC0 1.0',\n    }\n    \n    if pd.notnull(row['chromosome']):\n        meta_data['chromosome'] = row['chromosome']\n\n    # Add genes to graph\n    graph.add_node(kind='Gene', identifier=row['symbol'], name=row['entrez_gene_id'],\n                   data=meta_data)")
+get_ipython().run_cell_magic('time', '', "for i, row in gene_df.iterrows():\n    # Build dictionary of descriptive elements for each gene\n    meta_data = {\n        'description': row['description'],\n        'source': 'Entrez Gene',\n        'url': 'http://identifiers.org/ncbigene/{}'.format(row['entrez_gene_id']),\n        'license': 'CC0 1.0',\n    }\n    \n    if pd.notnull(row['chromosome']):\n        meta_data['chromosome'] = row['chromosome']\n\n    # Add genes to graph\n    graph.add_node(kind='Gene', identifier=int(row['entrez_gene_id']), name=row['symbol'],\n                   data=meta_data)")
 
 
 # ## Add gene set nodes and associated genes as edges
 # 
 # Add each MSigDB collection as distinct nodes with a `participates` edge for representative gene sets and corresponding membership.
 
-# In[13]:
+# In[7]:
 
 
-def add_msigdb_node_to_graph(current_graph, collection_file, collection_kind,
-                             collection_source, gene_list, min_geneset_size=4,
-                             max_geneset_size=1000, license='CC BY 4.0'):
+def add_node_to_graph(current_graph, collection_file, collection_kind,
+                      collection_source, gene_list, min_geneset_size=4,
+                      max_geneset_size=1000, license='CC BY 4.0'):
     """
     Add nodes and edges to current graph based on geneset memembership of collection
     
@@ -208,6 +166,9 @@ def add_msigdb_node_to_graph(current_graph, collection_file, collection_kind,
             # Process geneset membership
             genes = row[2:]
 
+            # The genes must exist in curated resource
+            genes = [int(x) for x in genes if int(x) in gene_list]
+
             # Filter geneset if its too big or small
             if min_geneset_size > len(genes) or len(genes) > max_geneset_size:
                 filtered_genesets.append(geneset_name)
@@ -217,128 +178,78 @@ def add_msigdb_node_to_graph(current_graph, collection_file, collection_kind,
             current_graph.add_node(kind=collection_kind,
                                    identifier=geneset_name,
                                    data=meta_data)
-
             # Loop through all genes and add to the graph it should be considered
             for gene in genes:
-                if gene in gene_list:
-                    source_id = ('Gene', gene)
-                    target_id = (collection_kind, geneset_name)
-                    
-                    edge_data = meta_data.copy()
-
-                    current_graph.add_edge(source_id, target_id, 'participates',
-                                           'both', edge_data)
+                source_id = ('Gene', gene)
+                target_id = (collection_kind, geneset_name)
+                edge_data = meta_data.copy()
+                current_graph.add_edge(source_id, target_id, 'participates',
+                                       'both', edge_data)
 
     return filtered_genesets
 
 
-# In[14]:
+# In[8]:
 
 
-get_ipython().run_cell_magic('time', '', "hallmarks_file = os.path.join('data', 'h.all.v6.1.symbols.gmt')\nhallmark_filtered = add_msigdb_node_to_graph(current_graph=graph,\n                                             collection_file=hallmarks_file,\n                                             collection_kind='Cancer-Hallmarks',\n                                             collection_source='MSigDB-H',\n                                             gene_list=common_subset_genes)")
+hetnet_build = {
+    
+    # MSigDB
+    'MSigDB-H': ['h.all.v6.1.entrez.gmt', 'Cancer-Hallmarks'],
+    'MSigDB-C1': ['c1.all.v6.1.entrez.gmt', 'Positional-Gene-Sets'],
+    'MSigDB-C2-CPG': ['c2.cgp.v6.1.entrez.gmt', 'Curated-Gene-Sets-CPG'],
+    'MSigDB-C2-Reactome': ['c2.cp.reactome.v6.1.entrez.gmt', 'Curated-Gene-Sets-REACTOME'],
+    'MSigDB-C3-MIR': ['c3.mir.v6.1.entrez.gmt', 'Motif-Gene-Sets-MIR'],
+    'MSigDB-C3-TFT': ['c3.tft.v6.1.entrez.gmt', 'Motif-Gene-Sets-TFT'],
+    'MSigDB-C4-CGN': ['c4.cgn.v6.1.entrez.gmt', 'Computational-Gene-Sets-CGN'],
+    'MSigDB-C4-CM': ['c4.cm.v6.1.entrez.gmt', 'Computational-Gene-Sets-CM'],
+    'MSigDB-C5-BP': ['c5.bp.v6.1.entrez.gmt', 'GO-Gene-Sets-BP'],
+    'MSigDB-C5-CC': ['c5.cc.v6.1.entrez.gmt', 'GO-Gene-Sets-CC'],
+    'MSigDB-C5-MF': ['c5.mf.v6.1.entrez.gmt', 'GO-Gene-Sets-MF'],
+    'MSigDB-C6': ['c6.all.v6.1.entrez.gmt', 'Oncogenic-Gene-Sets'],
+    'MSigDB-C7': ['c7.all.v6.1.entrez.gmt', 'Immunologic-Gene-Sets'],
+    
+    # xCell
+    'xCell-X': ['xcell_all_entrez.gmt', 'xCell-Cell-Type'],
+
+}
 
 
-# In[15]:
+# In[9]:
 
 
-get_ipython().run_cell_magic('time', '', "positional_file = os.path.join('data', 'c1.all.v6.1.symbols.gmt')\npositional_filtered = add_msigdb_node_to_graph(current_graph=graph,\n                                               collection_file=positional_file,\n                                               collection_kind='Positional-Gene-Sets',\n                                               collection_source='MSigDB-C1',\n                                               gene_list=common_subset_genes)")
-
-
-# In[16]:
-
-
-get_ipython().run_cell_magic('time', '', "curated_file = os.path.join('data', 'c2.cgp.v6.1.symbols.gmt')\ncurated_filtered = add_msigdb_node_to_graph(current_graph=graph,\n                                            collection_file=curated_file,\n                                            collection_kind='Curated-Gene-Sets-CPG',\n                                            collection_source='MSigDB-C2-CPG',\n                                            gene_list=common_subset_genes)")
-
-
-# In[17]:
-
-
-get_ipython().run_cell_magic('time', '', "reactome_file = os.path.join('data', 'c2.cp.reactome.v6.1.symbols.gmt')\nreactome_filtered = add_msigdb_node_to_graph(current_graph=graph,\n                                             collection_file=reactome_file,\n                                             collection_kind='Curated-Gene-Sets-REACTOME',\n                                             collection_source='MSigDB-C2-Reactome',\n                                             gene_list=common_subset_genes)")
-
-
-# In[18]:
-
-
-get_ipython().run_cell_magic('time', '', "micro_file = os.path.join('data', 'c3.mir.v6.1.symbols.gmt')\nmicro_filtered = add_msigdb_node_to_graph(current_graph=graph,\n                                          collection_file=micro_file,\n                                          collection_kind='Motif-Gene-Sets-MIR',\n                                          collection_source='MSigDB-C3-MIR',\n                                          gene_list=common_subset_genes)")
-
-
-# In[19]:
-
-
-get_ipython().run_cell_magic('time', '', "tf_file = os.path.join('data', 'c3.tft.v6.1.symbols.gmt')\ntf_filtered = add_msigdb_node_to_graph(current_graph=graph,\n                                          collection_file=tf_file,\n                                          collection_kind='Motif-Gene-Sets-TFT',\n                                          collection_source='MSigDB-C3-TFT',\n                                          gene_list=common_subset_genes)")
-
-
-# In[20]:
-
-
-get_ipython().run_cell_magic('time', '', "cancer_n_file = os.path.join('data', 'c4.cgn.v6.1.symbols.gmt')\ncancer_n_filtered = add_msigdb_node_to_graph(current_graph=graph,\n                                             collection_file=cancer_n_file,\n                                             collection_kind='Computational-Gene-Sets-CGN',\n                                             collection_source='MSigDB-C4-CGN',\n                                             gene_list=common_subset_genes)")
-
-
-# In[21]:
-
-
-get_ipython().run_cell_magic('time', '', "cancer_mod_file = os.path.join('data', 'c4.cm.v6.1.symbols.gmt')\ncancer_mod_filtered = add_msigdb_node_to_graph(current_graph=graph,\n                                             collection_file=cancer_mod_file,\n                                             collection_kind='Computational-Gene-Sets-CM',\n                                             collection_source='MSigDB-C4-CM',\n                                             gene_list=common_subset_genes)")
-
-
-# In[22]:
-
-
-get_ipython().run_cell_magic('time', '', "go_bp_file = os.path.join('data', 'c5.bp.v6.1.symbols.gmt')\ngo_bp_filtered = add_msigdb_node_to_graph(current_graph=graph,\n                                          collection_file=go_bp_file,\n                                          collection_kind='GO-Gene-Sets-BP',\n                                          collection_source='MSigDB-C5-BP',\n                                          gene_list=common_subset_genes) ")
-
-
-# In[23]:
-
-
-get_ipython().run_cell_magic('time', '', "go_cc_file = os.path.join('data', 'c5.cc.v6.1.symbols.gmt')\ngo_cc_filtered = add_msigdb_node_to_graph(current_graph=graph,\n                                          collection_file=go_cc_file,\n                                          collection_kind='GO-Gene-Sets-CC',\n                                          collection_source='MSigDB-C5-CC',\n                                          gene_list=common_subset_genes) ")
-
-
-# In[24]:
-
-
-get_ipython().run_cell_magic('time', '', "go_mf_file = os.path.join('data', 'c5.mf.v6.1.symbols.gmt')\ngo_mf_filtered = add_msigdb_node_to_graph(current_graph=graph,\n                                          collection_file=go_mf_file,\n                                          collection_kind='GO-Gene-Sets-MF',\n                                          collection_source='MSigDB-C5-MF',\n                                          gene_list=common_subset_genes) ")
-
-
-# In[25]:
-
-
-get_ipython().run_cell_magic('time', '', "oncogenic_file = os.path.join('data', 'c6.all.v6.1.symbols.gmt')\noncogenic_filtered = add_msigdb_node_to_graph(current_graph=graph,\n                                              collection_file=oncogenic_file,\n                                              collection_kind='Oncogenic-Gene-Sets',\n                                              collection_source='MSigDB-C6',\n                                              gene_list=common_subset_genes)")
-
-
-# In[26]:
-
-
-get_ipython().run_cell_magic('time', '', "immunologic_file = os.path.join('data', 'c7.all.v6.1.symbols.gmt')\nimmunologic_filtered = add_msigdb_node_to_graph(current_graph=graph,\n                                                collection_file=immunologic_file,\n                                                collection_kind='Immunologic-Gene-Sets',\n                                                collection_source='MSigDB-C7',\n                                                gene_list=common_subset_genes)")
+get_ipython().run_cell_magic('time', '', "\n# Add all collections genesets to hetnet\nfiltered = {}\nfor collection_source, collection_info in hetnet_build.items():\n    path, collection_kind = collection_info\n    collection_file = os.path.join('data', path)\n    filtered[collection_kind] = add_node_to_graph(current_graph=graph,\n                                                  collection_file=collection_file,\n                                                  collection_kind=collection_kind,\n                                                  collection_source=collection_source,\n                                                  gene_list=coding_genes)")
 
 
 # ## Network visualizations and stats
 
-# In[27]:
+# In[10]:
 
 
 # Export node degree tables
-node_degree_file = os.path.join('results', 'msigdb_node_degrees.xlsx')
+node_degree_file = os.path.join('results', 'interpret_node_degrees.xlsx')
 hetio.stats.degrees_to_excel(graph, node_degree_file)
 
 
-# In[28]:
+# In[11]:
 
 
 # Summary of metanodes and cooresponding nodes
 metanode_df = hetio.stats.get_metanode_df(graph)
 
-metanode_file = os.path.join('results', 'msigdb_metanode_summary.tsv')
+metanode_file = os.path.join('results', 'interpret_metanode_summary.tsv')
 metanode_df.to_csv(metanode_file, sep='\t', index=False)
 metanode_df
 
 
-# In[29]:
+# In[12]:
 
 
 # Total number of nodes
 metanode_df.nodes.sum()
 
 
-# In[30]:
+# In[13]:
 
 
 # Summary of metaedges and cooresponding edges
@@ -348,77 +259,65 @@ rows = list()
 for metaedge, edges in graph.get_metaedge_to_edges(exclude_inverts=True).items():
     rows.append({'metaedge': str(metaedge)})
 
-metaedge_file = os.path.join('results', 'msigdb_metaedges.tsv')
+metaedge_file = os.path.join('results', 'interpret_metaedges.tsv')
 metaedge_df = metaedge_df.merge(pd.DataFrame(rows))
 metaedge_df.to_csv(metaedge_file, sep='\t', index=False)
 metaedge_df
 
 
-# In[31]:
+# In[14]:
 
 
 # Summary of different styles for representing each metaedge
-metaedge_style_file = os.path.join('results', 'msigdb_metaedge_styles.tsv')
+metaedge_style_file = os.path.join('results', 'interpret_metaedge_styles.tsv')
 metaedge_style_df = hetio.stats.get_metaedge_style_df(metagraph)
 metaedge_style_df.to_csv(metaedge_style_file, sep='\t', index=False)
 metaedge_style_df
 
 
-# In[32]:
+# In[15]:
 
 
 # Number of edges in the network
 metaedge_df.edges.sum()
 
 
-# In[33]:
+# In[16]:
 
 
-# How many genesets were filtered?
-{'Cancer-Hallmarks': len(hallmark_filtered),
- 'Positional-Gene-Sets': len(positional_filtered),
- 'Curated-Gene-Sets-CPG': len(curated_filtered),
- 'Curated-Gene-Sets-REACTOME': len(reactome_filtered),
- 'Motif-Gene-Sets-MIR': len(micro_filtered),
- 'Motif-Gene-Sets-TFT': len(tf_filtered),
- 'Computational-Gene-Sets-CGN': len(cancer_n_filtered),
- 'Computational-Gene-Sets-CM': len(cancer_mod_filtered),
- 'GO-Gene-Sets-BP': len(go_bp_filtered),
- 'GO-Gene-Sets-CC': len(go_cc_filtered),
- 'GO-Gene-Sets-MF': len(go_mf_filtered),
- 'Oncogenic-Gene-Sets': len(oncogenic_filtered),
- 'Immunologic-Gene-Sets': len(immunologic_filtered)}
+# How many genesets were filtered per collection?
+{x: len(y) for x, y in filtered.items()}
 
 
 # ## Save graph
 
-# In[34]:
+# In[17]:
 
 
-get_ipython().run_cell_magic('time', '', "# Write nodes to a table\nnodes_file = os.path.join('hetnets', 'msigdb_nodes.tsv')\nhetio.readwrite.write_nodetable(graph, nodes_file)\n\n# Write edges to a table\nedges_file = os.path.join('hetnets', 'msigdb_edges.sif.gz')\nhetio.readwrite.write_sif(graph, edges_file)")
+get_ipython().run_cell_magic('time', '', "# Write nodes to a table\nnodes_file = os.path.join('hetnets', 'interpret_nodes.tsv')\nhetio.readwrite.write_nodetable(graph, nodes_file)\n\n# Write edges to a table\nedges_file = os.path.join('hetnets', 'interpret_edges.sif.gz')\nhetio.readwrite.write_sif(graph, edges_file)")
 
 
-# In[35]:
+# In[18]:
 
 
-get_ipython().run_cell_magic('time', '', "# Write metagraph as json\nmetagraph_file = os.path.join('hetnets', 'msigdb_metagraph.json')\nhetio.readwrite.write_metagraph(metagraph, metagraph_file)")
+get_ipython().run_cell_magic('time', '', "# Write metagraph as json\nmetagraph_file = os.path.join('hetnets', 'interpret_metagraph.json')\nhetio.readwrite.write_metagraph(metagraph, metagraph_file)")
 
 
-# In[36]:
+# In[19]:
 
 
-get_ipython().run_cell_magic('time', '', "# Write graph as json\nhetnet_json_path = os.path.join('hetnets', 'msigdb_hetnet.json.bz2')\nhetio.readwrite.write_graph(graph, hetnet_json_path)")
+get_ipython().run_cell_magic('time', '', "# Write graph as json\nhetnet_json_path = os.path.join('hetnets', 'interpret_hetnet.json.bz2')\nhetio.readwrite.write_graph(graph, hetnet_json_path)")
 
 
-# In[37]:
+# In[20]:
 
 
-get_ipython().system(" sha256sum 'hetnets/msigdb_hetnet.json.bz2'")
+get_ipython().system(" sha256sum 'hetnets/interpret_hetnet.json.bz2'")
 
 
 # ## Visualize hetnet node and edge counts
 
-# In[38]:
+# In[21]:
 
 
 ax = sns.barplot(x='metanode', y='nodes', data=metanode_df.sort_values('nodes'))
@@ -427,7 +326,7 @@ for tick in ax.get_xticklabels():
 ax.set_xlabel(''); ax.set_ylabel('nodes');
 
 
-# In[39]:
+# In[22]:
 
 
 ax = sns.barplot(x='metaedge', y='edges', data=metaedge_df.sort_values('edges'))

@@ -17,3 +17,5 @@ dependencies:
 - conda-forge::r-irkernel=0.8.11
 - pip:
   - hetio==0.2.8
+  - git+https://github.com/greenelab/tybalt@f89156f03ee20abfbe0def493746f47ffadae768
+

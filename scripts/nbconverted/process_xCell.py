@@ -48,12 +48,6 @@ cell_types.value_counts().hist(bins=10);
 # In[6]:
 
 
-geneset_url = 'https://doi.org/10.1186/s13059-017-1349-1'
-
-
-# In[7]:
-
-
 # Load curated gene names from versioned resource 
 commit = '721204091a96e55de6dcad165d6d8265e67e2a48'
 url = 'https://raw.githubusercontent.com/cognoma/genes/{}/data/genes.tsv'.format(commit)
@@ -68,7 +62,7 @@ symbol_to_entrez = dict(zip(gene_df.symbol,
                             gene_df.entrez_gene_id))
 
 
-# In[8]:
+# In[7]:
 
 
 # Add alternative symbols to entrez mapping dictionary
@@ -81,34 +75,40 @@ all_syn = (
     .reset_index(level=1, drop=True)
 )
 
+# Name the synonym series and join with rest of genes
 all_syn.name = 'all_synonyms'
 gene_with_syn_df = gene_df.join(all_syn)
 
 # Remove rows that have redundant symbols in all_synonyms
 gene_with_syn_df = (
     gene_with_syn_df
+    
+    # Drop synonyms that are duplicated - can't be sure of mapping
+    .drop_duplicates(['all_synonyms'], keep=False)
+
+    # Drop rows in which the symbol appears in the list of synonyms
     .query('symbol not in all_synonyms')
-    .drop_duplicates(['all_synonyms'], keep='first')
 )
 
 
+# In[8]:
+
+
+# Create a synonym to entrez mapping and add to dictionary
+synonym_to_entrez = dict(zip(gene_with_syn_df.all_synonyms,
+                             gene_with_syn_df.entrez_gene_id))
+
+symbol_to_entrez.update(synonym_to_entrez)
+
+
 # In[9]:
-
-
-symbol_to_entrez_alt = dict(zip(gene_with_syn_df.all_synonyms,
-                                gene_with_syn_df.entrez_gene_id))
-
-symbol_to_entrez.update(symbol_to_entrez_alt)
-
-
-# In[10]:
 
 
 # How many entrez genes match to duplicate symbols
 pd.DataFrame.from_dict(symbol_to_entrez, orient='index').loc[:, 0].value_counts().hist(bins=30)
 
 
-# In[11]:
+# In[10]:
 
 
 # Load gene updater
@@ -118,11 +118,12 @@ old_to_new_entrez = dict(zip(updater_df.old_entrez_gene_id,
                              updater_df.new_entrez_gene_id))
 
 
-# In[12]:
+# In[11]:
 
 
+geneset_url = 'https://doi.org/10.1186/s13059-017-1349-1'
 xcell_gmt_file = os.path.join('data', 'xcell_all_entrez.gmt')
-filtered_genes = []
+
 with open(xcell_gmt_file, 'w') as csvfile:
     xcell_writer = csv.writer(csvfile, delimiter='\t')
     for row in xcell_df.iterrows():

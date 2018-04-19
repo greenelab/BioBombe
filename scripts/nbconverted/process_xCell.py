@@ -42,7 +42,7 @@ cell_types.value_counts().head(10)
 
 
 # Distribution of number of cell types
-cell_types.value_counts().hist(bins=10)
+cell_types.value_counts().hist(bins=10);
 
 
 # In[6]:
@@ -62,11 +62,14 @@ gene_df = pd.read_table(url)
 # Only consider protein-coding genes
 gene_df = (
     gene_df.query("gene_type == 'protein-coding'")
-    .drop_duplicates('entrez_gene_id')
 )
 
 symbol_to_entrez = dict(zip(gene_df.symbol,
                             gene_df.entrez_gene_id))
+
+
+# In[8]:
+
 
 # Add alternative symbols to entrez mapping dictionary
 gene_df = gene_df.dropna(axis='rows', subset=['synonyms'])
@@ -79,21 +82,33 @@ all_syn = (
 )
 
 all_syn.name = 'all_synonyms'
-gene_df = gene_df.join(all_syn)
+gene_with_syn_df = gene_df.join(all_syn)
 
-symbol_to_entrez_alt = dict(zip(gene_df.all_synonyms,
-                                gene_df.entrez_gene_id))
+# Remove rows that have redundant symbols in all_synonyms
+gene_with_syn_df = (
+    gene_with_syn_df
+    .query('symbol not in all_synonyms')
+    .drop_duplicates(['all_synonyms'], keep='first')
+)
+
+
+# In[9]:
+
+
+symbol_to_entrez_alt = dict(zip(gene_with_syn_df.all_synonyms,
+                                gene_with_syn_df.entrez_gene_id))
 
 symbol_to_entrez.update(symbol_to_entrez_alt)
 
 
-# In[8]:
+# In[10]:
 
 
-len(symbol_to_entrez)
+# How many entrez genes match to duplicate symbols
+pd.DataFrame.from_dict(symbol_to_entrez, orient='index').loc[:, 0].value_counts().hist(bins=30)
 
 
-# In[9]:
+# In[11]:
 
 
 # Load gene updater
@@ -103,7 +118,7 @@ old_to_new_entrez = dict(zip(updater_df.old_entrez_gene_id,
                              updater_df.new_entrez_gene_id))
 
 
-# In[10]:
+# In[12]:
 
 
 xcell_gmt_file = os.path.join('data', 'xcell_all_entrez.gmt')
@@ -117,13 +132,10 @@ with open(xcell_gmt_file, 'w') as csvfile:
         # There are data issues of input datetime types
         # Ignore these genes for now
         # See https://doi.org/10.1186/s13059-016-1044-7
-        genes = [x for x in genes if not type(x) == datetime.date ]
+        genes = [x for x in genes if not type(x) == datetime.date]
 
-        # Convert genes to entrez IDs (consider alternate mappings)
-        genes = [symbol_to_entrez[x] for x in genes if x in symbol_to_entrez ]
-
-        # Update old to new entrez IDs
-        genes = [old_to_new_entrez[x] if x in old_to_new_entrez else x for x in genes]
+        # Convert genes to entrez IDs (considering alternate mappings)
+        genes = [symbol_to_entrez[x] for x in genes if x in symbol_to_entrez]
 
         # Remove empty cells in the cell file
         #genes = [x for x in genes if x != '']

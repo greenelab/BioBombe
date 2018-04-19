@@ -105,7 +105,6 @@ gene_df = pd.read_table(url)
 # Only consider protein-coding genes
 gene_df = (
     gene_df.query("gene_type == 'protein-coding'")
-    .drop_duplicates('entrez_gene_id')
 )
 
 coding_genes = set(gene_df['entrez_gene_id'].astype(int))
@@ -123,11 +122,21 @@ gene_df.head(2)
 get_ipython().run_cell_magic('time', '', "for i, row in gene_df.iterrows():\n    # Build dictionary of descriptive elements for each gene\n    meta_data = {\n        'description': row['description'],\n        'source': 'Entrez Gene',\n        'url': 'http://identifiers.org/ncbigene/{}'.format(row['entrez_gene_id']),\n        'license': 'CC0 1.0',\n    }\n    \n    if pd.notnull(row['chromosome']):\n        meta_data['chromosome'] = row['chromosome']\n\n    # Add genes to graph\n    graph.add_node(kind='Gene', identifier=int(row['entrez_gene_id']), name=row['symbol'],\n                   data=meta_data)")
 
 
+# In[7]:
+
+
+# Load gene updater
+url = 'https://raw.githubusercontent.com/cognoma/genes/{}/data/updater.tsv'.format(commit)
+updater_df = pd.read_table(url)
+old_to_new_entrez = dict(zip(updater_df.old_entrez_gene_id,
+                             updater_df.new_entrez_gene_id))
+
+
 # ## Add gene set nodes and associated genes as edges
 # 
 # Add each MSigDB collection as distinct nodes with a `participates` edge for representative gene sets and corresponding membership.
 
-# In[7]:
+# In[8]:
 
 
 def add_node_to_graph(current_graph, collection_file, collection_kind,
@@ -166,6 +175,9 @@ def add_node_to_graph(current_graph, collection_file, collection_kind,
             # Process geneset membership
             genes = row[2:]
 
+            # Update entrez_gene_id
+            genes = [old_to_new_entrez[x] if x in old_to_new_entrez else x for x in genes]
+            
             # The genes must exist in curated resource
             genes = [int(x) for x in genes if int(x) in gene_list]
 
@@ -189,7 +201,7 @@ def add_node_to_graph(current_graph, collection_file, collection_kind,
     return filtered_genesets
 
 
-# In[8]:
+# In[9]:
 
 
 hetnet_build = {
@@ -215,7 +227,7 @@ hetnet_build = {
 }
 
 
-# In[9]:
+# In[10]:
 
 
 get_ipython().run_cell_magic('time', '', "\n# Add all collections genesets to hetnet\nfiltered = {}\nfor collection_source, collection_info in hetnet_build.items():\n    path, collection_kind = collection_info\n    collection_file = os.path.join('data', path)\n    filtered[collection_kind] = add_node_to_graph(current_graph=graph,\n                                                  collection_file=collection_file,\n                                                  collection_kind=collection_kind,\n                                                  collection_source=collection_source,\n                                                  gene_list=coding_genes)")
@@ -223,7 +235,7 @@ get_ipython().run_cell_magic('time', '', "\n# Add all collections genesets to he
 
 # ## Network visualizations and stats
 
-# In[10]:
+# In[11]:
 
 
 # Export node degree tables
@@ -231,7 +243,7 @@ node_degree_file = os.path.join('results', 'interpret_node_degrees.xlsx')
 hetio.stats.degrees_to_excel(graph, node_degree_file)
 
 
-# In[11]:
+# In[12]:
 
 
 # Summary of metanodes and cooresponding nodes
@@ -242,14 +254,14 @@ metanode_df.to_csv(metanode_file, sep='\t', index=False)
 metanode_df
 
 
-# In[12]:
+# In[13]:
 
 
 # Total number of nodes
 metanode_df.nodes.sum()
 
 
-# In[13]:
+# In[14]:
 
 
 # Summary of metaedges and cooresponding edges
@@ -265,7 +277,7 @@ metaedge_df.to_csv(metaedge_file, sep='\t', index=False)
 metaedge_df
 
 
-# In[14]:
+# In[15]:
 
 
 # Summary of different styles for representing each metaedge
@@ -275,14 +287,14 @@ metaedge_style_df.to_csv(metaedge_style_file, sep='\t', index=False)
 metaedge_style_df
 
 
-# In[15]:
+# In[16]:
 
 
 # Number of edges in the network
 metaedge_df.edges.sum()
 
 
-# In[16]:
+# In[17]:
 
 
 # How many genesets were filtered per collection?
@@ -291,25 +303,25 @@ metaedge_df.edges.sum()
 
 # ## Save graph
 
-# In[17]:
+# In[18]:
 
 
 get_ipython().run_cell_magic('time', '', "# Write nodes to a table\nnodes_file = os.path.join('hetnets', 'interpret_nodes.tsv')\nhetio.readwrite.write_nodetable(graph, nodes_file)\n\n# Write edges to a table\nedges_file = os.path.join('hetnets', 'interpret_edges.sif.gz')\nhetio.readwrite.write_sif(graph, edges_file)")
 
 
-# In[18]:
+# In[19]:
 
 
 get_ipython().run_cell_magic('time', '', "# Write metagraph as json\nmetagraph_file = os.path.join('hetnets', 'interpret_metagraph.json')\nhetio.readwrite.write_metagraph(metagraph, metagraph_file)")
 
 
-# In[19]:
+# In[20]:
 
 
 get_ipython().run_cell_magic('time', '', "# Write graph as json\nhetnet_json_path = os.path.join('hetnets', 'interpret_hetnet.json.bz2')\nhetio.readwrite.write_graph(graph, hetnet_json_path)")
 
 
-# In[20]:
+# In[21]:
 
 
 get_ipython().system(" sha256sum 'hetnets/interpret_hetnet.json.bz2'")
@@ -317,7 +329,7 @@ get_ipython().system(" sha256sum 'hetnets/interpret_hetnet.json.bz2'")
 
 # ## Visualize hetnet node and edge counts
 
-# In[21]:
+# In[22]:
 
 
 ax = sns.barplot(x='metanode', y='nodes', data=metanode_df.sort_values('nodes'))
@@ -326,7 +338,7 @@ for tick in ax.get_xticklabels():
 ax.set_xlabel(''); ax.set_ylabel('nodes');
 
 
-# In[22]:
+# In[23]:
 
 
 ax = sns.barplot(x='metaedge', y='edges', data=metaedge_df.sort_values('edges'))

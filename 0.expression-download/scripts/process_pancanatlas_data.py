@@ -154,7 +154,7 @@ tcga_expr_df.head()
 # In[15]:
 
 
-# Extract sample time in the order of the gene expression matrix
+# Extract sample type in the order of the gene expression matrix
 tcga_id = pd.DataFrame(tcga_expr_df.index)
 
 # Extract the last two digits of the barcode and recode sample-type
@@ -213,6 +213,6 @@ train_df.to_csv(train_file, sep='\t', compression='gzip', float_format='%.3g')
 # In[20]:
 
 
-train_file = os.path.join('data', 'test_tcga_expression_matrix_processed.tsv.gz')
-test_df.to_csv(train_file, sep='\t', compression='gzip', float_format='%.3g')
+test_file = os.path.join('data', 'test_tcga_expression_matrix_processed.tsv.gz')
+test_df.to_csv(test_file, sep='\t', compression='gzip', float_format='%.3g')
 

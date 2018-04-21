@@ -20,8 +20,10 @@ Gene - participates - Motif-Gene-Sets-MIR	Gene–participates–Motif-Gene-Sets-
 Gene - participates - Motif-Gene-Sets-TFT	Gene–participates–Motif-Gene-Sets-TFT	Gene - participates - Motif-Gene-Sets-TFT	GpC3-TFT	GpC3-TFT	Gene	Motif-Gene-Sets-TFT	0
 Gene - participates - Oncogenic-Gene-Sets	Gene–participates–Oncogenic-Gene-Sets	Gene - participates - Oncogenic-Gene-Sets	GpC6	GpC6	Gene	Oncogenic-Gene-Sets	0
 Gene - participates - Positional-Gene-Sets	Gene–participates–Positional-Gene-Sets	Gene - participates - Positional-Gene-Sets	GpC1	GpC1	Gene	Positional-Gene-Sets	0
+Gene - participates - xCell-Cell-Type	Gene–participates–xCell-Cell-Type	Gene - participates - xCell-Cell-Type	GpXCELL	GpXCELL	Gene	xCell-Cell-Type	0
 Immunologic-Gene-Sets - participates - Gene	Immunologic-Gene-Sets–participates–Gene	Gene - participates - Immunologic-Gene-Sets	C7pG	GpC7	Immunologic-Gene-Sets	Gene	1
 Motif-Gene-Sets-MIR - participates - Gene	Motif-Gene-Sets-MIR–participates–Gene	Gene - participates - Motif-Gene-Sets-MIR	C3-MIRpG	GpC3-MIR	Motif-Gene-Sets-MIR	Gene	1
 Motif-Gene-Sets-TFT - participates - Gene	Motif-Gene-Sets-TFT–participates–Gene	Gene - participates - Motif-Gene-Sets-TFT	C3-TFTpG	GpC3-TFT	Motif-Gene-Sets-TFT	Gene	1
 Oncogenic-Gene-Sets - participates - Gene	Oncogenic-Gene-Sets–participates–Gene	Gene - participates - Oncogenic-Gene-Sets	C6pG	GpC6	Oncogenic-Gene-Sets	Gene	1
 Positional-Gene-Sets - participates - Gene	Positional-Gene-Sets–participates–Gene	Gene - participates - Positional-Gene-Sets	C1pG	GpC1	Positional-Gene-Sets	Gene	1
+xCell-Cell-Type - participates - Gene	xCell-Cell-Type–participates–Gene	Gene - participates - xCell-Cell-Type	XCELLpG	GpXCELL	xCell-Cell-Type	Gene	1

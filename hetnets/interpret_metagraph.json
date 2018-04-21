@@ -13,7 +13,8 @@
     "Motif-Gene-Sets-MIR",
     "Motif-Gene-Sets-TFT",
     "Oncogenic-Gene-Sets",
-    "Positional-Gene-Sets"
+    "Positional-Gene-Sets",
+    "xCell-Cell-Type"
   ],
   "metaedge_tuples": [
     [
@@ -93,6 +94,12 @@
       "Positional-Gene-Sets",
       "participates",
       "both"
+    ],
+    [
+      "Gene",
+      "xCell-Cell-Type",
+      "participates",
+      "both"
     ]
   ],
   "kind_to_abbrev": {
@@ -110,6 +117,7 @@
     "GO-Gene-Sets-MF": "C5-MF",
     "Oncogenic-Gene-Sets": "C6",
     "Immunologic-Gene-Sets": "C7",
+    "xCell-Cell-Type": "XCELL",
     "participates": "p"
   }
 }

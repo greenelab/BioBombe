@@ -176,7 +176,7 @@ def add_node_to_graph(current_graph, collection_file, collection_kind,
             genes = row[2:]
 
             # Update entrez_gene_id
-            genes = [old_to_new_entrez[x] if x in old_to_new_entrez else x for x in genes]
+            genes = set(old_to_new_entrez[x] if x in old_to_new_entrez else x for x in genes)
             
             # The genes must exist in curated resource
             genes = [int(x) for x in genes if int(x) in gene_list]
@@ -205,7 +205,8 @@ def add_node_to_graph(current_graph, collection_file, collection_kind,
 
 
 hetnet_build = {
-    
+    # Format: `Collection Source`: [`Collection File`, `Collection Kind`]
+
     # MSigDB
     'MSigDB-H': ['h.all.v6.1.entrez.gmt', 'Cancer-Hallmarks'],
     'MSigDB-C1': ['c1.all.v6.1.entrez.gmt', 'Positional-Gene-Sets'],

@@ -4,40 +4,22 @@
 
 **University of Pennsylvania**
 
-The repository stores data and data processing scripts of [MSigDB](http://software.broadinstitute.org/gsea/msigdb/index.jsp) gene sets.
-These data are used in methods to assign biology to compressed gene expression features.
+The repository stores data and data processing modules to enable compressed gene expression feature interpretation.
 
-## Data Access
+## Modules 
 
-Individual MSigDB gene sets (version 6.1) were downloaded from [GSEA downloads](http://software.broadinstitute.org/gsea/downloads.jsp).
-Also download the full gene set: `msigdb.v6.1.symbols.gmt`.
+To reproduce the results of the analysis, the modules should be run in order.
 
-See [download_msigdb.ipynb](download_msigdb.ipynb) for specific details.
- 
-The genesets consist of 8 different collections; many also have sub-collections:
+| Name | Description |
+| :--- | :---------- |
+| 0.expression-download | Download and process gene expression data to run through pipeline |
+| 1.initial-z-sweep | Determine a set of optimal hyperparameters for Tybalt and ADAGE models across a representative range of z dimensionality |
+| 2.ensemble-z-analysis | Train various algorithms to compress gene expression data across a large range of z dimensions |
+| 3.build-hetnets | Download, process, and integrate various curated gene sets into a single heterogeneous network |
 
-| Name | Collection | License |
-| :--: | :--------: | ------: |
-| H | Hallmark gene sets | CC-BY 4.0 |
-| C1 | Positional gene sets | CC-BY 4.0 |
-| C2 | Curated gene sets | CC-BY 4.0 (except KEGG, BioCarta, AAAS/STKE) |
-| C2.CPG | Chemical and genetic perturbations | CC-BY 4.0 |
-| C2.CP.Reactome | Reactome | CC-BY 4.0 |
-| C3 | Motif gene sets | CC-BY 4.0 |
-| C3.MIR | microRNA targets | CC-BY 4.0 |
-| C3.TFT | Transcription factor targets | CC-BY 4.0 |
-| C4 | Computational gene sets | CC-BY 4.0 |
-| C4.CGN | Cancer gene neighborhoods | CC-BY 4.0 |
-| C4.CM | Cancer modules | CC-BY 4.0 |
-| C5 | Gene Ontology (GO) terms | CC-BY 4.0 |
-| C5.BP | GO biological processes | CC-BY 4.0 |
-| C5.CC | GO cellular components | CC-BY 4.0 |
-| C5.MF | GO molecular functions | CC-BY 4.0 |
-| C6 | Oncogenic gene sets | CC-BY 4.0 |
-| C7 | Immunologic gene sets | CC-BY 4.0 |
+## Algorithms
 
-We do not include the KEGG, BioCarta, AAAS/STKE gene sets in `C2` for easy dissemination.
-For full license terms visit the [MSigDB license page](http://software.broadinstitute.org/gsea/msigdb_license_terms.jsp).
+See [2.ensemble-z-analysis](2.ensemble-z-analysis) for more details.
 
 ## Computational Environment
 

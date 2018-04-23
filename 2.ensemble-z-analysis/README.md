@@ -12,7 +12,7 @@ We also save the population of all models, for each algorithm, across z for down
 We compress gene expression data with the following algorithms:
 
 | Algorithm | Implementation |
-| :-------: | :------------: |
+| :-------- | :------------- |
 | Principal Components Analysis (PCA) | [sklearn](http://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html) |
 | Independent Components Analysis (ICA) | [sklearn](http://scikit-learn.org/stable/modules/generated/sklearn.decomposition.FastICA.html) |
 | Non-Negative Matrix Factorization (NMF) | [sklearn](http://scikit-learn.org/stable/modules/generated/sklearn.decomposition.NMF.html) |
@@ -25,10 +25,10 @@ We will evaluate the solutions across the ensemble population over all z dimensi
 
 1. Reconstruction Cost - Measures the binary cross entropy of input data to reconstruction
 2. Training History - For neural network models (ADAGE, Tybalt), save the training progress of each model
-  * For Tybalt, the KL Divergence and Reconstruction Loss are saved separately
+   * For Tybalt, the KL Divergence and Reconstruction Loss are saved separately
 3. Correlation of input sample to reconstructed sample - Measure how well certain samples traverse through the bottleneck.
-  * Calculate Pearson and Spearman correlations
-  * May reveal certain biases in sample reconstruction efficiency across algorithms
+   * Calculate Pearson and Spearman correlations
+   * May reveal certain biases in sample reconstruction efficiency across algorithms
 
 The population of weight and z matrices are also saved for alternative downstream analyses.
 These analyses include automatic interpretation of compressed features with HetMech.

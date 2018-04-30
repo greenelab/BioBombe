@@ -18,6 +18,7 @@ Usage:
                                           --noise
                                           --output_filename
                                           --num_components
+                                          --scale
 
     Typically, arguments to this script are compiled automatically by:
 
@@ -33,6 +34,7 @@ import argparse
 import numpy as np
 import pandas as pd
 
+from sklearn.preprocessing import MinMaxScaler
 from keras.engine.topology import Layer
 from keras.layers import Input, Dense, Dropout, Activation
 from keras.models import Sequential, Model
@@ -86,6 +88,8 @@ parser.add_argument('-o', '--optimizer', default='adam',
                     help='optimizer to use', choices=['adam', 'adadelta'])
 parser.add_argument('-w', '--untied_weights', action='store_false',
                     help='use tied weights in training ADAGE model')
+parser.add_argument('-s', '--scale', action='store_true',
+                    help='Add decision to scale input data')
 args = parser.parse_args()
 
 # Set hyper parameters
@@ -98,6 +102,7 @@ output_filename = args.output_filename
 latent_dim = int(args.num_components)
 use_optimizer = args.optimizer
 tied_weights = args.untied_weights
+scale = args.scale
 
 # Random seed
 seed = int(np.random.randint(low=0, high=10000, size=1))
@@ -108,6 +113,13 @@ rnaseq_file = os.path.join('data', 'pancan_scaled_zeroone_rnaseq.tsv.gz')
 rnaseq_df = pd.read_table(rnaseq_file, index_col=0)
 
 original_dim = rnaseq_df.shape[1]
+
+# Zero One normalize input data
+if scale:
+    scaler = MinMaxScaler()
+    x = scaler.fit_transform(rnaseq_df)
+    rnaseq_df = pd.DataFrame(x, index=rnaseq_df.index,
+                             columns=rnaseq_df.columns)
 
 # Split 10% test set randomly
 test_set_percent = 0.1

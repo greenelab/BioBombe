@@ -89,7 +89,7 @@ parser.add_argument('-o', '--optimizer', default='adam',
                     help='optimizer to use', choices=['adam', 'adadelta'])
 parser.add_argument('-w', '--untied_weights', action='store_false',
                     help='use tied weights in training ADAGE model')
-parser.add_argument('-s', '--scale', action='store_true',
+parser.add_argument('-a', '--scale', action='store_true',
                     help='Add decision to scale input data')
 parser.add_argument('-m', '--subset_mad_genes', default=8000,
                     help='The number of mad genes to subset')
@@ -113,10 +113,9 @@ seed = int(np.random.randint(low=0, high=10000, size=1))
 np.random.seed(seed)
 
 # Load Data
-rnaseq_file = os.path.join('data', 'pancan_scaled_zeroone_rnaseq.tsv.gz')
+rnaseq_file = os.path.join('..', '0.expression-download', 'data',
+                           'train_tcga_expression_matrix_processed.tsv.gz')
 rnaseq_df = pd.read_table(rnaseq_file, index_col=0)
-
-original_dim = rnaseq_df.shape[1]
 
 # Zero One normalize input data
 if scale:
@@ -130,6 +129,8 @@ if subset_mad_genes is not None:
     mad_genes = rnaseq_df.mad(axis=0).sort_values(ascending=False)
     top_mad_genes = mad_genes.iloc[0:subset_mad_genes, ].index
     rnaseq_df = rnaseq_df.loc[:, top_mad_genes]
+
+original_dim = rnaseq_df.shape[1]
 
 # Split 10% test set randomly
 test_set_percent = 0.1

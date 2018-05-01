@@ -3,6 +3,7 @@
 **Gregory Way, 2018**
 
 Gene expression data compression reveals coordinated gene expression modules that describe important biology.
+
 In the following analysis, we apply a series of compression algorithms to gene expression datasets.
 Through each series, we alter the dimensionality (z) of the bottleneck and compare mathematical performance.
 We also save the population of all models, for each algorithm, across z for downstream analyses.
@@ -22,6 +23,7 @@ We compress gene expression data with the following algorithms:
 ## Evaluation Metrics
 
 We will evaluate the solutions across the ensemble population over all z dimensions.
+For each of the populations, we will also track performance of training and testing sets independently.
 
 1. Reconstruction Cost - Measures the binary cross entropy of input data to reconstruction
 2. Training History - For neural network models (ADAGE, Tybalt), save the training progress of each model
@@ -29,7 +31,22 @@ We will evaluate the solutions across the ensemble population over all z dimensi
 3. Correlation of input sample to reconstructed sample - Measure how well certain samples traverse through the bottleneck.
    * Calculate Pearson and Spearman correlations
    * May reveal certain biases in sample reconstruction efficiency across algorithms
+4. Correlation of input gene profile to reconstructed gene profile - Measure how well certain genes are reconstructed through the bottleneck.
+   * Calculate Pearson and Spearman correlations
+   * May reveal certain biases in in reconstruction efficiency across genes and algorithms
 
 The population of weight and z matrices are also saved for alternative downstream analyses.
 These analyses include automatic interpretation of compressed features with HetMech.
+
+## Reproduce Analysis
+
+To rerun the analyis, perform the following:
+
+```bash
+conda activate interpret-compression
+
+# Navigate into this module folder
+cd 2.ensemble-z-analysis
+./analysis.sh
+```
 

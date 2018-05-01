@@ -79,6 +79,8 @@ parser.add_argument('-s', '--num_seeds', default=5,
                     help='number of different seeds to run on current data')
 parser.add_argument('-l', '--local', action='store_true',
                     help='decision to run models locally instead of on PMACS')
+parser.add_argument('-m', '--subset_mad_genes', default=8000,
+                    help='subset num genes based on mean absolute deviation')
 args = parser.parse_args()
 
 pmacs_config_file = args.pmacs_config
@@ -88,6 +90,7 @@ python_path = args.python_path
 num_seeds = args.num_seeds
 components = args.components
 local = args.local
+subset_mad_genes = args.subset_mad_genes
 
 if not os.path.exists(out_dir):
     os.makedirs(out_dir)
@@ -111,7 +114,7 @@ default_params = ['--param_config', param_config_file,
 all_commands = []
 for z in components:
     z_command = [python_path, 'scripts/train_models_given_z.py',
-                 '--num_components', z]
+                 '--num_components', z, '--subset_mad_genes', subset_mad_genes]
     if local:
         z_command += default_params
     else:

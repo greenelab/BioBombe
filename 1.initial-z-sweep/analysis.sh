@@ -13,7 +13,7 @@
 # cluster of 8 NVIDIA GEFORCE GTX Ti GPUs.
 
 PARAM_FILE_PREFIX='config/z_parameter_sweep_'
-PMACS_FILE='config/pmacs_config.tsv'
+PMACS_FILE='../config/pmacs_config.tsv'
 PYTHON_PATH='python'
 ALGORITHMS=( 'tybalt' 'adage' )
 
@@ -25,6 +25,6 @@ do
           --config_file $PMACS_FILE \
           --algorithm $alg \
           --python_path $PYTHON_PATH \
-          --param_folder 'z_param_sweep_'$alg \
+          --param_folder 'param_sweep/param_sweep_'$alg \
           --local
 done

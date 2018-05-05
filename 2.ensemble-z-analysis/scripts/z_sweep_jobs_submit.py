@@ -58,8 +58,11 @@ Submit jobs given certain number of latent space dimensionality
 """
 
 import os
+import sys
 import argparse
 import pandas as pd
+
+sys.path.insert(0, '../scripts/util')
 from bsub_helper import bsub_help
 
 parser = argparse.ArgumentParser()
@@ -113,7 +116,8 @@ default_params = ['--param_config', param_config_file,
 # Build lists of job commands depending on input algorithm
 all_commands = []
 for z in components:
-    z_command = [python_path, 'train_models_given_z.py', '--num_components', z]
+    z_command = [python_path, 'scripts/train_models_given_z.py',
+                 '--num_components', z]
     if local:
         z_command += default_params
     else:
@@ -122,7 +126,6 @@ for z in components:
 
 # Submit the jobs to PMACS
 for command in all_commands:
-    print(command)
     b = bsub_help(command=command,
                   queue=queue,
                   num_gpus=num_gpus,

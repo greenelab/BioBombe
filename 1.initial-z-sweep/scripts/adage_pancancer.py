@@ -18,6 +18,8 @@ Usage:
                                           --noise
                                           --output_filename
                                           --num_components
+                                          --scale
+                                          --subset_mad_genes
 
     Typically, arguments to this script are compiled automatically by:
 
@@ -33,6 +35,7 @@ import argparse
 import numpy as np
 import pandas as pd
 
+from sklearn.preprocessing import MinMaxScaler
 from keras.engine.topology import Layer
 from keras.layers import Input, Dense, Dropout, Activation
 from keras.models import Sequential, Model
@@ -86,6 +89,10 @@ parser.add_argument('-o', '--optimizer', default='adam',
                     help='optimizer to use', choices=['adam', 'adadelta'])
 parser.add_argument('-w', '--untied_weights', action='store_false',
                     help='use tied weights in training ADAGE model')
+parser.add_argument('-a', '--scale', action='store_true',
+                    help='Add decision to scale input data')
+parser.add_argument('-m', '--subset_mad_genes', default=8000,
+                    help='The number of mad genes to subset')
 args = parser.parse_args()
 
 # Set hyper parameters
@@ -98,14 +105,30 @@ output_filename = args.output_filename
 latent_dim = int(args.num_components)
 use_optimizer = args.optimizer
 tied_weights = args.untied_weights
+scale = args.scale
+subset_mad_genes = args.subset_mad_genes
 
 # Random seed
 seed = int(np.random.randint(low=0, high=10000, size=1))
 np.random.seed(seed)
 
 # Load Data
-rnaseq_file = os.path.join('data', 'pancan_scaled_zeroone_rnaseq.tsv.gz')
+rnaseq_file = os.path.join('..', '0.expression-download', 'data',
+                           'train_tcga_expression_matrix_processed.tsv.gz')
 rnaseq_df = pd.read_table(rnaseq_file, index_col=0)
+
+# Zero One normalize input data
+if scale:
+    scaler = MinMaxScaler()
+    x = scaler.fit_transform(rnaseq_df)
+    rnaseq_df = pd.DataFrame(x, index=rnaseq_df.index,
+                             columns=rnaseq_df.columns)
+
+# Determine most variably expressed genes and subset
+if subset_mad_genes is not None:
+    mad_genes = rnaseq_df.mad(axis=0).sort_values(ascending=False)
+    top_mad_genes = mad_genes.iloc[0:subset_mad_genes, ].index
+    rnaseq_df = rnaseq_df.loc[:, top_mad_genes]
 
 original_dim = rnaseq_df.shape[1]
 

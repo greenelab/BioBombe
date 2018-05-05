@@ -24,6 +24,17 @@ Therefore, we perform a parameter sweep over several hyperparameters for both Ty
 Previously, we used latent space dimensionality of `100` ([Way and Greene 2018](https://doi.org/10.1142/9789813235533_0008)).
 Here, we sweep over dimensions: `5`, `25`, `50`, `75`, `100`, and `125`.
 
+To reproduce the data for this analysis run the following command:
+
+```bash
+# From the top directory
+conda activate interpret-compression
+
+# Navigate into z-sweep directory
+cd 1.initial-z-sweep
+bash analysis.sh
+```
+
 ## Parameter Sweep
 
 We sweep over the following parameter combinations for Tybalt and ADAGE models:

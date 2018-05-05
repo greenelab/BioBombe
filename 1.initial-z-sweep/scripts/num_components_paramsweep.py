@@ -76,7 +76,7 @@ def get_param(param):
 parser = argparse.ArgumentParser()
 parser.add_argument('-p', '--parameter_file',
                     help='location of tab separated parameter file to sweep')
-parser.add_argument('-c', '--config_file', default='config/pmacs_config.tsv',
+parser.add_argument('-c', '--config_file', default='../config/pmacs_config.tsv',
                     help='location of the configuration file for PMACS')
 parser.add_argument('-a', '--algorithm',
                     help='which algorithm to sweep hyperparameters over')
@@ -148,7 +148,8 @@ if algorithm == 'tybalt':
                                   '--batch_size', bs,
                                   '--epochs', e,
                                   '--kappa', k,
-                                  '--output_filename', f]
+                                  '--output_filename', f,
+                                  '--scale']
                         final_command = [python_path, script] + params
                         all_commands.append(final_command)
 elif algorithm == 'adage':
@@ -166,7 +167,8 @@ elif algorithm == 'adage':
                                       '--epochs', e,
                                       '--sparsity', s,
                                       '--noise', n,
-                                      '--output_filename', f]
+                                      '--output_filename', f,
+                                      '--scale']
                             final_command = [python_path, script] + params
                             if adage_weights == 'untied':
                                 final_command += ['--untied_weights']

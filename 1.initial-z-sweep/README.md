@@ -48,7 +48,7 @@ We sweep over the following parameter combinations for Tybalt and ADAGE models:
 | Kappa | 0, 0.5, 1 | |
 | Sparsity | | 0, 0.000001, 0.001 |
 | Noise | | 0, 0.1, 0.5 |
-| Weights | | tied |
+| Weights | | untied,tied |
 
 This resulted in the training of 540 Tybalt models and 648 ADAGE models.
 We also include results of a parameter sweep of 1,080 ADAGE models with _untied_ weights.

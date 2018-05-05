@@ -48,14 +48,30 @@ We sweep over the following parameter combinations for Tybalt and ADAGE models:
 | Kappa | 0, 0.5, 1 | |
 | Sparsity | | 0, 0.000001, 0.001 |
 | Noise | | 0, 0.1, 0.5 |
+| Weights | | tied |
 
-This resulted in the training of 540 Tybalt models and 1,080 ADAGE models.
+This resulted in the training of 540 Tybalt models and 648 ADAGE models.
+We also include results of a parameter sweep of 1,080 ADAGE models with _untied_ weights.
+For all downstream applications we use ADAGE models with tied weights, but we also report the _untied_ results here.
 
 Our goal was to determine optimal hyperparameter combinations for both models across various bottleneck dimensionalities.
 
 ## Results
 
 We report the results in a series of visualizations and tables for Tybalt and ADAGE separately below.
+
+In order to compile the results of the parameter sweep, run the following commands:
+
+```bash
+# Compile Tybalt parameter sweep results
+python scripts/summarize_paramsweep.py --results_directory 'param_sweep/param_sweep_tybalt/' --output 'parameter_sweep_tybalt_full_results.tsv'
+
+# Compile ADAGE parameter sweep results
+python scripts/summarize_paramsweep.py --results_directory 'param_sweep/param_sweep_adage/' --output 'parameter_sweep_adage_tiedweights_full_results.tsv'
+
+# Compile untied ADAGE parameter sweep results
+python scripts/summarize_paramsweep.py --results_directory 'param_sweep/param_sweep_adage_untied' --output 'parameter_sweep_adage_full_results.tsv'
+```
 
 ### Tybalt
 
@@ -107,7 +123,7 @@ High levels of sparsity fail _worse_ with increasing dimensionality.
 
 After removing `sparsity = 0.001`, we see a clearer picture (**Figure 5**).
 
-![](figures/z_param_adage_tied_weights/z_parameter_adage_remove_sparsity_tiedweights.png?raw=true)
+![](figures/z_param_adage_tied_weights/z_param_adage_remove_learningrate_tiedweights.png?raw=true)
 
 **Figure 5.** The loss of validation sets at the end of training for 720 ADAGE models.
 
@@ -138,5 +154,3 @@ See https://github.com/greenelab/tybalt/issues/127 for more details about zero n
 Selection of hyperparameters across different latent space dimensionality operated as expected.
 Loss was higher for lower dimensions and lower dimensions benefitted the most from increased regularization.
 Nevertheless, we have obtained a broad set of optimal hyperparameters for use in a larger and more specific sweep of dimensionality.
-
-

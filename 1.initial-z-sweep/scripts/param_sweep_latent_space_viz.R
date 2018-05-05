@@ -16,7 +16,6 @@
 # dimensionality for both Tybalt and ADAGE models
 
 library(ggplot2)
-library(colorblindr)
 
 set.seed(123)
 
@@ -32,10 +31,10 @@ base_theme <-  theme(axis.text = element_text(size = rel(0.5)),
                      legend.key.height = unit(0.5, "line"))
 
 # Set input and output file names
-tyb_file <- file.path("results", "z_parameter_sweep_tybalt_full_results.tsv")
-adage_file <- file.path("results", "z_parameter_sweep_adage_full_results.tsv")
+tyb_file <- file.path("results", "parameter_sweep_tybalt_full_results.tsv")
+adage_file <- file.path("results", "parameter_sweep_adage_full_results.tsv")
 da_tw_file <- file.path("results",
-                        "z_parameter_sweep_adage_tiedweights_full_results.tsv")
+                        "parameter_sweep_adage_tiedweights_full_results.tsv")
 
 tyb_fig <- file.path("figures", "z_param_tybalt")
 adage_fig <- file.path("figures", "z_param_adage")
@@ -95,7 +94,7 @@ p <- ggplot(tybalt_select_df, aes(x = as.numeric(paste(num_components)),
   geom_point(aes(shape = epochs, color = kappa), size = 0.8, alpha = 0.7,
              position = position_jitter(w = 5, h = 0)) +
   scale_x_continuous(breaks = c(5, 25, 50, 75, 100, 125)) +
-  scale_color_OkabeIto() +
+  scale_color_brewer(palette = "Dark2") +
   facet_grid(batch_size ~ learning_rate) +
   ylab("Final Validation Loss") +
   xlab("Latent Space Dimensionality") +
@@ -124,7 +123,7 @@ tybalt_one_model_pdf <- file.path(tyb_fig, "z_parameter_tybalt_training.pdf")
 p <- ggplot(tybalt_one_model, aes(x = as.numeric(paste(train_epoch)),
                              y = val_loss)) +
   geom_line(aes(color = kappa), size = 0.2, alpha = 0.7) +
-  scale_color_OkabeIto() +
+  scale_color_brewer(palette = "Dark2") +
   facet_wrap(~ num_components) +
   ylab("Final Validation Loss") +
   xlab("Training Epochs") +
@@ -153,17 +152,17 @@ readr::write_tsv(tybalt_best_params, best_param_file)
 # decreased, batch size and epochs increased, and kappa decreased.
 tybalt_good_training_df <- tybalt_melt_df %>%
   dplyr::filter(
-    (learning_rate == "0.002" & num_components == 5 & epochs == 50 &
-       batch_size == 50 & kappa == "1.0") |
-      (learning_rate == "0.002" & num_components == 25 & epochs == 50 &
+    (learning_rate == "0.001" & num_components == 5 & epochs == 100 &
+       batch_size == 50 & kappa == "0.5") |
+      (learning_rate == "0.001" & num_components == 25 & epochs == 100 &
          batch_size == 50 & kappa == "0.0") |
-      (learning_rate == "0.002" & num_components == 50 & epochs == 100 &
+      (learning_rate == "0.001" & num_components == 50 & epochs == 100 &
          batch_size == 100 & kappa == "0.0") |
-      (learning_rate == "0.002" & num_components == 75 & epochs == 100 &
+      (learning_rate == "0.001" & num_components == 75 & epochs == 100 &
          batch_size == 150 & kappa == "0.0") |
-      (learning_rate == "0.001" & num_components == 100 & epochs == 100 &
+      (learning_rate == "0.0005" & num_components == 100 & epochs == 100 &
          batch_size == 150 & kappa == "0.0") |
-      (learning_rate == "0.001" & num_components == 125 & epochs == 100 &
+      (learning_rate == "0.0005" & num_components == 125 & epochs == 100 &
          batch_size == 150 & kappa == "0.0")
   )
 
@@ -179,7 +178,7 @@ p <- ggplot(tybalt_good_training_df, aes(x = train_epoch, y = loss)) +
   geom_line(aes(color = num_components, linetype = loss_type), size = 0.2) +
   xlab("Training Epoch") +
   ylab("Loss") +
-  scale_color_OkabeIto(name = "Latent Dimensions") +
+  scale_color_brewer(name = "Latent Dimensions", palette = "Dark2") +
   scale_linetype_manual(name = "Loss Type", values = c("solid", "dotted"),
                         labels = c("Train", "Validation")) +
   theme_bw() +
@@ -247,12 +246,18 @@ load_and_process_adage <- function(adage_filename) {
 }
 
 # Two functions facilitate plotting across ADAGE models
-plot_final_val <- function(select_df, filter_sparsity=FALSE) {
+plot_final_val <- function(select_df, filter_sparsity=FALSE,
+                           filter_learning_rate=FALSE) {
   # Plot final validation loss at training end for ADAGE models with various
   # input hyperparameters
 
   if (filter_sparsity) {
     select_df <- select_df %>% dplyr::filter(sparsity != 0.001)
+  }
+
+  if (filter_learning_rate) {
+    select_df <- select_df %>%
+      dplyr::filter(!(learning_rate %in% c("Learn: 1e-05", "Learn: 5e-05")))
   }
 
   # Latent space dimensionality by final validation loss points with learning
@@ -264,7 +269,7 @@ plot_final_val <- function(select_df, filter_sparsity=FALSE) {
                alpha = 0.7, position = position_jitter(w = 5, h = 0)) + 
     facet_grid(noise ~ learning_rate) +
     scale_size_manual(values = c(0.8, 0.4), name = "Batch Size") +
-    scale_color_OkabeIto(name = "Sparsity") +
+    scale_color_brewer(name = "Sparsity", palette = "Dark2") +
     scale_shape_discrete(name = "Epochs") +
     scale_x_continuous(breaks = c(5, 25, 50, 75, 100, 125)) +
     xlab("Latent Space Dimensionality") +
@@ -286,7 +291,7 @@ plot_adage_best_training <- function(good_training_df) {
   p <- ggplot(good_training_df, aes(x = train_epoch, y = loss)) +
     geom_line(aes(color = num_components, linetype = loss_type), size = 0.2) +
     xlab("Training Epoch") + ylab("Loss") +
-    scale_color_OkabeIto(name = "Latent Dimensions") +
+    scale_color_brewer(name = "Latent Dimensions", palette = "Dark2") +
     scale_linetype_manual(name = "Loss Type", values = c("solid", "dotted"),
                           labels = c("Train", "Validation")) +
     theme_bw() +
@@ -319,7 +324,7 @@ p <- plot_final_val(adage_tied_list[["adage_select_df"]])
 ggsave(adage_param_z_png, plot = p, height = 2.5, width = 5.5)
 ggsave(adage_param_z_pdf, plot = p, height = 2.5, width = 5.5)
 
-# 2) Sparsity 0.001 did not converge, remove it and replot
+# 2) Sparsity 0.001 did not converge in the untied weights model
 
 # First, plot the untied weights model
 adage_sub_png <- file.path(adage_fig, "z_parameter_adage_remove_sparsity.png")
@@ -331,14 +336,14 @@ p <- plot_final_val(adage_untied_list[["adage_select_df"]],
 ggsave(adage_sub_png, plot = p, height = 2.5, width = 5.5)
 ggsave(adage_sub_pdf, plot = p, height = 2.5, width = 5.5)
 
-# Next, process and plot the tied weights model
+# Next, process and plot the tied weights model - without two learning rates
 adage_sub_png <- file.path(da_tw_fig,
-                           "z_parameter_adage_remove_sparsity_tiedweights.png")
+                           "z_param_adage_remove_learningrate_tiedweights.png")
 adage_sub_pdf <- file.path(da_tw_fig,
-                           "z_parameter_adage_remove_sparsity_tiedweights.pdf")
+                           "z_param_adage_remove_learningrate_tiedweights.pdf")
 
 p <- plot_final_val(adage_tied_list[["adage_select_df"]],
-                    filter_sparsity = TRUE)
+                    filter_learning_rate = TRUE)
 
 ggsave(adage_sub_png, plot = p, height = 2.5, width = 5.5)
 ggsave(adage_sub_pdf, plot = p, height = 2.5, width = 5.5)
@@ -385,11 +390,17 @@ adage_untied_good_training_df <- adage_untied_list[["adage_melt_df"]] %>%
       (num_components == 125 & noise == 0.1))
 
 adage_tied_good_training_df <- adage_tied_list[["adage_melt_df"]] %>%
-  dplyr::filter(learning_rate == "0.0005") %>%
   dplyr::filter(sparsity == "0.0") %>%
   dplyr::filter(epochs == 100) %>%
   dplyr::filter(batch_size == 50) %>%
-  dplyr::filter(noise == "0.0")
+  dplyr::filter(noise == "0.0") %>%
+  dplyr::filter(
+    (num_components == 5 & learning_rate == "0.0015") |
+      (num_components == 25 & learning_rate == "0.0015") |
+      (num_components == 50 & learning_rate == "0.0005") |
+      (num_components == 75 & learning_rate == "0.0005") |
+      (num_components == 100 & learning_rate == "0.0005") |
+      (num_components == 125 & learning_rate == "0.0005"))
 
 # First, plot the untied weights model'
 best_model_png <- file.path(adage_fig, "z_parameter_adage_best.png")

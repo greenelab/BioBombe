@@ -137,13 +137,13 @@ ADAGE models are also generally stable, particularly at high dimensions.
 
 It appears that `learning rate` is globally optimal at 0.0005; epochs at 100; batch size at 50; sparsity at 0; with decreasing noise for larger z dimensions.
 
-![](figures/z_param_adage/z_parameter_adage_bes.png?raw=true)
+![](figures/z_param_adage/z_parameter_adage_best.png?raw=true)
 
 **Figure 6.** Training optimal untied weight ADAGE models across different latent space dimensions.
 
 ### Tied Weights
 
-By constrianing the compression and decompression networks to contain the same weights (tied weights), ADAGE models had variable performance across models.
+By constraining the compression and decompression networks to contain the same weights (tied weights), ADAGE models had variable performance across models.
 ADAGE models failed to converge with low learning rates (**Figure 7**).
 
 ![](figures/z_param_adage_tied_weights/z_parameter_adage_tiedweights.png?raw=true)
@@ -156,7 +156,7 @@ After removing `learning rate = 1e-05` and `learning_rate = 5e-05`, we see a cle
 
 **Figure 8.** The loss of validation sets at the end of training for 432 tied weight ADAGE models.
 
-It appears the models perform better without any induced sparsity
+It appears the models perform better without any induced sparsity.
 
 This analysis allowed us to select optimal models based on tested hyperparameters.
 For tied weights ADAGE, the optimal hyperparameters across dimensionality estimates are:
@@ -165,7 +165,7 @@ For tied weights ADAGE, the optimal hyperparameters across dimensionality estima
 | :--------- | :------- | :---- | :----- | :--------- | :------------ | :------- |
 | 5 | 0 | 0.0 | 100 | 50 | 0.0015 | 0.0042 |
 | 25 | 0 | 0.0 | 100 | 50 | 0.0015 | 0.0029 |
-| 50 | 0.0 | 0 | 100 | 50 | 0.0005 | 0.0023 |
+| 50 | 0 | 0.0 | 100 | 50 | 0.0005 | 0.0023 |
 | 75 | 0 | 0.0 | 100 | 50  | 0.0005 | 0.0019 |
 | 100 | 0 | 0.0 | 100 | 50 | 0.0005 | 0.0017 |
 | 125 | 0 | 0.0 | 100 | 50 | 0.0005 | 0.0016 |

@@ -59,6 +59,12 @@ shuffle = args.shuffle
 # Extract parameters from parameter configuation file
 param_df = pd.read_table(param_config, index_col=0)
 
+component_error = ' '.join(str(x) for x in
+                           [num_components, 'is not found in', param_config,
+                            '- either add it to the file or choose a',
+                            'different number of components'])
+assert str(num_components) in param_df.columns, component_error
+
 vae_epochs = param_df.loc['vae_epochs', str(num_components)]
 dae_epochs = param_df.loc['dae_epochs', str(num_components)]
 vae_lr = param_df.loc['vae_lr', str(num_components)]

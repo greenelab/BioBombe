@@ -19,7 +19,7 @@ import subprocess
 class bsub_help():
     def __init__(self, command, queue='gpu', num_gpus=2, num_gpus_shared=0,
                  walltime='0:10', error_file='std_err.txt',
-                 output_file='std_out.txt', local=False, shell=True):
+                 output_file='std_out.txt', local=False):
         try:
             self.command = command.split(' ')
         except:
@@ -31,7 +31,6 @@ class bsub_help():
         self.error_file = error_file
         self.output_file = output_file
         self.local = local
-        self.shell = shell
 
     def make_command_list(self):
         command_list = ['bsub', '-q', self.queue, '-eo', self.error_file,
@@ -61,5 +60,8 @@ class bsub_help():
             return '{} {}'.format(command_string, ' '.join(self.command))
 
     def submit_command(self):
-        submit_command = self.make_command_string()
-        subprocess.call(submit_command, shell=self.shell)
+        if self.local:
+            submit_command = self.make_command_string()
+        else:
+            submit_command = self.make_command_list()
+        subprocess.call(submit_command, shell=False)

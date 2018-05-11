@@ -4,6 +4,7 @@ channels:
 dependencies:
 - conda-forge::python=3.6
 - conda-forge::pandas=0.22.0
+- conda-forge::xlrd=1.1.0
 - conda-forge::numpy=1.14.2
 - conda-forge::seaborn=0.8.1
 - conda-forge::jupyter=1.0.0
@@ -16,6 +17,6 @@ dependencies:
 - conda-forge::r-ggplot2=2.2.1
 - conda-forge::r-irkernel=0.8.11
 - pip:
-  - hetio==0.2.8
-  - git+https://github.com/greenelab/tybalt@f89156f03ee20abfbe0def493746f47ffadae768
-
+  - git+https://github.com/dhimmel/hetio@9d9ef1320ee47609e3c61c9f4918531d3c1c8c96
+  - git+https://github.com/greenelab/tybalt@5eb40889873a51a9d9d00826a421c62a0b725440
+  - git+https://github.com/greenelab/hetmech@3caf7791b32f0104cdfe362eab884d9f97a8cb1a

@@ -89,12 +89,6 @@ num_seeds = args.num_seeds
 components = args.components
 local = args.local
 
-# Required to update shell for `subprocess` module if running locally
-if local:
-    shell = False
-else:
-    shell = True
-
 if not os.path.exists(out_dir):
     os.makedirs(out_dir)
 
@@ -108,7 +102,7 @@ num_gpus_shared = config_df.loc['num_gpus_shared']['assign']
 walltime = config_df.loc['walltime']['assign']
 
 # Set default parameter combination
-conda = ['conda', 'activate', 'tybalt-gpu']
+conda = ['source', 'activate', 'tybalt-gpu', '&&']
 default_params = ['--param_config', param_config_file,
                   '--out_dir', out_dir,
                   '--num_seeds', num_seeds]
@@ -131,6 +125,5 @@ for command in all_commands:
                   num_gpus=num_gpus,
                   num_gpus_shared=num_gpus_shared,
                   walltime=walltime,
-                  local=local,
-                  shell=shell)
+                  local=local)
     b.submit_command()

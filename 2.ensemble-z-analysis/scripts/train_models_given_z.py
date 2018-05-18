@@ -62,7 +62,8 @@ shuffle = args.shuffle
 subset_mad_genes = int(args.subset_mad_genes)
 
 
-def get_recon_correlation(df, recon_mat_dict, algorithm, cor_type, axis):
+def get_recon_correlation(df, recon_mat_dict, algorithm, cor_type,
+                          genes=False):
     """
     Get gene or sample correlations between input and reconstructed input
 
@@ -71,10 +72,10 @@ def get_recon_correlation(df, recon_mat_dict, algorithm, cor_type, axis):
     recon_mat_dict - dictionary of different algorithms reconstructions
     algorithm - string representing the compression algorithm
     cor_type - string representing Pearson or Spearman correlations
-    axis - string representing genes or samples to calculate correlations for
+    genes - boolean if to calculate correaltion over genes (sample by default)
     """
     recon_mat = recon_mat_dict[algorithm]
-    if axis == 'genes':
+    if genes:
         df = df.T
         recon_mat = recon_mat.T
     if cor_type == 'pearson':
@@ -267,12 +268,12 @@ for seed in random_seeds:
                                   recon_mat_dict=reconsructed_matrices,
                                   algorithm=algorithm,
                                   cor_type='pearson',
-                                  axis='samples')
+                                  genes=False)
         p = get_recon_correlation(df=dm.df,
                                   recon_mat_dict=reconsructed_matrices,
                                   algorithm=algorithm,
                                   cor_type='spearman',
-                                  axis='samples')
+                                  genes=False)
         pearson_corr.append(r)
         spearman_corr.append(p)
 
@@ -281,12 +282,12 @@ for seed in random_seeds:
                                   recon_mat_dict=reconsructed_matrices,
                                   algorithm=algorithm,
                                   cor_type='pearson',
-                                  axis='genes')
+                                  genes=True)
         p = get_recon_correlation(df=dm.df,
                                   recon_mat_dict=reconsructed_matrices,
                                   algorithm=algorithm,
                                   cor_type='spearman',
-                                  axis='genes')
+                                  genes=True)
         pearson_genes_corr.append(r)
         spearman_genes_corr.append(p)
 
@@ -295,12 +296,12 @@ for seed in random_seeds:
                                   recon_mat_dict=test_recon_mat,
                                   algorithm=algorithm,
                                   cor_type='pearson',
-                                  axis='samples')
+                                  genes=False)
         p = get_recon_correlation(df=dm.test_df,
                                   recon_mat_dict=test_recon_mat,
                                   algorithm=algorithm,
                                   cor_type='spearman',
-                                  axis='samples')
+                                  genes=False)
         pearson_corr_test.append(r)
         spearman_corr_test.append(p)
 
@@ -309,12 +310,12 @@ for seed in random_seeds:
                                   recon_mat_dict=test_recon_mat,
                                   algorithm=algorithm,
                                   cor_type='pearson',
-                                  axis='genes')
+                                  genes=True)
         p = get_recon_correlation(df=dm.test_df,
                                   recon_mat_dict=test_recon_mat,
                                   algorithm=algorithm,
                                   cor_type='spearman',
-                                  axis='genes')
+                                  genes=True)
         pearson_genes_corr_test.append(r)
         spearman_genes_corr_test.append(p)
 

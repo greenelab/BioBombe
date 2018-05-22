@@ -18,5 +18,11 @@ We download, process, and train compression models using the `RNA (Final)` data 
 
 Therapeutically Applicable Research to Generate Effective Treatments (TARGET) has profiled over 700 cases of pediatric cancer from 7 different cancer-types.
 We access the TARGET data using [UCSC Xena](https://xenabrowser.net/datapages/?dataset=target_RSEM_isoform_fpkm&host=https%3A%2F%2Ftoil.xenahubs.net).
-We use the RSEM FPKM RNAseq processed data
+We use the RSEM FPKM RNAseq processed data.
+
+### GTEx
+
+The Genotype-Tissue Expression ([GTEx](https://www.gtexportal.org/home/documentationPage)) project measured gene expression on over 11,000 healthy samples.
+These samples represent several different tissue types.
+We use [version 7](https://www.gtexportal.org/home/datasets) of GTEx RNAseq data (TPM normalized).
 

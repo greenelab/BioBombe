@@ -180,6 +180,14 @@ tcga_id.loc[tcga_id.stratify_samples_count == 1, "stratify_samples"] = "other"
 # In[16]:
 
 
+# Write out file for downstream use
+file = os.path.join('data', 'tcga_sample_identifiers.tsv')
+
+(
+    tcga_id.drop(['stratify_samples', 'stratify_samples_count'], axis='columns')
+    .to_csv(file, sep='\t', index=False)
+)
+
 tcga_id.head()
 
 

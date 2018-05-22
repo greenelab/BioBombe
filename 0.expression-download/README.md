@@ -14,3 +14,9 @@ This data was generated as a multicenter effort to profile over 10,000 tumors fr
 The list of data used as part of this effort is listed in the [Genomic Data Commons of The National Cancer Institute](https://gdc.cancer.gov/about-data/publications/pancanatlas).
 We download, process, and train compression models using the `RNA (Final)` data listed there.
 
+### TARGET
+
+Therapeutically Applicable Research to Generate Effective Treatments (TARGET) has profiled over 700 cases of pediatric cancer from 7 different cancer-types.
+We access the TARGET data using [UCSC Xena](https://xenabrowser.net/datapages/?dataset=target_RSEM_isoform_fpkm&host=https%3A%2F%2Ftoil.xenahubs.net).
+We use the RSEM FPKM RNAseq processed data
+

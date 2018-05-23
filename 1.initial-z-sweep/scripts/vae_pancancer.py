@@ -16,14 +16,15 @@ Usage:
                                         --num_components
                                         --scale
                                         --subset_mad_genes
+                                        --dataset
 
-    Typically, arguments to this script are compiled automatically by:
+    Typically, arguments to this script are compiled automatically.
 
-        python scripts/vae_paramsweep.py --parameter_file <parameter-filepath>
-                                         --config_file <configuration-filepath>
+    See `scripts/num_components_paramsweep.py` for more details
 
 Output:
-Loss and validation loss for the specific model trained
+
+    Loss and validation loss for the specific model trained
 """
 
 import os
@@ -62,6 +63,9 @@ parser.add_argument('-s', '--scale', action='store_true',
                     help='Add decision to scale input data')
 parser.add_argument('-m', '--subset_mad_genes', default=8000,
                     help='The number of mad genes to subset')
+parser.add_argument('-x', '--dataset', default='TCGA',
+                    choices=['TCGA', 'TARGET', 'GTEX'],
+                    help='the dataset to use in the sweep')
 args = parser.parse_args()
 
 # Set hyper parameters
@@ -75,11 +79,18 @@ output_filename = args.output_filename
 latent_dim = int(args.num_components)
 scale = args.scale
 subset_mad_genes = args.subset_mad_genes
+dataset = args.dataset
 
 # Load Data
-rnaseq_file = os.path.join('..', '0.expression-download', 'data',
-                           'train_tcga_expression_matrix_processed.tsv.gz')
+file = 'train_{}_expression_matrix_processed.tsv.gz'.format(dataset.lower())
+rnaseq_file = os.path.join('..', '0.expression-download', 'data', file)
 rnaseq_df = pd.read_table(rnaseq_file, index_col=0)
+
+# Determine most variably expressed genes and subset
+if subset_mad_genes is not None:
+    mad_genes = rnaseq_df.mad(axis=0).sort_values(ascending=False)
+    top_mad_genes = mad_genes.iloc[0:subset_mad_genes, ].index
+    rnaseq_df = rnaseq_df.loc[:, top_mad_genes]
 
 # Zero One normalize input data
 if scale:
@@ -87,12 +98,6 @@ if scale:
     x = scaler.fit_transform(rnaseq_df)
     rnaseq_df = pd.DataFrame(x, index=rnaseq_df.index,
                              columns=rnaseq_df.columns)
-
-# Determine most variably expressed genes and subset
-if subset_mad_genes is not None:
-    mad_genes = rnaseq_df.mad(axis=0).sort_values(ascending=False)
-    top_mad_genes = mad_genes.iloc[0:subset_mad_genes, ].index
-    rnaseq_df = rnaseq_df.loc[:, top_mad_genes]
 
 # Set architecture dimensions
 original_dim = rnaseq_df.shape[1]
@@ -251,12 +256,13 @@ hist = vae.fit(np.array(rnaseq_train_df),
 
 # Save training performance
 history_df = pd.DataFrame(hist.history)
-history_df = history_df.assign(num_components=latent_dim)
-history_df = history_df.assign(learning_rate=learning_rate)
-history_df = history_df.assign(batch_size=batch_size)
-history_df = history_df.assign(epochs=epochs)
-history_df = history_df.assign(kappa=kappa)
-history_df = history_df.assign(seed=seed)
-history_df = history_df.assign(depth=depth)
-history_df = history_df.assign(first_layer=first_layer)
+history_df = history_df.assign(num_components=latent_dim,
+                               learning_rate=learning_rate,
+                               batch_size=batch_size,
+                               epochs=epochs,
+                               kappa=kappa,
+                               seed=seed,
+                               depth=depth,
+                               first_layer=first_layer,
+                               dataset=dataset)
 history_df.to_csv(output_filename, sep='\t')

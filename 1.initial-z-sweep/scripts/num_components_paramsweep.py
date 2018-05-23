@@ -2,6 +2,9 @@
 Gregory Way 2018
 scripts/num_components_param_sweep.py
 
+Will perform a parameter sweep across different bottleneck dimensionalities for
+the given input data (either TCGA, TARGET, or GTEx)
+
 The script uses two configuration files: 1) parameter and 2) config files.
 
 1) The parameter file (required) is a tab separated file with a header:
@@ -42,6 +45,7 @@ python scripts/num_components_param_sweep.py
 
      and optional arguments:
 
+       --dataset            one of ['TCGA', 'TARGET', 'GTEX'] ('TCGA' default)
        --config_file        filepath pointing to PMACS configuration file
        --algorithm          a string indicating which algorithm to sweep over
                               default: 'tybalt' (i.e. variational autoencoder)
@@ -76,7 +80,11 @@ def get_param(param):
 parser = argparse.ArgumentParser()
 parser.add_argument('-p', '--parameter_file',
                     help='location of tab separated parameter file to sweep')
-parser.add_argument('-c', '--config_file', default='../config/pmacs_config.tsv',
+parser.add_argument('-x', '--dataset', default='TCGA',
+                    choices=['TCGA', 'TARGET', 'GTEX'],
+                    help='the dataset to use in the sweep')
+parser.add_argument('-c', '--config_file',
+                    default='../config/pmacs_config.tsv',
                     help='location of the configuration file for PMACS')
 parser.add_argument('-a', '--algorithm',
                     help='which algorithm to sweep hyperparameters over')
@@ -94,18 +102,13 @@ parser.add_argument('-l', '--local', action='store_true',
 args = parser.parse_args()
 
 parameter_file = args.parameter_file
+dataset = args.dataset
 config_file = args.config_file
 algorithm = args.algorithm
 python_path = args.python_path
 param_folder = args.param_folder
 script = args.script
 local = args.local
-
-# Required to update shell for `subprocess` module if running locally
-if local:
-    shell = False
-else:
-    shell = True
 
 if algorithm == 'adage':
     script = 'scripts/adage_pancancer.py'
@@ -133,6 +136,9 @@ num_gpus = config_df.loc['num_gpus']['assign']
 num_gpus_shared = config_df.loc['num_gpus_shared']['assign']
 walltime = config_df.loc['walltime']['assign']
 
+# Activate conda environment if not local
+conda = ['source', 'activate', 'tybalt-gpu', '&&']
+
 # Build lists of job commands depending on input algorithm
 all_commands = []
 if algorithm == 'tybalt':
@@ -141,16 +147,24 @@ if algorithm == 'tybalt':
             for bs in batch_sizes:
                 for e in epochs:
                     for k in kappas:
-                        f = 'paramsweep_{}z_{}lr_{}bs_{}e_{}k.tsv'.format(z, lr, bs, e, k)
-                        f = os.path.join(param_folder, f)
-                        params = ['--num_components', z,
+                        file = (
+                            'paramsweep_{}z_{}lr_{}bs_{}e_{}k_{}.tsv'
+                            .format(z, lr, bs, e, k, dataset)
+                        )
+                        file = os.path.join(param_folder, file)
+                        params = ['--dataset', dataset,
+                                  '--num_components', z,
                                   '--learning_rate', lr,
                                   '--batch_size', bs,
                                   '--epochs', e,
                                   '--kappa', k,
-                                  '--output_filename', f,
+                                  '--output_filename', file,
                                   '--scale']
                         final_command = [python_path, script] + params
+
+                        if not local:
+                            final_command = conda + final_command
+
                         all_commands.append(final_command)
 elif algorithm == 'adage':
     for z in num_components:
@@ -159,17 +173,25 @@ elif algorithm == 'adage':
                 for e in epochs:
                     for s in sparsities:
                         for n in noises:
-                            f = 'paramsweep_{}z_{}lr_{}bs_{}e_{}s_{}n.tsv'.format(z, lr, bs, e, s, n)
-                            f = os.path.join(param_folder, f)
-                            params = ['--num_components', z,
+                            file = (
+                                'paramsweep_{}z_{}lr_{}bs_{}e_{}s_{}n_{}.tsv'
+                                .format(z, lr, bs, e, s, n, dataset)
+                            )
+                            file = os.path.join(param_folder, file)
+                            params = ['--dataset', dataset,
+                                      '--num_components', z,
                                       '--learning_rate', lr,
                                       '--batch_size', bs,
                                       '--epochs', e,
                                       '--sparsity', s,
                                       '--noise', n,
-                                      '--output_filename', f,
+                                      '--output_filename', file,
                                       '--scale']
                             final_command = [python_path, script] + params
+
+                            if not local:
+                                final_command = conda + final_command
+
                             if adage_weights == 'untied':
                                 final_command += ['--untied_weights']
                             all_commands.append(final_command)
@@ -177,6 +199,9 @@ elif algorithm == 'adage':
 # Submit commands
 for command in all_commands:
     b = bsub_help(command=command,
-                  local=local,
-                  shell=shell)
+                  queue=queue,
+                  num_gpus=num_gpus,
+                  num_gpus_shared=num_gpus_shared,
+                  walltime=walltime,
+                  local=local)
     b.submit_command()

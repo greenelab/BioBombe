@@ -20,7 +20,7 @@ DATASETS=( 'TCGA' 'TARGET' 'GTEX')
 
 for alg in "${ALGORITHMS[@]}"
 do
-    for dat in "${DATASETS}"
+    for dat in "${DATASETS[@]}"
     do
         PARAM_FILE=$PARAM_FILE_PREFIX$alg'_'$dat'.tsv'
         python scripts/num_components_paramsweep.py \

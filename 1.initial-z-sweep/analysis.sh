@@ -16,15 +16,20 @@ PARAM_FILE_PREFIX='config/z_parameter_sweep_'
 PMACS_FILE='../config/pmacs_config.tsv'
 PYTHON_PATH='python'
 ALGORITHMS=( 'tybalt' 'adage' )
+DATASETS=( 'TCGA' 'TARGET' 'GTEX')
 
 for alg in "${ALGORITHMS[@]}"
 do
-    PARAM_FILE=$PARAM_FILE_PREFIX$alg'.tsv'
-    python scripts/num_components_paramsweep.py \
-          --parameter_file $PARAM_FILE \
-          --config_file $PMACS_FILE \
-          --algorithm $alg \
-          --python_path $PYTHON_PATH \
-          --param_folder 'param_sweep/param_sweep_'$alg \
-          --local
+    for dat in "${DATASETS}"
+    do
+        PARAM_FILE=$PARAM_FILE_PREFIX$alg'_'$dat'.tsv'
+        python scripts/num_components_paramsweep.py \
+              --parameter_file $PARAM_FILE \
+              --config_file $PMACS_FILE \
+              --algorithm $alg \
+              --python_path $PYTHON_PATH \
+              --param_folder 'param_sweep/param_sweep_'$alg'_'$dat \
+              --dataset $dat \
+              --local
+    done
 done

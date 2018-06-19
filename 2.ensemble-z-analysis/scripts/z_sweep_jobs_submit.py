@@ -40,6 +40,8 @@ Usage: Run in command line: python scripts/latent_space_sweep_submit.py
        --components         space separated dimensionalities to submit jobs for
                             e.g. "--num_components 2 5 10" will submit 3 jobs
                             fitting 2, 5, and 10 latent space dimensions
+       --dataset            a string indicating the dataset to use
+                            (options: TCGA, GTEX or TARGET)
        --param_config       location of tsv file (param by z dimension) for the
                             specific parameter combination for each z dimension
        --out_dir            filepath of where to save the results
@@ -52,6 +54,7 @@ Usage: Run in command line: python scripts/latent_space_sweep_submit.py
        --num_seeds          how many models to build (random seeds to set)
                               default: 5
        --local              if provided, sweep will be run locally instead
+       --shuffle            if provided, input matrix is shuffled
 
 Output:
 Submit jobs given certain number of latent space dimensionality
@@ -68,6 +71,8 @@ from bsub_helper import bsub_help
 parser = argparse.ArgumentParser()
 parser.add_argument('-n', '--components', help='dimensionality to sweep over',
                     nargs='+')
+parser.add_argument('-x', '--dataset', choices=['TCGA', 'GTEX', 'TARGET'],
+                    help='the dataset used for compression')
 parser.add_argument('-y', '--param_config',
                     help='locaiton of the parameter configuration')
 parser.add_argument('-d', '--out_dir', help='folder to store results')
@@ -79,17 +84,21 @@ parser.add_argument('-s', '--num_seeds', default=5,
                     help='number of different seeds to run on current data')
 parser.add_argument('-l', '--local', action='store_true',
                     help='decision to run models locally instead of on PMACS')
+parser.add_argument('-u', '--shuffle', action='store_true',
+                    help='decision to shuffle input matrices for null model')
 parser.add_argument('-m', '--subset_mad_genes', default=8000,
                     help='subset num genes based on mean absolute deviation')
 args = parser.parse_args()
 
 pmacs_config_file = args.pmacs_config
+dataset = args.dataset
 param_config_file = args.param_config
 out_dir = args.out_dir
 python_path = args.python_path
 num_seeds = args.num_seeds
 components = args.components
 local = args.local
+shuffle = args.shuffle
 subset_mad_genes = args.subset_mad_genes
 
 if not os.path.exists(out_dir):
@@ -114,11 +123,17 @@ default_params = ['--param_config', param_config_file,
 all_commands = []
 for z in components:
     z_command = [python_path, 'scripts/train_models_given_z.py',
-                 '--num_components', z, '--subset_mad_genes', subset_mad_genes]
+                 '--num_components', z,
+                 '--dataset', dataset,
+                 '--subset_mad_genes', subset_mad_genes]
     if local:
         z_command += default_params
     else:
         z_command = conda + z_command + default_params
+
+    if shuffle:
+        z_command += ['--shuffle']
+
     all_commands.append(z_command)
 
 # Submit the jobs to PMACS

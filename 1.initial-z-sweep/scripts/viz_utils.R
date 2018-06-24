@@ -7,25 +7,88 @@
 #
 #           source('scripts/viz_utils.R')
 
-readParamSweep <- function(param_file, algorithm) {
+processParamSweepResults <- function(param_file, algorithm, dataset,
+                                     output_fig_dir) {
+  # Read, process, and plot results for each algorithm by dataset
+  #
+  # Arguments:
+  # param_file - a string storing location of tab separated file
+  # algorithm - a string indicating either `ADAGE` or `Tybalt`
+  # dataset - a string indicating `TCGA`, `GTEx` or `TARGET`
+  # output_fig_dir - a string pointing to the location of output figures
+  #
+  # Output:
+  # An R list with several indices storing summarized results and figures
+
+  if (algorithm == 'ADAGE') {
+      id_vars <-  c("learning_rate", "batch_size", "epochs", "noise",
+                    "train_epoch", "num_components", "sparsity", "seed")
+  } else if (algorithm == 'Tybalt') {
+      id_vars <- c("learning_rate", "batch_size", "epochs", "kappa",
+                   "train_epoch", "num_components")
+  } else {
+      stop('algorithm must be either "ADAGE" or "Tybalt"')
+  }
+
+  # Create the output directory if it does not already exist
+  if (!dir.exists(output_fig_dir)) {
+    dir.create(output_fig_dir)
+  }
+
+  # Build output file names
+  final_val_fig_file <- paste0("z_parameter_final_loss_", algorithm, "_",
+                               dataset)
+  final_val_fig_file_png <- file.path(output_fig_dir,
+                                      paste0(final_val_fig_file, ".png"))
+  final_val_fig_file_pdf <- file.path(output_fig_dir,
+                                      paste0(final_val_fig_file, ".pdf"))
+
+  one_model_fig_file <- paste0("z_parameter_training_", algorithm, "_",
+                               dataset)
+  one_model_fig_file_png <- file.path(output_fig_dir,
+                                      paste0(one_model_fig_file, ".png"))
+  one_model_fig_file_pdf <- file.path(output_fig_dir,
+                                      paste0(one_model_fig_file, ".pdf"))
+
+  best_param_file <- paste0("z_latent_dim_best_", algorithm, "_", dataset)
+  best_param_file <- file.path("results", paste0(best_param_file, ".tsv"))
+
+  # Read in and process results files
+  param_sweep_results <- readParamSweep(param_file, algorithm, id_vars)
+  final_val_gg <- plotFinalLoss(select_df = param_sweep_results$select_df,
+                                output_fig_dir = output_fig_dir,
+                                algorithm = algorithm,
+                                dataset = dataset)
+  one_model_gg <- plotOneModel(one_model_df = param_sweep_results$one_model_df,
+                               algorithm = algorithm,
+                               dataset = dataset)
+
+  # Save output files
+  ggsave(final_val_fig_file_png, plot = final_val_gg, height = 3, width = 5.5)
+  ggsave(final_val_fig_file_pdf, plot = final_val_gg, height = 3, width = 5.5)
+
+  ggsave(one_model_fig_file_png, plot = one_model_gg, height = 2.5, width = 5)
+  ggsave(one_model_fig_file_pdf, plot = one_model_gg, height = 2.5, width = 5)
+
+  readr::write_tsv(param_sweep_results$best_params, best_param_file)
+
+  # Define function output list
+  output_list <- list("all_results" = param_sweep_results,
+                      "final_val_plot" = final_val_gg,
+                      "one_model_plot" = one_model_gg)
+  return(output_list)
+}
+
+readParamSweep <- function(param_file, algorithm, id_vars) {
     # Read and process parameter sweep file
     #
     # Arguments:
     # param_file - a string storing the location of a tab separated file
-    # algorithm - a string indicating either 'adage' or 'tybalt'
+    # algorithm - a string indicating either 'ADAGE' or 'Tybalt'
+    # id_vars - a vector of strings that indicate parameter sweep columns
     #
     # Output:
     # a list of length two with a full dataframe and melted across id_vars
-
-    if (algorithm == 'adage') {
-        id_vars <-  c("learning_rate", "batch_size", "epochs", "noise",
-                      "train_epoch", "num_components", "sparsity", "seed")
-    } else if (algorithm == 'tybalt') {
-        id_vars <- c("learning_rate", "batch_size", "epochs", "kappa",
-                     "train_epoch", "num_components")
-    } else {
-        stop('algorithm must be either "adage" or "tybalt"')
-    }
 
     # Load full parameter sweep file
     full_df <- readr::read_tsv(param_file,
@@ -44,11 +107,11 @@ readParamSweep <- function(param_file, algorithm) {
 
     # Select the lowest loss results across parameter combinations
     select_df <- melt_df %>% dplyr::filter(loss_type == "val_loss")
-    if (algorithm == 'adage') {
+    if (algorithm == 'ADAGE') {
         select_df <- select_df %>%
             dplyr::group_by(learning_rate, batch_size, epochs,
                             noise, sparsity, num_components)
-    } else if (algorithm == 'tybalt') {
+    } else if (algorithm == 'Tybalt') {
         select_df <- select_df %>%
             dplyr::group_by(learning_rate, batch_size, epochs,
                             kappa, num_components)
@@ -63,10 +126,19 @@ readParamSweep <- function(param_file, algorithm) {
         dplyr::arrange(as.numeric(paste(num_components)))
 
     # Output training curves a single full model across dimensions
-    one_model_df <- full_df %>%
-      dplyr::filter(learning_rate == "0.0005",
-                    batch_size == "50",
-                    epochs == 100)
+    if (algorithm == 'Tybalt') {
+      one_model_df <- full_df %>%
+        dplyr::filter(learning_rate == "0.0005",
+                      batch_size == "50",
+                      epochs == 100)
+    } else {
+      one_model_df <- full_df %>%
+        dplyr::filter(sparsity == "0.0",
+                      learning_rate == "0.001",
+                      batch_size == "50",
+                      epochs == 100)
+    }
+
     one_model_df$num_components <-
       dplyr::recode_factor(one_model_df$num_components,
                            `5` = "Latent Dim: 5",
@@ -83,7 +155,7 @@ readParamSweep <- function(param_file, algorithm) {
 
 recodeParamSweep <- function(df, algorithm) {
     # Recode several variables before plotting input
-    if (algorithm == 'adage') {
+    if (algorithm == 'ADAGE') {
         df$noise <-
             dplyr::recode_factor(df$noise,
                                  "0.0" = "Noise: 0",
@@ -97,7 +169,7 @@ recodeParamSweep <- function(df, algorithm) {
         lr_levels <- paste("Learn:",
                            unique(sort(as.numeric(gsub("Learn: ", '', lr)))))
         df$learning_rate <- factor(lr, levels = lr_levels)
-    } else if (algorithm == 'tybalt') {
+    } else if (algorithm == 'Tybalt') {
         # Order batch size and epoch variables
         df$batch_size <- factor(df$batch_size,
                                 levels = sort(unique(df$batch_size)))
@@ -131,13 +203,16 @@ base_theme <- theme(axis.text = element_text(size = rel(0.5)),
                     legend.title = element_text(size = rel(0.8)),
                     legend.key.height = unit(0.5, "line"))
 
-plotFinalLoss <- function(select_df, algorithm, dataset) {
+plotFinalLoss <- function(select_df, algorithm, dataset, output_fig_dir,
+                          plot_converge = FALSE) {
   # Plot the final validation loss at training end for each set of parameters
   #
   # Arguments:
   #   select_df - a processed dataframe of final validation loss
   #   algorithm - a string indicating the algorithm to be plotted
   #   dataset - a string indicating the name of the dataset
+  #   output_fig_dir - the location to save the output figures
+  #   plot_converge - boolean to determine if figure is replotted and saved
 
   # Set title
   title <- paste0(dataset, ' - ', algorithm)
@@ -174,6 +249,17 @@ plotFinalLoss <- function(select_df, algorithm, dataset) {
 
   p <- p + ggtitle(title)
 
+  if (plot_converge) {
+    converge_fig_file <- paste0("z_parameter_final_loss_converge", algorithm,
+                                "_", dataset)
+    converge_fig_file_png <- file.path(output_fig_dir,
+                                       paste0(converge_fig_file, ".png"))
+    converge_fig_file_pdf <- file.path(output_fig_dir,
+                                       paste0(converge_fig_file, ".pdf"))
+    ggsave(converge_fig_file_png, plot = p, height = 2.5, width = 5.5)
+    ggsave(converge_fig_file_pdf, plot = p, height = 2.5, width = 5.5)
+  }
+
   return(p)
 }
 
@@ -191,7 +277,6 @@ plotOneModel <- function(one_model_df, algorithm, dataset) {
   p <- ggplot(one_model_df,
               aes(x = as.numeric(paste(train_epoch)),
                   y = val_loss)) +
-    geom_line(aes(color = kappa), size = 0.2, alpha = 0.7) +
     scale_color_brewer(palette = "Dark2") +
     facet_wrap(~ num_components) +
     ylab("Final Validation Loss") +
@@ -200,19 +285,33 @@ plotOneModel <- function(one_model_df, algorithm, dataset) {
     base_theme +
     theme(legend.key.height = unit(1, "line")) +
     ggtitle(title)
+
+  if (algorithm == "Tybalt") {
+    p <- p + geom_line(aes(color = kappa), size = 0.2, alpha = 0.7)
+  } else {
+    p <- p + geom_line(aes(color = noise), size = 0.2, alpha = 0.7)
+  }
+
   return(p)
 }
 
-plotBestModel <- function(best_model_df, algorithm, dataset) {
-  # Plot the training curves of the best models for each algorithm
+plotBestModel <- function(best_model_df, algorithm, dataset, output_fig_dir) {
+  # Plot and save the training curves of the best models for each algorithm
   #
   # Arguments:
   #   best_model_df - full training curves of subset best models
   #   algorithm - a string indicating the algorithm to be plotted
   #   dataset - a string indicating the name of the dataset
+  #   output_fig_dir - a directory of where to save figure
 
-  # Set title
+  # Set title and output
   title <- paste0(dataset, ' - ', algorithm)
+  best_model_fig_file <- paste0("z_parameter_best_model_", algorithm, "_",
+                                dataset)
+  best_model_fig_file_png <- file.path(output_fig_dir,
+                                       paste0(best_model_fig_file, ".png"))
+  best_model_fig_file_pdf <- file.path(output_fig_dir,
+                                       paste0(best_model_fig_file, ".pdf"))
 
   p <- ggplot(best_model_df, aes(x = train_epoch, y = loss)) +
     geom_line(aes(color = num_components, linetype = loss_type), size = 0.2) +
@@ -224,6 +323,9 @@ plotBestModel <- function(best_model_df, algorithm, dataset) {
     theme_bw() + base_theme +
     theme(axis.text.x = element_text(angle = 0)) +
     ggtitle(title)
+
+  ggsave(best_model_fig_file_png, plot = p, height = 2.5, width = 4)
+  ggsave(best_model_fig_file_pdf, plot = p, height = 2.5, width = 4)
 
   return(p)
 }

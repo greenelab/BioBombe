@@ -216,6 +216,9 @@ plotFinalLoss <- function(select_df, algorithm, dataset, output_fig_dir,
 
   # Set title
   title <- paste0(dataset, ' - ', algorithm)
+  if (plot_converge) {
+    title <- paste0(title, " (Remove Unconverged)")
+  }
 
   p <- ggplot(select_df, aes(x = as.numeric(paste(num_components)),
                              y = end_loss)) +

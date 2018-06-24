@@ -84,3 +84,81 @@ jupyter nbconvert --to=script --FilesWriter.build_directory=scripts/nbconverted 
 Selection of hyperparameters across different latent space dimensionality operated as expected.
 Loss was higher for lower dimensions and lower dimensions benefited the most from increased regularization and higher learning rates.
 Nevertheless, we have obtained a broad set of optimal hyperparameters for use in a larger and more specific sweep of dimensionality for each of the three analyzed datasets.
+
+## Selected Optimal Hyperparamters
+
+The analysis allowed us to select optimal hyperparameters for each dataset and algorithm combination.
+We report the results below:
+
+### TCGA
+
+#### Tybalt
+
+| Dimensions | Kappa | Epochs | Batch Size | Learning Rate |
+| :--------- | :---- | :----- | :--------- | :------------ |
+| 5 | 0 | 100 | 50 | 0.002 |
+| 25 | 0 | 100 | 50 | 0.0015 |
+| 50 | 0 | 100 | 100 | 0.0015 |
+| 75 | 0 | 100 | 150  | 0.0015 |
+| 100 | 0 | 100 | 150 | 0.001 |
+| 125 | 0 | 100 | 150 | 0.0005 |
+
+#### ADAGE
+
+| Dimensions | Sparsity | Noise | Epochs | Batch Size | Learning Rate |
+| :--------- | :------- | :---- | :----- | :--------- | :------------ |
+| 5 | 0 | 0.0 | 100 | 50 | 0.0015 |
+| 25 | 0 | 0.0 | 100 | 50 | 0.0015 |
+| 50 | 0 | 0.0 | 100 | 50 | 0.0005 |
+| 75 | 0 | 0.0 | 100 | 50  | 0.0005 |
+| 100 | 0 | 0.0 | 100 | 50 | 0.0005 |
+| 125 | 0 | 0.0 | 100 | 50 | 0.0005 |
+
+### GTEx
+
+#### Tybalt
+
+| Dimensions | Kappa | Epochs | Batch Size | Learning Rate |
+| :--------- | :---- | :----- | :--------- | :------------ |
+| 5 | 0.5 | 100 | 100 | 0.0025 |
+| 25 | 0.5 | 100 | 100 | 0.0025 |
+| 50 | 0.5 | 100 | 100 | 0.002 |
+| 75 | 0.5 | 100 | 50  | 0.002 |
+| 100 | 0.5 | 100 | 50 | 0.0015 |
+| 125 | 0.5 | 100 | 50 | 0.0015 |
+
+#### ADAGE
+
+| Dimensions | Sparsity | Noise | Epochs | Batch Size | Learning Rate |
+| :--------- | :------- | :---- | :----- | :--------- | :------------ |
+| 5 | 0 | 0.1 | 100 | 50 | 0.001 |
+| 25 | 0 | 0.0 | 100 | 50 | 0.001 |
+| 50 | 0 | 0.0 | 100 | 50 | 0.0005 |
+| 75 | 0 | 0.0 | 100 | 50  | 0.0005 |
+| 100 | 0 | 0.0 | 100 | 50 | 0.0005 |
+| 125 | 0 | 0.0 | 100 | 50 | 0.0005 |
+
+### TARGET
+
+#### Tybalt
+
+| Dimensions | Kappa | Epochs | Batch Size | Learning Rate |
+| :--------- | :---- | :----- | :--------- | :------------ |
+| 5 | 0.5 | 100 | 25 | 0.0015 |
+| 25 | 0.5 | 100 | 25 | 0.0015 |
+| 50 | 0.5 | 100 | 25 | 0.0015 |
+| 75 | 0.5 | 100 | 25  | 0.0015 |
+| 100 | 0.5 | 100 | 25 | 0.0015 |
+| 125 | 0.5 | 100 | 25 | 0.0005 |
+
+#### ADAGE
+
+| Dimensions | Sparsity | Noise | Epochs | Batch Size | Learning Rate |
+| :--------- | :------- | :---- | :----- | :--------- | :------------ |
+| 5 | 0 | 0.1 | 100 | 50 | 0.0005 |
+| 25 | 0 | 0.1 | 100 | 50 | 0.0005 |
+| 50 | 0 | 0.1 | 100 | 50 | 0.0005 |
+| 75 | 0 | 0.1 | 100 | 50  | 0.0005 |
+| 100 | 0 | 0.1 | 100 | 50 | 0.0005 |
+| 125 | 0 | 0.1 | 100 | 50 | 0.0005 |
+

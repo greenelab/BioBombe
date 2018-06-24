@@ -155,7 +155,7 @@ plotFinalLoss <- function(select_df, algorithm, dataset) {
       scale_color_brewer(palette = "Dark2") +
       facet_grid(batch_size ~ learning_rate)
   } else {
-    if (dataset == 'TARGET') {
+    if (dataset %in% c('TARGET', 'GTEx')) {
       p <- p +
       geom_point(aes(shape = epochs, size = sparsity, color = batch_size),
                  alpha = 0.7, position = position_jitter(w = 5, h = 0)) +

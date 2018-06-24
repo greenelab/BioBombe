@@ -26,9 +26,9 @@ tcga_tybalt <- processParamSweepResults(param_file = tcga_tybalt_file,
                                         algorithm = "Tybalt",
                                         output_fig_dir = tcga_fig_dir)
 
-tcga_tybalt$final_val_plot
+tcga_tybalt$final_val_plot + theme(text = element_text(size = 15))
 
-tcga_tybalt$one_model_plot
+tcga_tybalt$one_model_plot + theme(text = element_text(size = 15))
 
 tcga_tybalt$all_results$best_params
 
@@ -53,7 +53,7 @@ tcga_tybalt_good_training_df <- tcga_tybalt$all_results$melt_df %>%
 plotBestModel(tcga_tybalt_good_training_df,
               dataset = "TCGA",
               algorithm = "Tybalt",
-              output_fig_dir = tcga_fig_dir)
+              output_fig_dir = tcga_fig_dir) + theme(text = element_text(size = 15))
 
 # Load and Process Data
 tcga_adage <- processParamSweepResults(param_file = tcga_adage_file,
@@ -61,7 +61,7 @@ tcga_adage <- processParamSweepResults(param_file = tcga_adage_file,
                                        algorithm = "ADAGE",
                                        output_fig_dir = tcga_fig_dir)
 
-tcga_adage$final_val_plot
+tcga_adage$final_val_plot + theme(text = element_text(size = 15))
 
 # Several hyperparameter combinations did not converge
 # This was particularly a result of the low learning rates - filter and replot
@@ -73,9 +73,9 @@ plotFinalLoss(tcga_adage_converge_df,
               dataset = "TCGA",
               algorithm = "ADAGE",
               output_fig_dir = tcga_fig_dir,
-              plot_converge = TRUE)
+              plot_converge = TRUE) + theme(text = element_text(size = 15))
 
-tcga_adage$one_model_plot
+tcga_adage$one_model_plot + theme(text = element_text(size = 15))
 
 tcga_adage$all_results$best_params
 
@@ -101,7 +101,7 @@ tcga_adage_good_training_df <- tcga_adage$all_results$melt_df %>%
 plotBestModel(tcga_adage_good_training_df,
               dataset = "TCGA",
               algorithm = "ADAGE",
-              output_fig_dir = tcga_fig_dir)
+              output_fig_dir = tcga_fig_dir) + theme(text = element_text(size = 15))
 
 # Load and process data
 gtex_tybalt <- processParamSweepResults(param_file = gtex_tybalt_file,
@@ -109,9 +109,9 @@ gtex_tybalt <- processParamSweepResults(param_file = gtex_tybalt_file,
                                         algorithm = "Tybalt",
                                         output_fig_dir = gtex_fig_dir)
 
-gtex_tybalt$final_val_plot
+gtex_tybalt$final_val_plot + theme(text = element_text(size = 15))
 
-gtex_tybalt$one_model_plot
+gtex_tybalt$one_model_plot + theme(text = element_text(size = 15))
 
 gtex_tybalt$all_results$best_params
 
@@ -134,7 +134,7 @@ gtex_tybalt_good_training_df <- gtex_tybalt$all_results$melt_df %>%
 plotBestModel(gtex_tybalt_good_training_df,
               dataset = "GTEx",
               algorithm = "Tybalt",
-              output_fig_dir = gtex_fig_dir)
+              output_fig_dir = gtex_fig_dir) + theme(text = element_text(size = 15))
 
 # Load and process data
 gtex_adage <- processParamSweepResults(param_file = gtex_adage_file,
@@ -142,7 +142,7 @@ gtex_adage <- processParamSweepResults(param_file = gtex_adage_file,
                                        algorithm = "ADAGE",
                                        output_fig_dir = gtex_fig_dir)
 
-gtex_adage$final_val_plot
+gtex_adage$final_val_plot + theme(text = element_text(size = 15))
 
 # Several hyperparameter combinations did not converge
 # This was particularly a result of the low learning rates - filter and replot
@@ -154,9 +154,9 @@ plotFinalLoss(gtex_adage_converge_df,
               dataset = "GTEx",
               algorithm = "ADAGE",
               output_fig_dir = gtex_fig_dir,
-              plot_converge = TRUE)
+              plot_converge = TRUE) + theme(text = element_text(size = 15))
 
-gtex_adage$one_model_plot
+gtex_adage$one_model_plot + theme(text = element_text(size = 15))
 
 gtex_adage$all_results$best_params
 
@@ -181,7 +181,7 @@ gtex_adage_good_training_df <- gtex_adage$all_results$melt_df %>%
 plotBestModel(gtex_adage_good_training_df,
               dataset = "GTEx",
               algorithm = "ADAGE",
-              output_fig_dir = gtex_fig_dir)
+              output_fig_dir = gtex_fig_dir) + theme(text = element_text(size = 15))
 
 # Load and process data
 target_tybalt <- processParamSweepResults(param_file = target_tybalt_file,
@@ -189,9 +189,9 @@ target_tybalt <- processParamSweepResults(param_file = target_tybalt_file,
                                           algorithm = "Tybalt",
                                           output_fig_dir = target_fig_dir)
 
-target_tybalt$final_val_plot
+target_tybalt$final_val_plot + theme(text = element_text(size = 15))
 
-target_tybalt$one_model_plot
+target_tybalt$one_model_plot + theme(text = element_text(size = 15))
 
 target_tybalt$all_results$best_params
 
@@ -216,7 +216,7 @@ target_tybalt_good_training_df <- target_tybalt$all_results$melt_df %>%
 plotBestModel(target_tybalt_good_training_df,
               dataset = "TARGET",
               algorithm = "Tybalt",
-              output_fig_dir = target_fig_dir)
+              output_fig_dir = target_fig_dir) + theme(text = element_text(size = 15))
 
 # Load and process data
 target_adage <- processParamSweepResults(param_file = target_adage_file,
@@ -224,9 +224,9 @@ target_adage <- processParamSweepResults(param_file = target_adage_file,
                                          algorithm = "ADAGE",
                                          output_fig_dir = target_fig_dir)
 
-target_adage$final_val_plot
+target_adage$final_val_plot + theme(text = element_text(size = 15))
 
-target_adage$one_model_plot
+target_adage$one_model_plot + theme(text = element_text(size = 15))
 
 target_adage$all_results$best_params
 
@@ -245,4 +245,4 @@ target_adage_good_training_df <- target_adage$all_results$melt_df %>%
 plotBestModel(target_adage_good_training_df,
               dataset = "TARGET",
               algorithm = "ADAGE",
-              output_fig_dir = target_fig_dir)
+              output_fig_dir = target_fig_dir) + theme(text = element_text(size = 15))

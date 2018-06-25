@@ -336,20 +336,20 @@ for seed in random_seeds:
         )
 
 # Save reconstruction and neural network training results
-(pd.concat([
+pd.concat([
     pd.concat(reconstruction_results).assign(data_type='training'),
     pd.concat(test_reconstruction_results).assign(data_type='testing')
-    ]).reset_index(drop=True)
-       .drop('Unnamed: 0', axis='columns')
-      .to_csv(recon_file, sep='\t'))
+    ]).reset_index(drop=True).to_csv(recon_file, sep='\t', index=False)
 pd.concat(sample_correlation_results).to_csv(co_file,
                                              sep='\t',
                                              index=False,
                                              float_format='%.3f',
                                              compression='gzip')
 (pd.concat(tybalt_training_histories)
-   .rename({'Unnamed: 0': 'epoch'}, axis='columns')
-   .to_csv(tybalt_hist_file, sep='\t'))
+   .reset_index()
+   .rename({'index': 'epoch'}, axis='columns')
+   .to_csv(tybalt_hist_file, sep='\t', index=False))
 (pd.concat(adage_training_histories)
-   .rename({'Unnamed: 0': 'epoch'}, axis='columns')
-   .to_csv(adage_hist_file, sep='\t'))
+   .reset_index()
+   .rename({'index': 'epoch'}, axis='columns')
+   .to_csv(adage_hist_file, sep='\t', index=False))

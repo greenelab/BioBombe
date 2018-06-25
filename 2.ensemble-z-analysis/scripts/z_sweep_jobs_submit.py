@@ -70,7 +70,7 @@ from bsub_helper import bsub_help
 parser = argparse.ArgumentParser()
 parser.add_argument('-n', '--components', help='dimensionality to sweep over',
                     nargs='+')
-parser.add_argument('-d', '--dataset', choices=['TCGA', 'GTEX', 'TARGET'],
+parser.add_argument('-x', '--dataset', choices=['TCGA', 'GTEX', 'TARGET'],
                     help='the dataset used for compression')
 parser.add_argument('-y', '--param_config',
                     help='locaiton of the parameter configuration')

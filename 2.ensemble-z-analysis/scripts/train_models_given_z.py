@@ -57,7 +57,7 @@ parser.add_argument('-m', '--subset_mad_genes', default=8000,
 args = parser.parse_args()
 
 # Load command arguments
-dataset = args.datasets.lower()
+dataset = args.dataset.lower()
 num_components = int(args.num_components)
 param_config = args.param_config
 out_dir = args.out_dir
@@ -328,8 +328,6 @@ for seed in random_seeds:
     test_reconstruction_results.append(
         full_test_recon.assign(seed=seed, shuffled=shuffle)
         )
-    sample_correlation_results.append(corr_df)
-    sample_correlation_results.append(corr_test_df)
     tybalt_training_histories.append(
         dm.tybalt_fit.history_df.assign(seed=seed, shuffle=shuffle)
         )

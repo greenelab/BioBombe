@@ -14,6 +14,7 @@ Usage:
 
     With required command line arguments:
 
+        --dataset           The focus dataset to apply compression models to
         --num_components    The z dimensionality we're testing
         --param_config      A tsv file (param by z dimension) indicating the
                             specific parameter combination for the z dimension
@@ -41,6 +42,8 @@ from scipy.stats import pearsonr, spearmanr
 from tybalt.data_models import DataModel
 
 parser = argparse.ArgumentParser()
+parser.add_argument('-d', '--dataset', choices=['TCGA', 'GTEX', 'TARGET'],
+                    help='the dataset used for compression')
 parser.add_argument('-n', '--num_components', help='dimensionality of z')
 parser.add_argument('-p', '--param_config',
                     help='text file optimal hyperparameter assignment for z')
@@ -54,6 +57,7 @@ parser.add_argument('-m', '--subset_mad_genes', default=8000,
 args = parser.parse_args()
 
 # Load command arguments
+dataset = args.dataset.lower()
 num_components = int(args.num_components)
 param_config = args.param_config
 out_dir = args.out_dir
@@ -146,9 +150,9 @@ if not os.path.exists(train_dir):
     os.makedirs(train_dir)
 
 if shuffle:
-    file_pre = '{}_components_shuffled_'.format(num_components)
+    file_pre = '{}_{}_components_shuffled_'.format(dataset, num_components)
 else:
-    file_pre = '{}_components_'.format(num_components)
+    file_pre = '{}_{}_components_'.format(dataset, num_components)
 
 recon_file = os.path.join(train_dir, '{}reconstruction.tsv'.format(file_pre))
 co_file = os.path.join(train_dir, '{}sample_corr.tsv.gz'.format(file_pre))
@@ -160,10 +164,14 @@ adage_hist_file = os.path.join(train_dir,
 
 # Load Data
 base_dir = os.path.join('..', '0.expression-download', 'data')
-rnaseq_train = os.path.join(base_dir,
-                            'train_tcga_expression_matrix_processed.tsv.gz')
-rnaseq_test = os.path.join(base_dir,
-                           'test_tcga_expression_matrix_processed.tsv.gz')
+rnaseq_train = (
+    os.path.join(base_dir,
+    'train_{}_expression_matrix_processed.tsv.gz'.format(dataset))
+    )
+rnaseq_test = (
+    os.path.join(base_dir,
+    'test_{}_expression_matrix_processed.tsv.gz'.format(dataset))
+    )
 
 rnaseq_train_df = pd.read_table(rnaseq_train, index_col=0)
 rnaseq_test_df = pd.read_table(rnaseq_test, index_col=0)
@@ -185,14 +193,13 @@ algorithms = ['pca', 'ica', 'nmf', 'dae', 'vae']
 
 # Save population of models in specific folder
 comp_out_dir = os.path.join(out_dir, 'ensemble_z_matrices',
-                            'components_{}'.format(num_components))
+                            '{}_components_{}'.format(dataset, num_components))
 if not os.path.exists(comp_out_dir):
     os.makedirs(comp_out_dir)
 
 reconstruction_results = []
 test_reconstruction_results = []
 sample_correlation_results = []
-gene_correlation_results = []
 tybalt_training_histories = []
 adage_training_histories = []
 for seed in random_seeds:
@@ -237,14 +244,20 @@ for seed in random_seeds:
           transform_test_df=True)
 
     # Obtain z matrix (sample scores per latent space feature) for all models
-    full_z_matrix = dm.combine_models()
-    full_test_z_matrix = dm.combine_models(test_set=True)
+    full_z_file = '{}_z_matrix.tsv.gz'.format(seed_file)
+    dm.combine_models().to_csv(full_z_file, sep='\t', compression='gzip')
+
+    full_test_z_file = '{}_z_test_matrix.tsv.gz'.format(seed_file)
+    dm.combine_models(test_set=True).to_csv(full_test_z_file, sep='\t',
+                                            compression='gzip')
 
     # Obtain weight matrices (gene by latent space feature) for all models
-    full_weight_matrix = dm.combine_weight_matrix()
+    full_weight_file = '{}_weight_matrix.tsv.gz'.format(seed_file)
+    dm.combine_weight_matrix().to_csv(full_weight_file, sep='\t',
+                                      compression='gzip')
 
     # Store reconstruction costs and reconstructed input at training end
-    full_reconstruction, reconsructed_matrices = dm.compile_reconstruction()
+    full_reconstruction, reconstructed_matrices = dm.compile_reconstruction()
 
     # Store reconstruction evaluation and data for test set
     full_test_recon, test_recon_mat = dm.compile_reconstruction(test_set=True)
@@ -252,149 +265,91 @@ for seed in random_seeds:
     # Get correlations across samples and genes between input and output data
     pearson_corr = []
     spearman_corr = []
-
-    pearson_genes_corr = []
-    spearman_genes_corr = []
-
     pearson_corr_test = []
     spearman_corr_test = []
 
-    pearson_genes_corr_test = []
-    spearman_genes_corr_test = []
-
     for algorithm in algorithms:
         # Training Sample Correlations
-        r = get_recon_correlation(df=dm.df,
-                                  recon_mat_dict=reconsructed_matrices,
+        pearson_corr.append(
+            get_recon_correlation(df=dm.df,
+                                  recon_mat_dict=reconstructed_matrices,
                                   algorithm=algorithm,
                                   cor_type='pearson',
                                   genes=False)
-        p = get_recon_correlation(df=dm.df,
-                                  recon_mat_dict=reconsructed_matrices,
+                            )
+        spearman_corr.append(
+            get_recon_correlation(df=dm.df,
+                                  recon_mat_dict=reconstructed_matrices,
                                   algorithm=algorithm,
                                   cor_type='spearman',
                                   genes=False)
-        pearson_corr.append(r)
-        spearman_corr.append(p)
-
-        # Training Gene Correlations
-        r = get_recon_correlation(df=dm.df,
-                                  recon_mat_dict=reconsructed_matrices,
-                                  algorithm=algorithm,
-                                  cor_type='pearson',
-                                  genes=True)
-        p = get_recon_correlation(df=dm.df,
-                                  recon_mat_dict=reconsructed_matrices,
-                                  algorithm=algorithm,
-                                  cor_type='spearman',
-                                  genes=True)
-        pearson_genes_corr.append(r)
-        spearman_genes_corr.append(p)
+                            )
 
         # Testing Sample Correlations
-        r = get_recon_correlation(df=dm.test_df,
+        pearson_corr_test.append(
+            get_recon_correlation(df=dm.test_df,
                                   recon_mat_dict=test_recon_mat,
                                   algorithm=algorithm,
                                   cor_type='pearson',
                                   genes=False)
-        p = get_recon_correlation(df=dm.test_df,
+                                )
+        spearman_corr_test.append(
+            get_recon_correlation(df=dm.test_df,
                                   recon_mat_dict=test_recon_mat,
                                   algorithm=algorithm,
                                   cor_type='spearman',
                                   genes=False)
-        pearson_corr_test.append(r)
-        spearman_corr_test.append(p)
-
-        # Testing Gene Correlations
-        r = get_recon_correlation(df=dm.test_df,
-                                  recon_mat_dict=test_recon_mat,
-                                  algorithm=algorithm,
-                                  cor_type='pearson',
-                                  genes=True)
-        p = get_recon_correlation(df=dm.test_df,
-                                  recon_mat_dict=test_recon_mat,
-                                  algorithm=algorithm,
-                                  cor_type='spearman',
-                                  genes=True)
-        pearson_genes_corr_test.append(r)
-        spearman_genes_corr_test.append(p)
+                                 )
 
     # Training - Sample correlations between input and reconstruction
-    corr_df = compile_corr_df(pearson_list=pearson_corr,
-                              spearman_list=spearman_corr,
-                              algorithm_list=algorithms,
-                              column_names=dm.df.index,
-                              seed=seed,
-                              data_type='training')
-
-    # Training - Gene correlations between input and reconstruction
-    corr_gene_df = compile_corr_df(pearson_list=pearson_genes_corr,
-                                   spearman_list=spearman_genes_corr,
-                                   algorithm_list=algorithms,
-                                   column_names=dm.df.columns,
-                                   seed=seed,
-                                   data_type='training')
+    sample_correlation_results.append(
+        compile_corr_df(pearson_list=pearson_corr,
+                        spearman_list=spearman_corr,
+                        algorithm_list=algorithms,
+                        column_names=dm.df.index,
+                        seed=seed,
+                        data_type='training')
+                        )
 
     # Testing - Sample correlations between input and reconstruction
-    corr_test_df = compile_corr_df(pearson_list=pearson_corr_test,
-                                   spearman_list=spearman_corr_test,
-                                   algorithm_list=algorithms,
-                                   column_names=dm.test_df.index,
-                                   seed=seed,
-                                   data_type='testing')
+    sample_correlation_results.append(
+        compile_corr_df(pearson_list=pearson_corr_test,
+                        spearman_list=spearman_corr_test,
+                        algorithm_list=algorithms,
+                        column_names=dm.test_df.index,
+                        seed=seed,
+                        data_type='testing')
+                        )
 
-    # Testing - Gene correlations between input and reconstruction
-    corr_gene_test_df = compile_corr_df(pearson_list=pearson_genes_corr_test,
-                                        spearman_list=spearman_genes_corr_test,
-                                        algorithm_list=algorithms,
-                                        column_names=dm.test_df.columns,
-                                        seed=seed,
-                                        data_type='testing')
-
-    # Store training histories for neural network models
-    tybalt_train_history = dm.tybalt_fit.history_df
-    tybalt_train_history = tybalt_train_history.assign(seed=seed)
-    tybalt_train_history = tybalt_train_history.assign(shuffled=shuffle)
-    adage_train_history = dm.adage_fit.history_df
-    adage_train_history = adage_train_history.assign(seed=seed)
-    adage_train_history = adage_train_history.assign(shuffled=shuffle)
-
-    # Store z and weight matrices for each seed (the population of models)
-    full_z_file = '{}_z_matrix.tsv.gz'.format(seed_file)
-    full_z_matrix.to_csv(full_z_file, sep='\t', compression='gzip')
-
-    full_test_z_file = '{}_z_test_matrix.tsv.gz'.format(seed_file)
-    full_test_z_matrix.to_csv(full_test_z_file, sep='\t', compression='gzip')
-
-    full_weight_file = '{}_weight_matrix.tsv.gz'.format(seed_file)
-    full_weight_matrix.to_csv(full_weight_file, sep='\t', compression='gzip')
-
-    # Save intermediate results
-    reconstruction_results.append(full_reconstruction.assign(seed=seed))
-    test_reconstruction_results.append(full_test_recon.assign(seed=seed))
-    sample_correlation_results.append(corr_df)
-    sample_correlation_results.append(corr_test_df)
-    gene_correlation_results.append(corr_gene_df)
-    gene_correlation_results.append(corr_gene_test_df)
-    tybalt_training_histories.append(tybalt_train_history)
-    adage_training_histories.append(adage_train_history)
+    # Store training histories and intermediate results for neural networks
+    reconstruction_results.append(
+        full_reconstruction.assign(seed=seed, shuffled=shuffle)
+        )
+    test_reconstruction_results.append(
+        full_test_recon.assign(seed=seed, shuffled=shuffle)
+        )
+    tybalt_training_histories.append(
+        dm.tybalt_fit.history_df.assign(seed=seed, shuffle=shuffle)
+        )
+    adage_training_histories.append(
+        dm.adage_fit.history_df.assign(seed=seed, shuffle=shuffle)
+        )
 
 # Save reconstruction and neural network training results
-reconstruction_df = pd.concat(reconstruction_results)
-reconstruction_df = reconstruction_df.assign(data_type='training')
-test_reconstruction_df = pd.concat(test_reconstruction_results)
-test_reconstruction_df = test_reconstruction_df.assign(data_type='testing')
-reconstruction_df = (pd.concat([reconstruction_df, test_reconstruction_df])
-                       .reset_index(drop=True))
-correlation_df = pd.concat(sample_correlation_results)
-correlation_gene_df = pd.concat(gene_correlation_results)
-tybalt_history_df = pd.concat(tybalt_training_histories)
-adage_history_df = pd.concat(adage_training_histories)
-
-# Output files
-reconstruction_df.to_csv(recon_file, sep='\t')
-correlation_df.to_csv(co_file, sep='\t', index=False, float_format='%.3f',
-                      compression='gzip')
-# correlation_gene_df.to_csv(co_g_file, sep='\t', index=False, float_format='%.3f', compression='gzip')
-tybalt_history_df.to_csv(tybalt_hist_file, sep='\t')
-adage_history_df.to_csv(adage_hist_file, sep='\t')
+pd.concat([
+    pd.concat(reconstruction_results).assign(data_type='training'),
+    pd.concat(test_reconstruction_results).assign(data_type='testing')
+    ]).reset_index(drop=True).to_csv(recon_file, sep='\t', index=False)
+pd.concat(sample_correlation_results).to_csv(co_file,
+                                             sep='\t',
+                                             index=False,
+                                             float_format='%.3f',
+                                             compression='gzip')
+(pd.concat(tybalt_training_histories)
+   .reset_index()
+   .rename({'index': 'epoch'}, axis='columns')
+   .to_csv(tybalt_hist_file, sep='\t', index=False))
+(pd.concat(adage_training_histories)
+   .reset_index()
+   .rename({'index': 'epoch'}, axis='columns')
+   .to_csv(adage_hist_file, sep='\t', index=False))

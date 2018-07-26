@@ -18,5 +18,5 @@ dependencies:
 - conda-forge::r-irkernel=0.8.11
 - pip:
   - git+https://github.com/dhimmel/hetio@9d9ef1320ee47609e3c61c9f4918531d3c1c8c96
-  - git+https://github.com/greenelab/tybalt@5eb40889873a51a9d9d00826a421c62a0b725440
+  - git+https://github.com/greenelab/tybalt@1af6086a1f4bfee035b4d25789cdb1d53361fefc
   - git+https://github.com/greenelab/hetmech@3caf7791b32f0104cdfe362eab884d9f97a8cb1a

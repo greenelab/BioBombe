@@ -34,3 +34,21 @@ do
           --dataset $dat \
           --local
 done
+
+# Loop through all datasets again with shuffled gene expression
+for dat in "${DATASETS[@]}"
+do
+    PARAM_FILE=$PARAM_FILE_PREFIX$dat'.tsv'
+    OUT_DIR='results/'$dat'_shuffled_results/'
+
+    python scripts/z_sweep_jobs_submit.py \
+          --param_config $PARAM_FILE \
+          --pmacs_config $PMACS_FILE \
+          --out_dir $OUT_DIR \
+          --num_seeds $NUM_SEEDS \
+          --subset_mad_genes $NUM_GENES \
+          --components 2 3 4 5 6 7 8 9 10 12 14 16 18 20 25 30 35 40 45 50 60 70 80 90 100 125 150 200 \
+          --dataset $dat \
+          --local \
+          --shuffle
+done

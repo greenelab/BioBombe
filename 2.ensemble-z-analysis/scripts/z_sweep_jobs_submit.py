@@ -54,6 +54,7 @@ Usage: Run in command line: python scripts/latent_space_sweep_submit.py
        --num_seeds          how many models to build (random seeds to set)
                               default: 5
        --local              if provided, sweep will be run locally instead
+       --shuffle            if provided, input matrix is shuffled
 
 Output:
 Submit jobs given certain number of latent space dimensionality
@@ -83,6 +84,8 @@ parser.add_argument('-s', '--num_seeds', default=5,
                     help='number of different seeds to run on current data')
 parser.add_argument('-l', '--local', action='store_true',
                     help='decision to run models locally instead of on PMACS')
+parser.add_argument('-u', '--shuffle', action='store_true',
+                    help='decision to shuffle input matrices for null model')
 parser.add_argument('-m', '--subset_mad_genes', default=8000,
                     help='subset num genes based on mean absolute deviation')
 args = parser.parse_args()
@@ -95,6 +98,7 @@ python_path = args.python_path
 num_seeds = args.num_seeds
 components = args.components
 local = args.local
+shuffle = args.shuffle
 subset_mad_genes = args.subset_mad_genes
 
 if not os.path.exists(out_dir):
@@ -126,6 +130,10 @@ for z in components:
         z_command += default_params
     else:
         z_command = conda + z_command + default_params
+
+    if shuffle:
+        z_command += ['--shuffle']
+
     all_commands.append(z_command)
 
 # Submit the jobs to PMACS

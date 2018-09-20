@@ -146,6 +146,9 @@ vae_kappa = param_df.loc['vae_kappa', str(num_components)]
 # Set output directory and file names
 train_dir = os.path.join(out_dir, 'ensemble_z_results',
                          '{}_components'.format(num_components))
+if shuffle:
+    train_dir = '{}_shuffled'.format(train_dir)
+
 if not os.path.exists(train_dir):
     os.makedirs(train_dir)
 

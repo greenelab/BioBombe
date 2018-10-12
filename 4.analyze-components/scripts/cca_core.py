@@ -161,9 +161,11 @@ def compute_ccas(sigma_xx, sigma_xy, sigma_yx, sigma_yy, verbose=True):
     print("trying to take final svd")
   arr_x_stable = arr_x + epsilon * np.eye(arr_x.shape[0])
   arr_y_stable = arr_y + epsilon * np.eye(arr_y.shape[0])
-  ux, sx, vx = np.linalg.svd(arr_x_stable)
-  uy, sy, vy = np.linalg.svd(arr_y_stable)
-
+  try:
+      ux, sx, vx = np.linalg.svd(arr_x_stable)
+      uy, sy, vy = np.linalg.svd(arr_y_stable)
+  except:
+      return [0, 0, 0], [0, 0, 0], 0, 0, 0, 0
   sx = np.sqrt(np.abs(sx))
   sy = np.sqrt(np.abs(sy))
   if verbose:

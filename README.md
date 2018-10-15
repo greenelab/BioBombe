@@ -16,6 +16,7 @@ To reproduce the results of the analysis, the modules should be run in order.
 | 1.initial-z-sweep | Determine a set of optimal hyperparameters for Tybalt and ADAGE models across a representative range of z dimensionality |
 | 2.ensemble-z-analysis | Train various algorithms to compress gene expression data across a large range of z dimensions |
 | 3.build-hetnets | Download, process, and integrate various curated gene sets into a single heterogeneous network |
+| 4.analyze-components | Visualize the reconstruction and sample correlation results of the ensemble z analysis |
 
 ## Algorithms
 

@@ -14,9 +14,10 @@ dependencies:
 - conda-forge::r-dplyr=0.7.4
 - conda-forge::r-tidyr=0.8.0
 - conda-forge::r-readr=1.1.1
+- conda-forge::r-readxl=1.1.0
 - conda-forge::r-ggplot2=2.2.1
 - conda-forge::r-irkernel=0.8.11
 - pip:
   - git+https://github.com/dhimmel/hetio@9d9ef1320ee47609e3c61c9f4918531d3c1c8c96
-  - git+https://github.com/greenelab/tybalt@1af6086a1f4bfee035b4d25789cdb1d53361fefc
+  - git+https://github.com/greenelab/tybalt@739cfb894426b2dcedcf3ed48e3a43733a5cac2e
   - git+https://github.com/greenelab/hetmech@3caf7791b32f0104cdfe362eab884d9f97a8cb1a

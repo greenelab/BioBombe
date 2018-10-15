@@ -381,16 +381,22 @@ plot_sample_correlation <- function(data_df,
     use_theme
 
   # Save Figure
+  if (dataset_name %in% c("TCGA", "GTEX")) {
+    plot_height <- 20
+  } else {
+    plot_height <- 7
+  }
+
   figure_base <- file.path(sample_cor_dir,
                            paste0("sample-type_sample-correlation_", plot_name))
   ggsave(plot = return_plot_list[["cancer_type_full_plot"]],
          paste0(figure_base, ".pdf"),
          dpi = 500,
-         height = 7,
+         height = plot_height,
          width = 10)
   ggsave(plot = return_plot_list[["cancer_type_full_plot"]],
          paste0(figure_base, ".png"),
-         height = 7,
+         height = plot_height,
          width = 10)
 
   # Now, plot individual sample-types

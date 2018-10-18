@@ -17,9 +17,11 @@ compressed gene expression features.
 """
 
 import os
+from collections import ChainMap
 import glob
-import gseapy as gp
+
 import pandas as pd
+import gseapy as gp
 
 
 class latentModel():
@@ -46,6 +48,7 @@ class latentModel():
         # Load gene expression data
         self.filename = filename
         self.w_df = pd.read_table(self.filename, index_col=0)
+        self.w_df.index = self.w_df.index.map(str)
 
         # Set attributes
         self.z_dim = z_dim
@@ -211,8 +214,9 @@ class latentModel():
 
         return compressed_feature_df
 
-    def _get_gsea_results(self, use_df, algorithm, current_z, distribution,
-                          num_perm, shuffled, direction, seed):
+    def _get_gsea_results(self, use_df, algorithm, current_z, full_z,
+                          distribution, num_perm, shuffled, direction, seed,
+                          gene_sets='KEGG_2016'):
         """
         Helper function to perform and process the GSEA results
 
@@ -220,11 +224,14 @@ class latentModel():
         use_df - a compressed feature
         algorithm - a string indicating which algorithm is being analyzed
         current_z - int describing which z vector to subset
+        full_z - int describing the bottleneck dimensionality of the ful lmodel
         distribution - a string indicating which distribution is being tested
         num_perm - int specifying the number of permutations to use
         shuffled - a boolean indicating if data is shuffled before training
         direction - string indicating the distribution tail being considered
         seed - the random seed used to train the model
+        gene_sets - keywords from http://amp.pharm.mssm.edu/Enrichr/#stats or
+                    file paths to `.gmt` files
 
         Output:
         A pandas DataFrame of processed results and attributes
@@ -232,7 +239,8 @@ class latentModel():
         results_df = (
             self.run_gsea_prerank(
                 gene_score_df=use_df,
-                permutation_num=num_perm)
+                permutation_num=num_perm,
+                gene_sets=gene_sets)
             )
 
         # Store various attributes for downstream analysis
@@ -241,6 +249,7 @@ class latentModel():
                 distrib=distribution,
                 algorithm=algorithm,
                 current_z=current_z,
+                full_z=full_z,
                 shuffled=shuffled,
                 direction=direction,
                 seed=seed
@@ -250,7 +259,8 @@ class latentModel():
         return results_df
 
     def get_gsea_compressed_matrix(self, algorithms, distrib_methods,
-                                   shuffled, seed, num_perm=15):
+                                   shuffled, seed, z_dim, num_perm=15,
+                                   gene_sets='KEGG_2016'):
         """
         Perform GSEA on all compressed features in a weight matrix across all
         algorithms and distribution methods
@@ -261,7 +271,10 @@ class latentModel():
         distrib_methods - a list of methods to obtain compressed feature genes
         shuffled - a boolean indicating if data is shuffled before training
         seed - the random seed that the model is trained using
+        z_dim - the full dimensionality of the input compressed model
         num_perm - int specifying the number of permutations to use
+        gene_sets - keywords from http://amp.pharm.mssm.edu/Enrichr/#stats or
+                    file paths to `.gmt` files
 
         Output:
         a gseapy res2d object with significant pathways (fdr) assigned to
@@ -330,11 +343,13 @@ class latentModel():
                                 use_df=use_df,
                                 algorithm=alg,
                                 current_z=current_z,
+                                full_z=z_dim,
                                 distribution=distrib,
                                 direction='both',
                                 num_perm=num_perm,
                                 shuffled=shuffled,
-                                seed=seed)
+                                seed=seed,
+                                gene_sets=gene_sets)
                         )
 
                         current_z_list += [results_df]
@@ -347,11 +362,13 @@ class latentModel():
                                     use_df=use_df,
                                     algorithm=alg,
                                     current_z=current_z,
+                                    full_z=z_dim,
                                     distribution=distrib,
                                     direction='positive',
                                     num_perm=num_perm,
                                     shuffled=shuffled,
-                                    seed=seed)
+                                    seed=seed,
+                                    gene_sets=gene_sets)
                             )
 
                             current_z_list += [results_df]
@@ -362,14 +379,35 @@ class latentModel():
                                     use_df=use_df,
                                     algorithm=alg,
                                     current_z=current_z,
+                                    full_z=z_dim,
                                     distribution=distrib,
                                     direction='negative',
                                     num_perm=num_perm,
                                     shuffled=shuffled,
-                                    seed=seed)
+                                    seed=seed,
+                                    gene_sets=gene_sets)
                             )
 
                             current_z_list += [results_df]
+
+        return pd.concat(current_z_list)
+
+    def parse_gmt(self, gene_sets):
+        """
+        gmt parser
+        Modified from:
+        https://github.com/zqfang/GSEApy/blob/c43a73ee638e4326e8d5505b92f9b6dfeb4d9400/gseapy/gsea.py#L141-L149
+        """
+        gene_set_dict_list = []
+        for gene_set in gene_sets:
+            if gene_set.lower().endswith(".gmt"):
+                with open(gene_set) as gmt:
+                    gene_set_dict_list.append(
+                        {line.strip().split("\t")[0]:
+                         line.strip().split("\t")[2:]
+                         for line in gmt.readlines()}
+                     )
+        return dict(ChainMap(*gene_set_dict_list))
 
     def run_gsea_prerank(self, gene_score_df, **kwargs):
         """
@@ -395,6 +433,11 @@ class latentModel():
 
         # unpack kwargs
         gene_sets = kwargs.pop('gene_sets', 'KEGG_2016')
+        if len(gene_sets) == 1:
+            gene_sets = gene_sets[0]
+        else:
+            gene_sets = self.parse_gmt(gene_sets)
+
         processes = kwargs.pop('processes', 1)
         permutation_num = kwargs.pop('permutation_num', 1000)
         verbose = kwargs.pop('verbose', False)
@@ -423,7 +466,8 @@ class latentModel():
 
 
 def run_gsea_pipeline_command(input_weight_dir, z_dim, dataset_name, num_perm,
-                              shuffled_true, algorithms, distrib_methods):
+                              shuffled_true, algorithms, distrib_methods,
+                              translate, gene_sets='KEGG_2016'):
     """
     Perform the entire pipeline to obtain all GSEA results built into a single
     function for multiprocessing to act upon
@@ -436,6 +480,9 @@ def run_gsea_pipeline_command(input_weight_dir, z_dim, dataset_name, num_perm,
     shuffled_true - boolean indicating if the data were shuffled
     algorithms - a list of algorithms to analyze
     distrib_methods - a list of methods to obtain compressed feature gene lists
+    translate - boolean describing if the genesets should be translated
+    gene_sets - keywords from http://amp.pharm.mssm.edu/Enrichr/#stats or
+                file paths to `.gmt` files
 
     Output:
     for each input z directory, a results file will be written to disk
@@ -464,12 +511,13 @@ def run_gsea_pipeline_command(input_weight_dir, z_dim, dataset_name, num_perm,
         lm._load_gene_dict()
 
         # Step 3 - Translate the indeces of the weight matrix
-        lm.w_df.index = (
-            lm.translate_gene_ids(
-                gene_list=lm.w_df.index,
-                translate_from='entrez_gene_id',
-                translate_to='symbol')
-        )
+        if translate:
+            lm.w_df.index = (
+                lm.translate_gene_ids(
+                    gene_list=lm.w_df.index,
+                    translate_from='entrez_gene_id',
+                    translate_to='symbol')
+            )
 
         # Step 4 - Process the distriubtions that will be used for comparisons
         lm.get_high_weight_genes()
@@ -480,13 +528,15 @@ def run_gsea_pipeline_command(input_weight_dir, z_dim, dataset_name, num_perm,
             lm.get_gsea_compressed_matrix(
                 algorithms=algorithms,
                 distrib_methods=distrib_methods,
+                gene_sets=gene_sets,
                 num_perm=num_perm,
                 shuffled=shuffled_true,
-                seed=seed
+                seed=seed,
+                z_dim=z_dim
                 )
             )
 
-        gsea_results_list += gsea_results_df
+        gsea_results_list.append(gsea_results_df)
 
     out_file = 'gsea_results_{}_zdim_{}.tsv'.format(dataset_name, z_dim)
     out_file = os.path.join('results', 'gsea', out_file)

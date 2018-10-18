@@ -11,6 +11,7 @@ Usage:
             python scripts/submit_gsea.py
 
      with required command arguments:
+
        --input_weight_dir   directory storing ensemble weight matrices
        --z_dim              the given z dimension (bottleneck layer size)
                             (options: TCGA, GTEX or TARGET)
@@ -22,6 +23,12 @@ Usage:
        --distrib_methods    various mechanisms that aggregate gene lists from
                             compressed features. These gene lists are input to
                             GSEA
+
+    and optional command arguments:
+
+        --gene_sets         A keyword from Enrichr or a file path to .gmt file
+        --translate         if present, then the gene symbols in the weight
+                            matrices will be translated
 
 Output:
 
@@ -44,6 +51,10 @@ parser.add_argument('-s', '--shuffled', action='store_true',
 parser.add_argument('-a', '--algorithms', help='the algorithms to consider')
 parser.add_argument('-m', '--distrib_methods',
                     help='the distribution methods to perform')
+parser.add_argument('-g', '--gene_sets', default='KEGG_2016', nargs='+',
+                    help='gene sets to perform GSEA using')
+parser.add_argument('-t', '--translate', action='store_true',
+                    help='translate hugo symbol into entrez gene')
 args = parser.parse_args()
 
 # Set constants
@@ -54,6 +65,8 @@ num_perm = args.num_perm
 shuffled = args.shuffled
 algorithms = args.algorithms.split()
 distrib_methods = args.distrib_methods.split()
+gene_sets = args.gene_sets
+translate = args.translate
 
 # Perform the analysis
 if __name__ == "__main__":
@@ -64,5 +77,7 @@ if __name__ == "__main__":
         num_perm=num_perm,
         shuffled_true=shuffled,
         algorithms=algorithms,
-        distrib_methods=distrib_methods
+        distrib_methods=distrib_methods,
+        translate=translate,
+        gene_sets=gene_sets
     )

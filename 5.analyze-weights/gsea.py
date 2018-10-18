@@ -11,11 +11,17 @@ Usage:
             python gsea.py
 
      with optional arguments:
-       --pmacs_config       filepath pointing to PMACS configuration file
-       --python_path        absolute path of PMACS python in select environment
-                              default: '~/.conda/envs/tybalt-gpu/bin/python'
-       --local              if provided, sweep will be run locally instead
 
+        --pmacs_config      filepath pointing to PMACS configuration file
+        --python_path       absolute path of PMACS python in select environment
+                              default: '~/.conda/envs/tybalt-gpu/bin/python'
+        --local             if provided, sweep will be run locally instead
+
+    and optional command arguments:
+
+        --gene_sets         A keyword from Enrichr or a file path to .gmt file
+        --translate         if present, then the gene symbols in the weight
+                            matrices will be translated
 Output:
 
     Will submit jobs for each ensemble of compressed weight matrix (directory)
@@ -37,11 +43,17 @@ parser.add_argument('-p', '--python_path', help='absolute path of python',
                     default='python')
 parser.add_argument('-l', '--local', action='store_true',
                     help='decision to run models locally instead of on PMACS')
+parser.add_argument('-g', '--gene_sets', default='KEGG_2016', nargs='+',
+                    help='gene sets to perform GSEA using')
+parser.add_argument('-t', '--translate', action='store_true',
+                    help='translate hugo symbol into entrez gene')
 args = parser.parse_args()
 
 pmacs_config_file = args.pmacs_config
 python_path = args.python_path
 local = args.local
+gene_sets = args.gene_sets
+translate = args.translate
 
 # Load data
 config_df = pd.read_table(pmacs_config_file, index_col=0)
@@ -94,14 +106,19 @@ for dataset in all_file_dict.keys():
                        '--dataset_name', dataset,
                        '--num_perm', num_perm,
                        '--algorithms', ' '.join(algorithms),
-                       '--distrib_methods', ' '.join(distrib_methods)]
+                       '--distrib_methods', ' '.join(distrib_methods),
+                       '--gene_sets']
+
+            for gene_set in gene_sets:
+                command += [gene_set]
+            if translate:
+                command += ['--translate']
 
             if signal != 'results':
                 command += ['--shuffled']
 
             if not local:
                 command = conda + command
-
             all_commands.append(command)
 
 # Submit the jobs

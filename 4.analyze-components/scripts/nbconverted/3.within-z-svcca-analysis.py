@@ -7,7 +7,7 @@
 # 
 # Here, we apply Singular Vector Canonical Correlation Analysis ([Raghu et al. 2017](https://arxiv.org/abs/1706.05806 "SVCCA: Singular Vector Canonical Correlation Analysis for Deep Learning Dynamics and Interpretability")) ([github](https://github.com/google/svcca)) to the neuron matrices Z to quantify model stability both within and across algorithms over each bottleneck dimensionality.
 # 
-# Briefly, SVCCA uses Singular Value Decomposition (SVC) to extract the components explaining 99% of the variation.
+# Briefly, SVCCA uses Singular Value Decomposition (SVD) to extract the components explaining 99% of the variation.
 # This is done to remove potential dimensions described by noise.
 # Next, SVCCA performs a Canonical Correlation Analysis (CCA) on the SVD matrices to identify maximum correlations of linear combinations of both input matrices. The algorithm will identify the canonical correlations of highest magnitude across and within algorithms of the same dimensionality. 
 # 
@@ -31,7 +31,7 @@ datasets = ['TARGET', 'TCGA', 'GTEX']
 algorithms = ['pca', 'ica', 'nmf', 'dae', 'vae']
 z_dims = [2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 25, 30,
           35, 40, 45, 50, 60, 70, 80, 90, 100, 125, 150, 200]
-signals = (True, False)
+shuffled_data = (True, False)
 
 
 # In[3]:
@@ -42,12 +42,12 @@ for dataset in datasets:
 
     for z in z_dims:
 
-        for signal in signals:
+        for signal in shuffled_data:
 
             if signal:
-                shuffled_status = 'signal'
-            else:
                 shuffled_status = 'shuffled'
+            else:
+                shuffled_status = 'signal'
 
             print("Calculating... dataset {} for {} dimension {}"
                   .format(dataset, shuffled_status, z))

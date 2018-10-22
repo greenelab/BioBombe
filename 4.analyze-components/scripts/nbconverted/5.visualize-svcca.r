@@ -33,23 +33,15 @@ options(repr.plot.width = 15, repr.plot.height = 9)
 
 for (dataset in c("TARGET", "TCGA", "GTEX")) {
     
-    for (shuffled in c(TRUE, FALSE)) {
-        
-        if (shuffled) {
-            shuff = "shuffled"
-            svcca_subset = 0
-        } else {
-            shuff = "signal"
-            svcca_subset = 0.3
-        }
+    for (signal_contains in c("signal", "shuffled")) {
         
         svcca_subset_df <- svcca_df %>%
-            dplyr::filter(shuffled == !!shuff,
-                          dataset == !!dataset,
-                          svcca_mean_similarity >= !!svcca_subset)
+            dplyr::filter(shuffled == !!signal_contains,
+                          dataset == !!dataset)
         
-        out_figure <- file.path("figures", "svcca", paste("within_z",dataset, shuff, sep = '_'))
-        plot_title <- paste0("SVCCA Mean Correlations\n", dataset, ' - ', shuff)
+        out_figure <- file.path("figures", "svcca",
+                                paste("within_z", dataset, signal_contains, sep = '_'))
+        plot_title <- paste0("SVCCA Mean Correlations\n", dataset, ' - ', signal_contains)
         
         g <- ggplot(svcca_subset_df, aes(x = z_dim, y = svcca_mean_similarity, fill = algorithm_1)) +
                 geom_boxplot(outlier.size = 0.1, lwd = 0.8) +
@@ -67,6 +59,7 @@ for (dataset in c("TARGET", "TCGA", "GTEX")) {
                                              "nmf" = "NMF",
                                              "dae" = "DAE",
                                              "vae" = "VAE")) +
+                ylim(c(0, 1)) +
                 ggtitle(plot_title) +
                 theme_bw() +
                 theme(axis.text.x = element_text(angle = 90, size = 5),

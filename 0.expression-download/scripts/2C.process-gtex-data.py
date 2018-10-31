@@ -169,3 +169,16 @@ train_df.to_csv(train_file, sep='\t', compression='gzip', float_format='%.3g')
 test_file = os.path.join('data', 'test_gtex_expression_matrix_processed.tsv.gz')
 test_df.to_csv(test_file, sep='\t', compression='gzip', float_format='%.3g')
 
+
+# ## Sort genes based on median absolute deviation and output to file
+
+# In[16]:
+
+
+# Determine most variably expressed genes and subset
+mad_genes_df = pd.DataFrame(train_df.mad(axis=0).sort_values(ascending=False)).reset_index()
+mad_genes_df.columns = ['gene_id', 'median_absolute_deviation']
+
+file = os.path.join('data', 'gtex_mad_genes.tsv')
+mad_genes_df.to_csv(file, sep='\t', index=False)
+

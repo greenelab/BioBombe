@@ -61,19 +61,38 @@ for dataset in datasets:
             )
 
             # Perform across algorithm SVCCA
-            svcca_out = (
+            # For training
+            svcca_out_train_df = (
                 get_svcca_across_algorithm_stability(z_dict=z_dict,
-                                                     algorithms=algorithms)
+                                                     algorithms=algorithms,
+                                                     train_or_test='train')
             )
-            
+            svcca_out_train_df = svcca_out_train_df.assign(train_or_test='train')
+
+            # SVCCA cannot be calculated for TARGET test data because there are
+            # not enough datapoints
+            if dataset != 'TARGET':
+                # And for testing
+                svcca_out_test_df = (
+                    get_svcca_across_algorithm_stability(z_dict=z_dict,
+                                                         algorithms=algorithms,
+                                                         train_or_test='test')
+                )
+                svcca_out_test_df = svcca_out_test_df.assign(train_or_test='test')
+
+                # Concatenate training and testing
+                svcca_out_df = pd.concat([svcca_out_train_df, svcca_out_test_df])
+            else:
+                svcca_out_df = svcca_out_train_df
+
             # Append info to the output dataframe
-            svcca_out = svcca_out.assign(
+            svcca_out_df = svcca_out_df.assign(
                 dataset=dataset,
                 z_dim=z,
                 shuffled=shuffled_status
             )
 
-            large_svcca_results_list.append(svcca_out)
+            large_svcca_results_list.append(svcca_out_df)
 
 
 # In[4]:
@@ -81,7 +100,8 @@ for dataset in datasets:
 
 svcca_results_df = pd.concat(large_svcca_results_list)
 svcca_results_df.columns = ['seed_1', 'seed_2', 'algorithm_1', 'algorithm_2',
-                            'svcca_mean_similarity', 'dataset', 'z_dim', 'shuffled']
+                            'svcca_mean_similarity', 'train_or_test',
+                            'dataset', 'z_dim', 'shuffled']
 svcca_results_df.head()
 
 

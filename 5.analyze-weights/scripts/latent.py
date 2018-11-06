@@ -549,7 +549,8 @@ def run_gsea_pipeline_command(input_weight_dir, z_dim, dataset_name, num_perm,
 def load_hetnets(hetnet_file, permuted_directory, subset_genes,
                  metaedge_abbrev='GpXCELL'):
     """
-    Load in real and permuted hetnets and store in a dictionary
+    Load in real and permuted hetnets and store in a dictionary. A hetnet is a
+    "heterogeneous network" described in https://neo4j.het.io/browser/
 
     Arguments:
     hetnet_file - the file path of the real data hetnet

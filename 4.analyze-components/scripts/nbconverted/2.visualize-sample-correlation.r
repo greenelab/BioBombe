@@ -71,6 +71,7 @@ colnames(gtex_pheno_df)[6] <- 'sample_type'
 
 # Subset gtex phenotype file for plotting
 gtex_pheno_df <- gtex_pheno_df[, c('sample_id', 'sample_type')]
+head(gtex_pheno_df, 2)
 
 # 2) Load sample correlation data
 sample_correlation_list[[dataset_name]] <- compile_sample_correlation(dataset_name = dataset_name)

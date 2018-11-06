@@ -43,18 +43,27 @@ def read_in_z(dataset, z_dim, algorithm, shuffled_data=False):
     z_dim_dir = '{}_components_{}'.format(dataset.lower(), z_dim)
     full_dir = os.path.join(base_dir, dataset_dir, z_dim_dir)
 
-    z_dict = {}
-    for file_name in glob.glob('{}/*_z_matrix*'.format(full_dir)):
+    z_dict = {'train': {}, 'test': {}}
+    for file_name in glob.glob('{}/*_z_*'.format(full_dir)):
+        file = os.path.basename(file_name)
         seed = os.path.basename(file_name).split('_')[1]
         z_df = pd.read_table(file_name, index_col=0)
+
         if algorithm != 'all':
             z_df = z_df.loc[:, z_df.columns.str.contains(algorithm)]
-        z_dict[seed] = z_df
+
+        if 'test' in file:
+            z_dict_key = 'test'
+        else:
+            z_dict_key = 'train'
+
+        z_dict[z_dict_key][seed] = z_df.assign(train_or_test=z_dict_key)
 
     return z_dict
 
 
-def get_svcca_across_algorithm_stability(z_dict, algorithms):
+def get_svcca_across_algorithm_stability(z_dict, algorithms,
+                                         train_or_test='train'):
     """
     Compile SVCCA results for all combinations of within algorithms for a given
     dataset and z
@@ -62,10 +71,14 @@ def get_svcca_across_algorithm_stability(z_dict, algorithms):
     Arguments:
     z_dict - a dictionary storing the specific z dataframes
     algorithms - a list storing the algorithms to compare
+    train_or_test - a string that indicates if the comparison should be
+                    training or testing
 
     Output:
     a list of mean SVCCA similarity scores for each cross comparison
     """
+
+    z_dict = z_dict[train_or_test]
 
     output_list = []
     for model_a in z_dict.keys():
@@ -97,7 +110,7 @@ def get_svcca_across_algorithm_stability(z_dict, algorithms):
     return pd.DataFrame(output_list, columns=out_cols)
 
 
-def get_svcca_across_z_stability(z_dict_a, z_dict_b):
+def get_svcca_across_z_stability(z_dict_a, z_dict_b, train_or_test='train'):
     """
     Given two dictionaries, assess model stability between entries and output.
     The a dictionary should always contain fewer dimensions than b
@@ -105,10 +118,15 @@ def get_svcca_across_z_stability(z_dict_a, z_dict_b):
     Arguments:
     z_dict_a - a dict of the output of `read_in_z` for specific z and dataset
     z_dict_b - the same structure but a different z and dataset than z_dict_a
+    train_or_test - a string that indicates if the comparison should be
+                    training or testing
 
     Output:
     A dataframe of SVCCA similarity scores comparing all models
     """
+
+    z_dict_a = z_dict_a[train_or_test]
+    z_dict_b = z_dict_b[train_or_test]
 
     output_list = []
     for model_a in z_dict_a.keys():

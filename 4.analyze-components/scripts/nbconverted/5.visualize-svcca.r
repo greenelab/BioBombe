@@ -9,7 +9,10 @@ svcca_df <- readr::read_tsv(svcca_file,
                             col_types = readr::cols(
                                 .default = readr::col_character(),
                                 svcca_mean_similarity = readr::col_double()))
+print(dim(svcca_df))
 head(svcca_df, 2)
+
+table(svcca_df$train_or_test)
 
  # Make sure factors are in order
 svcca_df$z_dim <- factor(
@@ -31,51 +34,116 @@ svcca_df$algorithm_2 <- factor(
 
 options(repr.plot.width = 15, repr.plot.height = 9)
 
-for (dataset in c("TARGET", "TCGA", "GTEX")) {
+for(dataset in c("TARGET", "TCGA", "GTEX")) {
     
-    for (signal_contains in c("signal", "shuffled")) {
+    for(signal_contains in c("signal", "shuffled")) {
         
-        svcca_subset_df <- svcca_df %>%
-            dplyr::filter(shuffled == !!signal_contains,
-                          dataset == !!dataset)
-        
-        out_figure <- file.path("figures", "svcca",
-                                paste("within_z", dataset, signal_contains, sep = '_'))
-        plot_title <- paste0("SVCCA Mean Correlations\n", dataset, ' - ', signal_contains)
-        
-        g <- ggplot(svcca_subset_df, aes(x = z_dim, y = svcca_mean_similarity, fill = algorithm_1)) +
-                geom_boxplot(outlier.size = 0.1, lwd = 0.8) +
-                facet_grid(algorithm_1 ~ algorithm_2) +
-                xlab("Z Dimension") +
-                ylab("SVCCA Mean Similarity") +
-                scale_fill_manual(name = "Algorithm",
-                                  values = c("#e41a1c",
-                                             "#377eb8",
-                                             "#4daf4a",
-                                             "#984ea3",
-                                             "#ff7f00"),
-                                  labels = c("pca" = "PCA",
-                                             "ica" = "ICA",
-                                             "nmf" = "NMF",
-                                             "dae" = "DAE",
-                                             "vae" = "VAE")) +
-                ylim(c(0, 1)) +
-                ggtitle(plot_title) +
-                theme_bw() +
-                theme(axis.text.x = element_text(angle = 90, size = 5),
-                      plot.title = element_text(hjust = 0.5, size = 18),
-                      legend.text = element_text(size = 12),
-                      legend.key.size = unit(1, "lines"),
-                      strip.text.x = element_text(size = 20),
-                      strip.text.y = element_text(size = 20),
-                      strip.background = element_rect(colour = "black", fill = "lightgrey"))
-        
-        ggsave(plot = g, filename = paste0(out_figure, ".png"), height = 8, width = 12)
-        ggsave(plot = g, filename = paste0(out_figure, ".pdf"), height = 8, width = 12)
-        
-        print(g)
+        for(train_or_test in c("train", "test")) {
+            
+            if (!((dataset == "TARGET") & (train_or_test == "test"))) {
+                svcca_subset_df <- svcca_df %>%
+                dplyr::filter(shuffled == !!signal_contains,
+                              dataset == !!dataset,
+                              train_or_test == !!train_or_test)
+
+                out_figure <- file.path("figures", "svcca",
+                                        paste("within_z", dataset, signal_contains,
+                                              train_or_test, sep = '_'))
+                plot_title <- paste0("SVCCA Mean Correlations\n", dataset, ' - ',
+                                     signal_contains, ' - ', train_or_test)
+
+                g <- ggplot(svcca_subset_df,
+                            aes(x = z_dim, y = svcca_mean_similarity,
+                                fill = algorithm_1)) +
+                        geom_boxplot(outlier.size = 0.1, lwd = 0.8) +
+                        facet_grid(algorithm_1 ~ algorithm_2) +
+                        xlab("Z Dimension") +
+                        ylab("SVCCA Mean Similarity") +
+                        scale_fill_manual(name = "Algorithm",
+                                          values = c("#e41a1c",
+                                                     "#377eb8",
+                                                     "#4daf4a",
+                                                     "#984ea3",
+                                                     "#ff7f00"),
+                                          labels = c("pca" = "PCA",
+                                                     "ica" = "ICA",
+                                                     "nmf" = "NMF",
+                                                     "dae" = "DAE",
+                                                     "vae" = "VAE")) +
+                        ylim(c(0, 1)) +
+                        ggtitle(plot_title) +
+                        theme_bw() +
+                        theme(axis.text.x = element_text(angle = 90, size = 5),
+                              plot.title = element_text(hjust = 0.5, size = 18),
+                              legend.text = element_text(size = 12),
+                              legend.key.size = unit(1, "lines"),
+                              strip.text.x = element_text(size = 20),
+                              strip.text.y = element_text(size = 20),
+                              strip.background = element_rect(colour = "black", fill = "lightgrey"))
+
+                ggsave(plot = g, filename = paste0(out_figure, ".png"), height = 8, width = 12)
+                ggsave(plot = g, filename = paste0(out_figure, ".pdf"), height = 8, width = 12)
+
+                print(g)
+            }
+        }
     }
 }
+
+svcca_subset_df <- svcca_df %>%
+    dplyr::group_by(algorithm_1, algorithm_2, dataset, z_dim, shuffled, train_or_test) %>%
+    dplyr::summarize_at('svcca_mean_similarity', mean)
+
+for(train_or_test in c("train", "test")) {
+    signal_data = svcca_subset_df %>%
+        dplyr::filter(shuffled == 'signal',
+                      train_or_test == !!train_or_test)
+    shuffled_data = svcca_subset_df %>%
+        dplyr::filter(shuffled == 'shuffled',
+                      train_or_test == !!train_or_test)
+
+    full_svcca_data = signal_data %>%
+        dplyr::full_join(shuffled_data,
+                         by = c('algorithm_1', 'algorithm_2', 'dataset', 'z_dim'),
+                         suffix = c('_signal', '_shuffled'))
+    
+    full_svcca_data <- full_svcca_data %>%
+        dplyr::mutate(
+            svcca_diff = svcca_mean_similarity_signal - svcca_mean_similarity_shuffled
+        )
+    
+    g <- ggplot(full_svcca_data, aes(x = z_dim, y = svcca_diff, color = dataset)) +
+        geom_point() +
+        facet_grid(algorithm_1 ~ algorithm_2) +
+        xlab("Z Dimension") +
+        ylab("SVCCA Mean Similarity") +
+        scale_color_manual(name = "Dataset",
+                          values = c("#66c2a5",
+                                     "#fc8d62",
+                                     "#8da0cb"),
+                          labels = c("GTEX" = "GTEX",
+                                     "TCGA" = "TCGA",
+                                     "TARGET" = "TARGET")) +
+        ylim(c(0, 1)) +
+        ggtitle(paste0('SVCCA Mean Similarity\nSignal Difference ', train_or_test)) +
+        theme_bw() +
+        theme(axis.text.x = element_text(angle = 90, size = 5),
+              plot.title = element_text(hjust = 0.5, size = 18),
+              legend.text = element_text(size = 12),
+              legend.key.size = unit(1, "lines"),
+              strip.text.x = element_text(size = 20),
+              strip.text.y = element_text(size = 20),
+              strip.background = element_rect(colour = "black", fill = "lightgrey"))
+
+    out_figure = file.path("figures", "svcca", "signal_difference")
+
+    ggsave(plot = g,filename = paste0(out_figure, "_", train_or_test, ".png"),
+           height = 8, width = 11)
+    ggsave(plot = g, filename = paste0(out_figure, "_", train_or_test, ".pdf"),
+           height = 8, width = 11)
+
+    print(g)
+    }
 
 myPalette <- colorRampPalette(rev(brewer.pal(9, "YlOrRd")))
 

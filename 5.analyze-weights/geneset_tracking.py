@@ -19,8 +19,8 @@ Usage:
 
 Output:
 A single long dataframe storing the values and z_scores of all input gene set
-enrichment results for the given dataset across all weight matrices and
-algorithms.
+analysis results for the given input dataset across all weight matrices for
+all bottleneck dimensions and all compression algorithms.
 """
 
 import os
@@ -54,7 +54,7 @@ file = os.path.join('..', '0.expression-download', 'data', file)
 genes_df = pd.read_table(file)
 genes = genes_df.iloc[0:subset_mad_genes, ].gene_id
 
-# Load hetnets
+# Load hetnets for the given metaedge for rapid latent feature interpretation
 hetnets = load_hetnets(
     hetnet_file='../3.build-hetnets/hetnets/interpret_hetnet.json.bz2',
     permuted_directory='../3.build-hetnets/hetnets/permuted/',

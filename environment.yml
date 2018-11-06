@@ -12,14 +12,15 @@ dependencies:
 - conda-forge::ipykernel=4.8.1
 - conda-forge::nb_conda_kernels=2.1.0
 - conda-forge::openpyxl=2.5.1
-- conda-forge::r-dplyr=0.7.4
+- conda-forge::r-dplyr=0.7.6
 - conda-forge::r-tidyr=0.8.0
 - conda-forge::r-readr=1.1.1
 - conda-forge::r-readxl=1.1.0
 - conda-forge::r-ggplot2=2.2.1
 - conda-forge::r-irkernel=0.8.11
+- conda-forge::r-optparse=1.6.0
 - bioconda::gseapy=0.9.5
 - pip:
   - git+https://github.com/dhimmel/hetio@9d9ef1320ee47609e3c61c9f4918531d3c1c8c96
   - git+https://github.com/greenelab/tybalt@739cfb894426b2dcedcf3ed48e3a43733a5cac2e
-  - git+https://github.com/greenelab/hetmech@b4aca774a2e9b41e6c448535d3b1cc2d9b3f85f4
+  - git+https://github.com/greenelab/hetmech@dc1c14b60b1cb19f87d7ff6d1679e0dae72adc8d

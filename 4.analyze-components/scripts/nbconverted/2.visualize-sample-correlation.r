@@ -33,6 +33,9 @@ sample_correlation_list[[dataset_name]] <-
     dplyr::full_join(target_pheno_df, by = c("id" = "sample_id")) %>%
     na.omit
 
+out_file <- file.path("results", "TARGET_sample_correlation_phenotype.tsv.gz")
+readr::write_tsv(sample_correlation_list[[dataset_name]], out_file)
+
 head(sample_correlation_list[[dataset_name]], 2)
 
 dataset_name <- "TCGA"
@@ -54,6 +57,9 @@ sample_correlation_list[[dataset_name]] <-
     sample_correlation_list[[dataset_name]] %>%
     dplyr::full_join(tcga_pheno_df, by = c("id" = "sample_id")) %>%
     na.omit
+
+out_file <- file.path("results", "TCGA_sample_correlation_phenotype.tsv.gz")
+readr::write_tsv(sample_correlation_list[[dataset_name]], out_file)
 
 head(sample_correlation_list[[dataset_name]], 2)
 
@@ -82,6 +88,9 @@ sample_correlation_list[[dataset_name]] <-
     dplyr::full_join(gtex_pheno_df, by = c("id" = "sample_id")) %>%
     na.omit
 
+out_file <- file.path("results", "GTEX_sample_correlation_phenotype.tsv.gz")
+readr::write_tsv(sample_correlation_list[[dataset_name]], out_file)
+
 head(sample_correlation_list[[dataset_name]], 2)
 
 for (dataset_name in names(sample_correlation_list)) {
@@ -107,4 +116,3 @@ for (dataset_name in names(sample_correlation_list)) {
         }
     }
 }
-

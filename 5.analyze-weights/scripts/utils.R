@@ -38,7 +38,8 @@ plot_cell_type <- function(cell_type, dataset = "gtex", show_plot = TRUE) {
         algorithm = readr::col_character())
     )
 
-    cell_df <- cell_df %>% dplyr::filter(grepl(cell_type, variable))
+    cell_df <- cell_df %>%
+      dplyr::filter(grepl(cell_type, variable, fixed=TRUE))
 
     cell_type_list[[z_dim]] <- cell_df
   }

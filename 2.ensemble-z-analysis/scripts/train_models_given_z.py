@@ -169,11 +169,11 @@ adage_hist_file = os.path.join(train_dir,
 base_dir = os.path.join('..', '0.expression-download', 'data')
 rnaseq_train = (
     os.path.join(base_dir,
-    'train_{}_expression_matrix_processed.tsv.gz'.format(dataset))
+                 'train_{}_expression_matrix_processed.tsv.gz'.format(dataset))
     )
 rnaseq_test = (
     os.path.join(base_dir,
-    'test_{}_expression_matrix_processed.tsv.gz'.format(dataset))
+                 'test_{}_expression_matrix_processed.tsv.gz'.format(dataset))
     )
 
 rnaseq_train_df = pd.read_table(rnaseq_train, index_col=0)
@@ -181,10 +181,14 @@ rnaseq_test_df = pd.read_table(rnaseq_test, index_col=0)
 
 # Determine most variably expressed genes and subset
 if subset_mad_genes is not None:
-    mad_genes = rnaseq_train_df.mad(axis=0).sort_values(ascending=False)
-    top_mad_genes = mad_genes.iloc[0:subset_mad_genes, ].index
-    rnaseq_train_df = rnaseq_train_df.reindex(top_mad_genes, axis='columns')
-    rnaseq_test_df = rnaseq_test_df.reindex(top_mad_genes, axis='columns')
+    data_base = os.path.join('..', '0.expression-download', 'data')
+    mad_file = os.path.join(data_base, '{}_mad_genes.tsv'.format(dataset))
+
+    mad_genes_df = pd.read_table(mad_file)
+    mad_genes = mad_genes_df.iloc[0:subset_mad_genes, ].gene_id.astype(str)
+
+    rnaseq_train_df = rnaseq_train_df.reindex(mad_genes, axis='columns')
+    rnaseq_test_df = rnaseq_test_df.reindex(mad_genes, axis='columns')
 
 # Initialize DataModel class with pancancer data
 dm = DataModel(df=rnaseq_train_df, test_df=rnaseq_test_df)
@@ -215,6 +219,12 @@ for seed in random_seeds:
         shuf_df = rnaseq_train_df.apply(lambda x:
                                         np.random.permutation(x.tolist()),
                                         axis=1)
+
+        # Setup new pandas dataframe
+        shuf_df = pd.DataFrame(shuf_df, columns=['gene_list'])
+        shuf_df = pd.DataFrame(shuf_df.gene_list.values.tolist(),
+                               columns=rnaseq_train_df.columns,
+                               index=rnaseq_train_df.index)
 
         # Initiailze a new DataModel, with different shuffling each permutation
         dm = DataModel(df=shuf_df, test_df=rnaseq_test_df)

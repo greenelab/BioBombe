@@ -17,6 +17,7 @@ dependencies:
 - conda-forge::r-readr=1.1.1
 - conda-forge::r-readxl=1.1.0
 - conda-forge::r-ggplot2=2.2.1
+- conda-forge::r-ggrepel=0.8.0
 - conda-forge::r-irkernel=0.8.11
 - conda-forge::r-optparse=1.6.0
 - bioconda::gseapy=0.9.5

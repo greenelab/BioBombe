@@ -9,13 +9,15 @@
 # 
 # For example, the ability of variational autoencoders to capture blood tissue correlation jumps by nearly 50% between bottleneck dimensions 2 and 3 (see below).
 # 
-# ![sample-correlation_Blood_GTEX_signal_pearson.png](attachment:sample-correlation_Blood_GTEX_signal_pearson.png)
+# ![sample-correlation_Blood_GTEX_signal_pearson.png](https://raw.githubusercontent.com/greenelab/interpret-compression/master/4.analyze-components/figures/GTEX/sample-correlation/sample-type/sample-correlation_Blood_GTEX_signal_pearson.png)
 # 
 # ## Procedure
 # 
 # In the following notebook, we extract two representative weight matrices for VAE latent space dimensions 2 and 3.
-# We apply our matrix interpretation approach to the weight vectors for each latent space feature.
-# We also apply GSEA.
+# We apply two compression feature interpretaion approaches to the weight vectors for each latent space feature. 
+# 
+# 1. Our matrix interpretation approach
+# 2. Overrepresentation Tests using high weight genes
 # 
 # In both approaches we use genesets derived in the XCELL paper that represent cell-types ([Aran et al. 2017](https://doi.org/10.1186/s13059-017-1349-1))
 # 
@@ -25,13 +27,15 @@
 
 
 import os
+import sys
 import glob
 import requests
 import pandas as pd
 import numpy as np
 import gseapy as gp
 
-from scripts.latent import latentModel, load_hetnets, parse_gmt, run_gsea_prerank
+sys.path.append('../scripts')
+from latent import latentModel, load_hetnets, parse_gmt, run_overrepresentation
 
 
 # In[2]:
@@ -150,13 +154,23 @@ real_df.head()
 # In[13]:
 
 
-file = os.path.join('results', 'interpret_compression_gtex_vae_example.tsv')
+file = os.path.join('results', 'gtex_vae_example_interpret_compression.tsv')
 real_df.sort_values(by='z_score').to_csv(file, sep='\t')
 
 
-# ## Apply GSEA to the same features
+# ## Perform overrepresentation tests on the same features
+# 
+# ### Split into positive and negative tails and extract high weight genes
 
 # In[14]:
+
+
+geneset_file = os.path.join('..', '3.build-hetnets', 'data', 'xcell_all_entrez.gmt')
+xcell_genesets_gmt = parse_gmt(gene_sets=[geneset_file])
+len(xcell_genesets_gmt)
+
+
+# In[15]:
 
 
 vae_2_lm = latentModel(filename=sample_weight_2,
@@ -174,47 +188,65 @@ vae_3_lm = latentModel(filename=sample_weight_3,
                        shuffled_true=False)
 
 
-# In[15]:
-
-
-xcell_gmt = parse_gmt(gene_sets=['../3.build-hetnets/data/xcell_all_entrez.gmt'])
-len(xcell_gmt)
-
-
 # In[16]:
 
 
-get_ipython().run_cell_magic('time', '', 'vae_feature_0_zdim_2 = run_gsea_prerank(gene_score_df=vae_2_lm.w_df.vae_0,\n                                        gene_sets=xcell_gmt,\n                                        permutation_num=1000)\n\nvae_feature_1_zdim_2 = run_gsea_prerank(gene_score_df=vae_2_lm.w_df.vae_1,\n                                        gene_sets=xcell_gmt,\n                                        permutation_num=1000)\n\nvae_feature_0_zdim_3 = run_gsea_prerank(gene_score_df=vae_3_lm.w_df.vae_0,\n                                        gene_sets=xcell_gmt,\n                                        permutation_num=1000)\n\nvae_feature_1_zdim_3 = run_gsea_prerank(gene_score_df=vae_3_lm.w_df.vae_1,\n                                        gene_sets=xcell_gmt,\n                                        permutation_num=1000)\n\nvae_feature_2_zdim_3 = run_gsea_prerank(gene_score_df=vae_3_lm.w_df.vae_2,\n                                        gene_sets=xcell_gmt,\n                                        permutation_num=1000)')
+vae_2_lm.get_high_weight_genes()
+vae_3_lm.get_high_weight_genes()
 
 
 # In[17]:
 
 
-vae_feature_0_zdim_2 = vae_feature_0_zdim_2.assign(z_dim=2, feature=0)
-vae_feature_1_zdim_2 = vae_feature_1_zdim_2.assign(z_dim=2, feature=1)
-
-vae_feature_0_zdim_3 = vae_feature_0_zdim_3.assign(z_dim=3, feature=0)
-vae_feature_1_zdim_3 = vae_feature_1_zdim_3.assign(z_dim=3, feature=1)
-vae_feature_2_zdim_3 = vae_feature_2_zdim_3.assign(z_dim=3, feature=2)
+background_genes = []
+for xcell_name, xcell_gene_set in xcell_genesets_gmt.items():
+    background_genes += xcell_gene_set
 
 
 # In[18]:
 
 
-gsea_results_df = pd.concat([
-    vae_feature_0_zdim_2,
-    vae_feature_1_zdim_2,
-    vae_feature_0_zdim_3,
-    vae_feature_1_zdim_3,
-    vae_feature_2_zdim_3
-])
-
-gsea_results_df.head()
+get_ipython().run_cell_magic('time', '', '\ngene_list = vae_2_lm.w_df[vae_2_lm.pos_high_w_df.vae_0].index.tolist()\nvae_feature_0_zdim_2_pos = run_overrepresentation(gene_list=gene_list,\n                                                  gene_set_dict=xcell_genesets_gmt,\n                                                  background_genes=background_genes)\n\ngene_list = vae_2_lm.w_df[vae_2_lm.neg_high_w_df.vae_0].index.tolist()\nvae_feature_0_zdim_2_neg = run_overrepresentation(gene_list=gene_list,\n                                                  gene_set_dict=xcell_genesets_gmt,\n                                                  background_genes=background_genes)\n\ngene_list = vae_2_lm.w_df[vae_2_lm.pos_high_w_df.vae_1].index.tolist()\nvae_feature_1_zdim_2_pos = run_overrepresentation(gene_list=gene_list,\n                                                  gene_set_dict=xcell_genesets_gmt,\n                                                  background_genes=background_genes)\n\ngene_list = vae_2_lm.w_df[vae_2_lm.neg_high_w_df.vae_1].index.tolist()\nvae_feature_1_zdim_2_neg = run_overrepresentation(gene_list=gene_list,\n                                                  gene_set_dict=xcell_genesets_gmt,\n                                                  background_genes=background_genes)\n\ngene_list = vae_3_lm.w_df[vae_3_lm.pos_high_w_df.vae_0].index.tolist()\nvae_feature_0_zdim_3_pos = run_overrepresentation(gene_list=gene_list,\n                                                  gene_set_dict=xcell_genesets_gmt,\n                                                  background_genes=background_genes)\n\ngene_list = vae_3_lm.w_df[vae_3_lm.neg_high_w_df.vae_0].index.tolist()\nvae_feature_0_zdim_3_neg = run_overrepresentation(gene_list=gene_list,\n                                                  gene_set_dict=xcell_genesets_gmt,\n                                                  background_genes=background_genes)\n\ngene_list = vae_3_lm.w_df[vae_3_lm.pos_high_w_df.vae_1].index.tolist()\nvae_feature_1_zdim_3_pos = run_overrepresentation(gene_list=gene_list,\n                                                  gene_set_dict=xcell_genesets_gmt,\n                                                  background_genes=background_genes)\n\ngene_list = vae_3_lm.w_df[vae_3_lm.neg_high_w_df.vae_1].index.tolist()\nvae_feature_1_zdim_3_neg = run_overrepresentation(gene_list=gene_list,\n                                                  gene_set_dict=xcell_genesets_gmt,\n                                                  background_genes=background_genes)\n\ngene_list = vae_3_lm.w_df[vae_3_lm.pos_high_w_df.vae_2].index.tolist()\nvae_feature_2_zdim_3_pos = run_overrepresentation(gene_list=gene_list,\n                                                  gene_set_dict=xcell_genesets_gmt,\n                                                  background_genes=background_genes)\n\ngene_list = vae_3_lm.w_df[vae_3_lm.neg_high_w_df.vae_2].index.tolist()\nvae_feature_2_zdim_3_neg = run_overrepresentation(gene_list=gene_list,\n                                                  gene_set_dict=xcell_genesets_gmt,\n                                                  background_genes=background_genes)')
 
 
 # In[19]:
 
 
-file = os.path.join('results', 'gsea_gtex_vae_example.tsv')
-gsea_results_df.sort_values(by='fdr').to_csv(file, sep='\t')
+vae_feature_0_zdim_2_pos = vae_feature_0_zdim_2_pos.assign(feature='vae_0_two', tailed='pos')
+vae_feature_0_zdim_2_neg = vae_feature_0_zdim_2_neg.assign(feature='vae_0_two', tailed='neg')
+vae_feature_1_zdim_2_pos = vae_feature_1_zdim_2_pos.assign(feature='vae_1_two', tailed='pos')
+vae_feature_1_zdim_2_neg = vae_feature_1_zdim_2_neg.assign(feature='vae_1_two', tailed='neg')
+
+vae_feature_0_zdim_3_pos = vae_feature_0_zdim_3_pos.assign(feature='vae_0_three', tailed='pos')
+vae_feature_0_zdim_3_neg = vae_feature_0_zdim_3_neg.assign(feature='vae_0_three', tailed='neg')
+vae_feature_1_zdim_3_pos = vae_feature_1_zdim_3_pos.assign(feature='vae_1_three', tailed='pos')
+vae_feature_1_zdim_3_neg = vae_feature_1_zdim_3_neg.assign(feature='vae_1_three', tailed='neg')
+vae_feature_2_zdim_3_pos = vae_feature_2_zdim_3_pos.assign(feature='vae_2', tailed='pos')
+vae_feature_2_zdim_3_neg = vae_feature_2_zdim_3_neg.assign(feature='vae_2', tailed='neg')
+
+
+# In[20]:
+
+
+overrepresented_results_df = pd.concat([
+    vae_feature_0_zdim_2_pos,
+    vae_feature_0_zdim_2_neg,
+    vae_feature_1_zdim_2_pos,
+    vae_feature_1_zdim_2_neg,
+    vae_feature_0_zdim_3_pos,
+    vae_feature_0_zdim_3_neg,
+    vae_feature_1_zdim_3_pos,
+    vae_feature_1_zdim_3_neg,
+    vae_feature_2_zdim_3_pos,
+    vae_feature_2_zdim_3_neg
+])
+
+overrepresented_results_df.head()
+
+
+# In[21]:
+
+
+file = os.path.join('results', 'gtex_vae_example_overrepresentation.tsv')
+overrepresented_results_df.sort_values(by='pval').to_csv(file, sep='\t')
 

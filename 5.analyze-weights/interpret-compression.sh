@@ -96,7 +96,7 @@ Rscript --vanilla visualize_genesets.R \
         --dataset 'TARGET' \
         --gmt_name 'h.all.v6.1.entrez.gmt' \
         --metaedge 'GpH' \
-        --gene_set_dir 'results/target/gph/shuffled'
+        --gene_set_dir 'results/target/gph/shuffled' \
         --shuffled
 
 ###################
@@ -121,5 +121,5 @@ Rscript --vanilla visualize_genesets.R \
         --dataset 'TARGET' \
         --gmt_name 'xcell_all_entrez.gmt' \
         --metaedge 'GpXCELL' \
-        --gene_set_dir 'results/target/gpxcell/shuffled'
+        --gene_set_dir 'results/target/gpxcell/shuffled' \
         --shuffled

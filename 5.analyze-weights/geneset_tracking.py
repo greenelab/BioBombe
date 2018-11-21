@@ -16,6 +16,7 @@ Usage:
     and the following optional flags:
 
         --subset_num_genes  the number of genes to subset (default: 8000)
+        --shuffled          decision to use real data or shuffled data
 
 Output:
 A single long dataframe storing the values and z_scores of all input gene set
@@ -24,11 +25,13 @@ all bottleneck dimensions and all compression algorithms.
 """
 
 import os
+import sys
 import glob
 import argparse
 import pandas as pd
 
-from scripts.latent import latentModel, load_hetnets
+sys.path.append('../scripts')
+from latent import latentModel, load_hetnets
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-d', '--dataset', choices=['TCGA', 'GTEX', 'TARGET'],
@@ -37,14 +40,23 @@ parser.add_argument('-m', '--metaedge',
                     help='the metaedge to to construct adjacency matrix')
 parser.add_argument('-n', '--subset_num_genes', default=8000,
                     help='subset num genes based on mean absolute deviation')
+parser.add_argument('-s', '--shuffled', action='store_true',
+                    help='compile results with shuffled data or not')
 args = parser.parse_args()
 
 # Load command arguments
 dataset = args.dataset
 metaedge = args.metaedge
 subset_mad_genes = int(args.subset_num_genes)
+shuffled = args.shuffled
 
-output_dir = os.path.join('results', dataset.lower())
+output_dir = os.path.join('results', dataset.lower(), metaedge.lower())
+
+if shuffled:
+    output_dir = os.path.join(output_dir, 'shuffled')
+else:
+    output_dir = os.path.join(output_dir, 'signal')
+
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 
@@ -52,7 +64,7 @@ if not os.path.exists(output_dir):
 file = '{}_mad_genes.tsv'.format(dataset.lower())
 file = os.path.join('..', '0.expression-download', 'data', file)
 genes_df = pd.read_table(file)
-genes = genes_df.iloc[0:subset_mad_genes, ].gene_id
+genes = genes_df.iloc[0:subset_mad_genes, ].gene_id.astype(str)
 
 # Load hetnets for the given metaedge for rapid latent feature interpretation
 hetnets = load_hetnets(
@@ -63,7 +75,11 @@ hetnets = load_hetnets(
    )
 
 # Load weight matrices
-results = '{}_results'.format(dataset)
+if shuffled:
+    results = '{}_shuffled_results'.format(dataset)
+else:
+    results = '{}_results'.format(dataset)
+
 base_dir = os.path.join('..', '2.ensemble-z-analysis', 'results',
                         results, 'ensemble_z_matrices')
 weight_matrices = {}
@@ -81,8 +97,13 @@ for z_dim in weight_matrices.keys():
     weight_matrix_seed_dict = weight_matrices[z_dim]
 
     # Build output file
-    output_file = '{}_z_{}_geneset_scores.tsv.gz'.format(dataset.lower(), z_dim)
-    output_file = os.path.join(output_dir, output_file)
+    if shuffled:
+        out_base = '_geneset_scores_shuffled.tsv.gz'
+    else:
+        out_base = '_geneset_scores.tsv.gz'
+
+    file = '{}_z_{}_{}_{}'.format(dataset.lower(), z_dim, metaedge, out_base)
+    file = os.path.join(output_dir, file)
 
     weight_matrix_seed_results = []
     for seed in weight_matrix_seed_dict.keys():
@@ -170,6 +191,6 @@ for z_dim in weight_matrices.keys():
     (
         weight_seed_df
         .sort_values(by='z_score')
-        .to_csv(output_file, sep='\t', index=False, compression='gzip',
+        .to_csv(file, sep='\t', index=False, compression='gzip',
                 float_format='%.6g')
     )

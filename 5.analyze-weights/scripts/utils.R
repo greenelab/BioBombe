@@ -7,28 +7,33 @@
 #   source(file.path("scripts", "utils.R"))
 
 
-plot_cell_type <- function(cell_type, dataset = "gtex", show_plot = TRUE) {
+plot_gene_set <- function(gene_set, gene_set_dir, metaedge, dataset = "gtex",
+                          show_plot = TRUE, shuffled = FALSE,
+                          return_top = TRUE) {
   # Logic to plot cell-type activation across z and across algorithm
   #
   # Arguments:
-  # cell_type - a string indicating the cell type of interest from XCELL
+  # gene_set - a string indicating the cell type of interest
+  # gene_set_dir - a string indicating where the results are stored
+  # metaedge - a string indicating the metaedge used to identify enrichment
   # dataset - a string indicating the dataset to focus on
   # show_plot - boolean to indicate if the plot should be printed
+  # shuffled - boolean if the data were shuffled prior to analysis
+  # return_top - boolean if the top results should be saved to a file
   #
   # Output:
   # Saves plot to file
 
-  cell_type_dir <- file.path("results", tolower(dataset))
-  cell_type_results <- list.files(cell_type_dir, full.names = TRUE)
+  gene_set_results <- list.files(gene_set_dir, full.names = TRUE)
 
   # Load in the specific cell type
-  cell_type_list <- list()
-  for (cell_type_file in cell_type_results) {
+  gene_set_list <- list()
+  for (gene_set_file in gene_set_results) {
 
-    z_dim <- unlist(strsplit(basename(cell_type_file), "_"))[3]
+    z_dim <- unlist(strsplit(basename(gene_set_file), "_"))[3]
 
-    cell_df <- readr::read_tsv(
-      cell_type_file,
+    gene_set_df <- readr::read_tsv(
+      gene_set_file,
       col_types = readr::cols(
         .default = readr::col_integer(),
         model_type = readr::col_character(),
@@ -38,14 +43,14 @@ plot_cell_type <- function(cell_type, dataset = "gtex", show_plot = TRUE) {
         algorithm = readr::col_character())
     )
 
-    cell_df <- cell_df %>%
-      dplyr::filter(grepl(cell_type, variable, fixed=TRUE))
+    gene_set_df <- gene_set_df %>%
+      dplyr::filter(grepl(gene_set, variable, fixed = TRUE))
 
-    cell_type_list[[z_dim]] <- cell_df
+    gene_set_list[[z_dim]] <- gene_set_df
   }
 
   # Combine results
-  full_results_df <- dplyr::bind_rows(cell_type_list)
+  full_results_df <- dplyr::bind_rows(gene_set_list)
 
   # Create factors for plotting
   full_results_df$z <-
@@ -65,7 +70,9 @@ plot_cell_type <- function(cell_type, dataset = "gtex", show_plot = TRUE) {
   # Subset to the top variables only
   top_results_df <- full_results_df %>%
     dplyr::group_by(variable, algorithm, z) %>%
-    dplyr::filter(abs_z_score == max(abs_z_score))
+    dplyr::filter(abs_z_score == max(abs_z_score)) %>%
+    dplyr::arrange(dplyr::desc(abs_z_score)) %>%
+    dplyr::distinct(abs_z_score, algorithm, feature_z, .keep_all = TRUE)
 
   # Plot and save to file
   p <- ggplot(top_results_df,
@@ -95,15 +102,25 @@ plot_cell_type <- function(cell_type, dataset = "gtex", show_plot = TRUE) {
           legend.text = element_text(size = 8),
           legend.key.size = unit(0.7, "lines"))
 
-  base_dir <- file.path("figures", dataset, "cell_type")
+  if (shuffled) {
+    base_dir <- file.path("figures", dataset, 'shuffled', metaedge)
+  } else {
+    base_dir <- file.path("figures", dataset, 'signal', metaedge)
+  }
+
   dir.create(base_dir,
              showWarnings = FALSE,
              recursive = TRUE)
-  fig_file <- file.path(base_dir, paste0("cell_type_", cell_type, ".png"))
+
+  fig_file <- file.path(base_dir, paste0("gene_set_", gene_set, ".png"))
   ggsave(plot = p, fig_file, dpi = 300, height = 3, width = 7)
 
   if (show_plot) {
     print(p)
+  }
+  
+  if (return_top) {
+    return(top_results_df)
   }
 
 }

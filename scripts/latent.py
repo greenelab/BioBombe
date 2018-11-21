@@ -1,6 +1,6 @@
 """
 2018 Gregory Way
-5.analyze-components/scripts/latent.py
+scripts/latent.py
 
 Functions to perform gene set analyses on compressed gene expression weights
 
@@ -20,6 +20,7 @@ import os
 from collections import ChainMap
 import glob
 
+import scipy.stats as stats
 import pandas as pd
 import gseapy as gp
 
@@ -395,78 +396,6 @@ class latentModel():
 
         return pd.concat(current_z_list)
 
-    def parse_gmt(self, gene_sets):
-        """
-        gmt parser
-        Modified from:
-        https://github.com/zqfang/GSEApy/blob/c43a73ee638e4326e8d5505b92f9b6dfeb4d9400/gseapy/gsea.py#L141-L149
-        """
-        gene_set_dict_list = []
-        for gene_set in gene_sets:
-            if gene_set.lower().endswith(".gmt"):
-                with open(gene_set) as gmt:
-                    gene_set_dict_list.append(
-                        {line.strip().split("\t")[0]:
-                         line.strip().split("\t")[2:]
-                         for line in gmt.readlines()}
-                     )
-        return dict(ChainMap(*gene_set_dict_list))
-
-    def run_gsea_prerank(self, gene_score_df, **kwargs):
-        """
-        Method to perform ranked GSEA on an input gene list and score
-
-        Arguments:
-        gene_score_df - A two column pandas DataFrame (no column names) with
-                        the first column storing Hugo gene symbols and the
-                        second column storing the scores
-
-        Output:
-        A gseapy res2d dataframe
-        https://gseapy.readthedocs.io/en/master/run.html#gseapy.prerank
-
-        NOTE: To get list of all available genesets run:
-
-            import gseapy
-            names = gseapy.get_library_name()
-            print(names)
-        """
-
-        gene_score_df.columns = [0, 1]
-
-        # unpack kwargs
-        gene_sets = kwargs.pop('gene_sets', 'KEGG_2016')
-        if len(gene_sets) == 1:
-            gene_sets = gene_sets[0]
-        else:
-            gene_sets = self.parse_gmt(gene_sets)
-
-        processes = kwargs.pop('processes', 1)
-        permutation_num = kwargs.pop('permutation_num', 1000)
-        verbose = kwargs.pop('verbose', False)
-        outdir = kwargs.pop('outdir', None)
-        format = kwargs.pop('format', 'png')
-        no_plot = kwargs.pop('no_plot', True)
-        fdr_cutoff = kwargs.pop('fdr_cutoff', 0.05)
-
-        # Perform the GSEA prerank
-        result = gp.prerank(rnk=gene_score_df,
-                            gene_sets=gene_sets,
-                            processes=processes,
-                            permutation_num=permutation_num,
-                            outdir=outdir,
-                            format=format,
-                            no_plot=no_plot,
-                            verbose=verbose)
-
-        result = result.res2d
-        result = (
-            result.loc[:, ['fdr', 'geneset_size']]
-            .query("fdr < @fdr_cutoff")
-        )
-
-        return result
-
 
 def run_gsea_pipeline_command(input_weight_dir, z_dim, dataset_name, num_perm,
                               shuffled_true, algorithms, distrib_methods,
@@ -546,6 +475,120 @@ def run_gsea_pipeline_command(input_weight_dir, z_dim, dataset_name, num_perm,
     pd.concat(gsea_results_list).to_csv(out_file, sep='\t')
 
 
+def parse_gmt(gene_sets):
+    """
+    gmt parser
+    Modified from:
+    https://github.com/zqfang/GSEApy/blob/c43a73ee638e4326e8d5505b92f9b6dfeb4d9400/gseapy/gsea.py#L141-L149
+    """
+    gene_set_dict_list = []
+    for gene_set in gene_sets:
+        if gene_set.lower().endswith(".gmt"):
+            with open(gene_set) as gmt:
+                gene_set_dict_list.append(
+                    {line.strip().split("\t")[0]:
+                     line.strip().split("\t")[2:]
+                     for line in gmt.readlines()}
+                 )
+    return dict(ChainMap(*gene_set_dict_list))
+
+
+def run_gsea_prerank(gene_score_df, gene_sets, fdr_cutoff=0.05,
+                     **kwargs):
+    """
+    Method to perform ranked GSEA on an input gene list and score
+
+    Arguments:
+    gene_score_df - A two column pandas DataFrame (no column names) with
+                    the first column storing Hugo gene symbols and the
+                    second column storing the scores
+    gene_sets - a string or gmt list of gene sets to perform GSEA using
+    fdr_cutoff - decision to subset results based on FDR cutoff
+
+    Output:
+    A gseapy res2d dataframe
+    https://gseapy.readthedocs.io/en/master/run.html#gseapy.prerank
+
+    NOTE: To get list of all available genesets run:
+
+        import gseapy
+        names = gseapy.get_library_name()
+        print(names)
+    """
+
+    gene_sets_parsed = parse_gmt([gene_sets])
+
+    gene_score_df.columns = [0, 1]
+
+    processes = kwargs.pop('processes', 1)
+    permutation_num = kwargs.pop('permutation_num', 1000)
+    verbose = kwargs.pop('verbose', False)
+    outdir = kwargs.pop('outdir', None)
+    format = kwargs.pop('format', 'png')
+    no_plot = kwargs.pop('no_plot', True)
+    weighted_score_type = kwargs.pop('weighted_score_type', 1)
+
+    # Perform the GSEA prerank
+    result = gp.prerank(rnk=gene_score_df,
+                        gene_sets=gene_sets_parsed,
+                        processes=processes,
+                        permutation_num=permutation_num,
+                        outdir=outdir,
+                        format=format,
+                        no_plot=no_plot,
+                        weighted_score_type=weighted_score_type,
+                        verbose=verbose)
+
+    result = result.res2d
+
+    if fdr_cutoff:
+        result = result.query("fdr < @fdr_cutoff")
+
+    return result
+
+
+def run_overrepresentation(gene_list, gene_set_dict, background_genes):
+    """
+    Method to perform overrepresentation test on given input gene sets
+
+    Arguments:
+    gene_list - a list of genes of interest
+    gene_set_dict - a dictionary of gene sets to loop through and test
+    background_genes - a list of universe genes being compared
+
+    Output:
+    a pandas DataFrame storing p values and odds ratios for each comparison
+    """
+    # Set background genes
+    background_genes += gene_list
+    background_genes = set(background_genes)
+    G = len(background_genes)
+
+    pvals = []
+    odds = []
+    gene_set_names = []
+    for gene_set_name, gene_set in gene_set_dict.items():
+        gene_set = set(gene_set)
+        candidate_set = set(gene_list)
+
+        m = len(gene_set.intersection(candidate_set))
+        N = len(candidate_set)
+        P = len(gene_set)
+
+        oddsratio, pvalue = stats.fisher_exact([
+                [m + 1, N - m + 1],
+                [P - m + 1, G - N - P + m + 1]
+            ])
+        pvals.append(pvalue)
+        odds.append(oddsratio)
+        gene_set_names.append(gene_set_name)
+
+    result_df = pd.DataFrame([pvals, odds],
+                             columns=gene_set_names,
+                             index=['pval', 'odds']).T
+    return result_df
+
+
 def load_hetnets(hetnet_file, permuted_directory, subset_genes,
                  metaedge_abbrev='GpXCELL'):
     """
@@ -578,8 +621,8 @@ def load_hetnets(hetnet_file, permuted_directory, subset_genes,
                 )
 
             graph = pd.DataFrame(graph[2], index=graph[0], columns=graph[1])
-            graph = graph.reindex(subset_genes).fillna(0) * 1
             graph.index = graph.index.map(str)
+            graph = graph.reindex(subset_genes).fillna(0) * 1
             hetnet_dict[idx] = graph
             idx += 1
 
@@ -588,8 +631,27 @@ def load_hetnets(hetnet_file, permuted_directory, subset_genes,
         graph, metaedge=metaedge_abbrev
         )
     graph = pd.DataFrame(graph[2], index=graph[0], columns=graph[1])
-    graph = graph.reindex(subset_genes).fillna(0) * 1
     graph.index = graph.index.map(str)
+    graph = graph.reindex(subset_genes).fillna(0) * 1
     hetnet_dict['real'] = graph
 
     return hetnet_dict
+
+
+def load_gmt(gmt_file_path):
+    """
+    Load in gmt file into a dictionary
+
+    Arguments:
+    gmt_file_path - the full file path location of the gmt file to be loaded
+    """
+
+    gene_set_dict = {}
+    with open(gmt_file_path, 'r') as gmt_fh:
+        for line in gmt_fh:
+            line = line.strip().split('\t')
+            gene_set_name = line[0]
+            gene_set = line[2:]
+            gene_set_dict[gene_set_name] = gene_set
+
+    return gene_set_dict

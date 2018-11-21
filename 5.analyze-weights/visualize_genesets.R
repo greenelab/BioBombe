@@ -44,7 +44,12 @@ option_list <- list(optparse::make_option(c("-d", "--dataset"),
                                           type = "character",
                                           action = "store_true",
                                           default = FALSE,
-                                          help = "if input data is shuffled"))
+                                          help = "if input data is shuffled"),
+                    optparse::make_option(c("-r", "--save_results"),
+                                          type = "character",
+                                          action = "store_true",
+                                          default = FALSE,
+                                          help = "if top results are saved"))
 
 opt_parser <- optparse::OptionParser(option_list = option_list)
 opt <- optparse::parse_args(opt_parser)
@@ -55,6 +60,7 @@ gmt_name <- opt$gmt_name
 metaedge <- opt$metaedge
 gene_set_dir <- opt$gene_set_dir
 shuffled <- opt$shuffled
+save_results <- opt$save_results
 
 # Find the name of all of the gene sets of interest
 xcell_file <- file.path("..", "3.build-hetnets", "data", gmt_name)
@@ -64,17 +70,22 @@ con <- file(xcell_file, open = "r")
 genesets <- c()
 while (length(geneset <- readLines(con, n = 1, warn = FALSE)) > 0) {
   geneset <- unlist(strsplit(geneset, "\t"))[1]
-  geneset <- substr(geneset, 1, nchar(geneset) - 2)
   genesets <- unique(c(geneset, genesets))
 }
 
 close(con)
 
 for (gene_set in genesets) {
-  plot_gene_set(gene_set = gene_set,
-                gene_set_dir = gene_set_dir,
-                metaedge = metaedge,
-                dataset = dataset,
-                show_plot = FALSE,
-                shuffled = shuffled)
+  top_results_df <- plot_gene_set(gene_set = gene_set,
+                                  gene_set_dir = gene_set_dir,
+                                  metaedge = metaedge,
+                                  dataset = dataset,
+                                  show_plot = FALSE,
+                                  shuffled = shuffled)
+  
+  if (save_results) {
+    out_file <- paste(dataset, metaedge, paste0(gene_set, ".tsv"), sep = "_")
+    out_file <- file.path("results", "top_features", out_file)
+    readr::write_tsv(x = top_results_df, path = out_file)
+  }
 }

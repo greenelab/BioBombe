@@ -636,3 +636,22 @@ def load_hetnets(hetnet_file, permuted_directory, subset_genes,
     hetnet_dict['real'] = graph
 
     return hetnet_dict
+
+
+def load_gmt(gmt_file_path):
+    """
+    Load in gmt file into a dictionary
+
+    Arguments:
+    gmt_file_path - the full file path location of the gmt file to be loaded
+    """
+
+    gene_set_dict = {}
+    with open(gmt_file_path, 'r') as gmt_fh:
+        for line in gmt_fh:
+            line = line.strip().split('\t')
+            gene_set_name = line[0]
+            gene_set = line[2:]
+            gene_set_dict[gene_set_name] = gene_set
+
+    return gene_set_dict

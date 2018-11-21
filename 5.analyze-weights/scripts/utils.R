@@ -8,16 +8,18 @@
 
 
 plot_gene_set <- function(gene_set, gene_set_dir, metaedge, dataset = "gtex",
-                          show_plot = TRUE, shuffled = FALSE) {
+                          show_plot = TRUE, shuffled = FALSE,
+                          return_top = TRUE) {
   # Logic to plot cell-type activation across z and across algorithm
   #
   # Arguments:
-  # gene_set - a string indicating the cell type of interest from XCELL
+  # gene_set - a string indicating the cell type of interest
   # gene_set_dir - a string indicating where the results are stored
   # metaedge - a string indicating the metaedge used to identify enrichment
   # dataset - a string indicating the dataset to focus on
   # show_plot - boolean to indicate if the plot should be printed
   # shuffled - boolean if the data were shuffled prior to analysis
+  # return_top - boolean if the top results should be saved to a file
   #
   # Output:
   # Saves plot to file
@@ -68,7 +70,9 @@ plot_gene_set <- function(gene_set, gene_set_dir, metaedge, dataset = "gtex",
   # Subset to the top variables only
   top_results_df <- full_results_df %>%
     dplyr::group_by(variable, algorithm, z) %>%
-    dplyr::filter(abs_z_score == max(abs_z_score))
+    dplyr::filter(abs_z_score == max(abs_z_score)) %>%
+    dplyr::arrange(dplyr::desc(abs_z_score)) %>%
+    dplyr::distinct(abs_z_score, algorithm, feature_z, .keep_all = TRUE)
 
   # Plot and save to file
   p <- ggplot(top_results_df,
@@ -107,11 +111,16 @@ plot_gene_set <- function(gene_set, gene_set_dir, metaedge, dataset = "gtex",
   dir.create(base_dir,
              showWarnings = FALSE,
              recursive = TRUE)
+
   fig_file <- file.path(base_dir, paste0("gene_set_", gene_set, ".png"))
   ggsave(plot = p, fig_file, dpi = 300, height = 3, width = 7)
 
   if (show_plot) {
     print(p)
+  }
+  
+  if (return_top) {
+    return(top_results_df)
   }
 
 }

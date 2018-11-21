@@ -27,7 +27,7 @@ Rscript --vanilla visualize_genesets.R \
 
 ###################
 # Analysis 2
-# Track Cancer Hallmarks across the TCGA dataset
+# Track Cancer Hallmarks and Oncogenic Signatures across the TCGA dataset
 ###################
 python geneset_tracking.py \
         --dataset 'TCGA' \
@@ -46,7 +46,30 @@ python geneset_tracking.py \
 Rscript --vanilla visualize_genesets.R \
         --dataset 'TCGA' \
         --gmt_name 'h.all.v6.1.entrez.gmt' \
+        --metaedge 'GpH' \
         --gene_set_dir 'results/tcga/gph/shuffled' \
+        --shuffled
+
+# Track Oncogenic signatures
+python geneset_tracking.py \
+        --dataset 'TCGA' \
+        --metaedge 'GpC6'
+Rscript --vanilla visualize_genesets.R \
+        --dataset 'TCGA' \
+        --gmt_name 'c6.all.v6.1.entrez.gmt' \
+        --metaedge 'GpC6' \
+        --gene_set_dir 'results/tcga/gpc6/signal'
+
+# Apply to shuffled dataset to set null distribution
+python geneset_tracking.py \
+        --dataset 'TCGA' \
+        --metaedge 'GpC6' \
+        --shuffled
+Rscript --vanilla visualize_genesets.R \
+        --dataset 'TCGA' \
+        --gmt_name 'c6.all.v6.1.entrez.gmt' \
+        --metaedge 'GpC6' \
+        --gene_set_dir 'results/tcga/gpc6/shuffled' \
         --shuffled
 
 ###################

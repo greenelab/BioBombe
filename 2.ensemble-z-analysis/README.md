@@ -4,9 +4,8 @@
 
 Gene expression data compression reveals coordinated gene expression modules that describe important biology.
 
-In the following analysis, we apply a series of compression algorithms to gene expression datasets.
-Through each series, we alter the dimensionality (z) of the bottleneck and compare mathematical performance.
-We also save the population of all models, for each algorithm, across z for downstream analyses.
+In the following analysis, we apply five compression algorithms to serially compress three gene expression datasets across various bottleneck dimensionalities.
+We save the population of all models, for each algorithm, across z for downstream analyses.
 
 ## Algorithms
 
@@ -31,16 +30,12 @@ For each of the populations, we will also track performance of training and test
 3. Correlation of input sample to reconstructed sample - Measure how well certain samples traverse through the bottleneck.
    * Calculate Pearson and Spearman correlations
    * May reveal certain biases in sample reconstruction efficiency across algorithms
-4. Correlation of input gene profile to reconstructed gene profile - Measure how well certain genes are reconstructed through the bottleneck.
-   * Calculate Pearson and Spearman correlations
-   * May reveal certain biases in in reconstruction efficiency across genes and algorithms
 
-The population of weight and z matrices are also saved for alternative downstream analyses.
-These analyses include automatic interpretation of compressed features with HetMech.
+The population of weight and z matrices are saved for alternative downstream analyses.
 
 ## Reproduce Analysis
 
-To rerun the analyis, perform the following:
+To rerun the analysis, perform the following:
 
 ```bash
 conda activate interpret-compression
@@ -49,4 +44,3 @@ conda activate interpret-compression
 cd 2.ensemble-z-analysis
 ./analysis.sh
 ```
-

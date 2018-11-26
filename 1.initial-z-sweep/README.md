@@ -17,7 +17,8 @@ We will first sweep over various different dimensions (results provided below) a
 Before sweeping over a large number of different dimensions, we perform a hyperparameter sweep of select dimensions.
 In this sense, we want to minimize the effect of poor hyperparameter combinations across different dimensions contributing to performance differences.
 In other words, we want to isolate the effect of changing dimensionality on the observed patterns and solutions.
-Therefore, we perform a parameter sweep over several hyperparameters for both Tybalt and ADAGE models below.
+Therefore, we perform a parameter sweep over several hyperparameters for the two unsupervised neural network models.
+The models include a variational autoencoder (VAE; Tybalt) and a denoising autoencoder (DAE; ADAGE).
 
 The analysis is provided, with results visualized, in [`visualize-parameter-sweep.ipynb`](visualize-parameter-sweep.ipynb).
 
@@ -29,7 +30,7 @@ For more details about these datasets, refer to [0.expression-download/README.md
 
 ### Number of dimensions
 
-Previously, we used latent space dimensionality of `100` ([Way and Greene 2018](https://doi.org/10.1142/9789813235533_0008)).
+Previously, we used a latent space dimensionality of `100` ([Way and Greene 2018](https://doi.org/10.1142/9789813235533_0008)).
 Here, we sweep over dimensions: `5`, `25`, `50`, `75`, `100`, and `125`.
 
 To reproduce the data for this analysis run the following command:
@@ -92,7 +93,7 @@ We report the results below:
 
 ### TCGA
 
-#### Tybalt
+#### VAE (Tybalt)
 
 | Dimensions | Kappa | Epochs | Batch Size | Learning Rate |
 | :--------- | :---- | :----- | :--------- | :------------ |
@@ -103,7 +104,7 @@ We report the results below:
 | 100 | 0 | 100 | 150 | 0.001 |
 | 125 | 0 | 100 | 150 | 0.0005 |
 
-#### ADAGE
+#### DAE (ADAGE)
 
 | Dimensions | Sparsity | Noise | Epochs | Batch Size | Learning Rate |
 | :--------- | :------- | :---- | :----- | :--------- | :------------ |
@@ -116,7 +117,7 @@ We report the results below:
 
 ### GTEx
 
-#### Tybalt
+#### VAE (Tybalt)
 
 | Dimensions | Kappa | Epochs | Batch Size | Learning Rate |
 | :--------- | :---- | :----- | :--------- | :------------ |
@@ -127,7 +128,7 @@ We report the results below:
 | 100 | 0.5 | 100 | 50 | 0.0015 |
 | 125 | 0.5 | 100 | 50 | 0.0015 |
 
-#### ADAGE
+#### DAE (ADAGE)
 
 | Dimensions | Sparsity | Noise | Epochs | Batch Size | Learning Rate |
 | :--------- | :------- | :---- | :----- | :--------- | :------------ |
@@ -140,7 +141,7 @@ We report the results below:
 
 ### TARGET
 
-#### Tybalt
+#### VAE (Tybalt)
 
 | Dimensions | Kappa | Epochs | Batch Size | Learning Rate |
 | :--------- | :---- | :----- | :--------- | :------------ |
@@ -151,7 +152,7 @@ We report the results below:
 | 100 | 0.5 | 100 | 25 | 0.0015 |
 | 125 | 0.5 | 100 | 25 | 0.0005 |
 
-#### ADAGE
+#### DAE (ADAGE)
 
 | Dimensions | Sparsity | Noise | Epochs | Batch Size | Learning Rate |
 | :--------- | :------- | :---- | :----- | :--------- | :------------ |
@@ -161,4 +162,3 @@ We report the results below:
 | 75 | 0 | 0.1 | 100 | 50  | 0.0005 |
 | 100 | 0 | 0.1 | 100 | 50 | 0.0005 |
 | 125 | 0 | 0.1 | 100 | 50 | 0.0005 |
-

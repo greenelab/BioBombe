@@ -6,7 +6,7 @@ This module stores scripts to download and process gene expression data.
 The processed files are tracked in this repository, so there is no need to rerun the downloading scripts.
 All processed files will be used for either training or evaluation.
 
-## RNAeq Data
+## RNAseq Data
 
 ### The Cancer Genome Atlas PanCanAtlas
 
@@ -25,4 +25,3 @@ We use the RSEM FPKM RNAseq processed data.
 The Genotype-Tissue Expression ([GTEx](https://www.gtexportal.org/home/documentationPage)) project measured gene expression on over 11,000 healthy samples.
 These samples represent several different tissue types.
 We use [version 7](https://www.gtexportal.org/home/datasets) of GTEx RNAseq data (TPM normalized).
-

@@ -11,7 +11,7 @@ Our goal is to construct reproducible gene expression features with unsupervised
 
 Our approach is outlined below:
 
-![overview](https://raw.githubusercontent.com/greenelab/interpret-compression/master/path/compression-overview.png)
+![overview](https://raw.githubusercontent.com/greenelab/interpret-compression/master/compression-overview.png)
 
 ## Modules
 

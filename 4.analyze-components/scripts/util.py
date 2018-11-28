@@ -16,19 +16,29 @@ import pandas as pd
 import scripts.cca_core as cca
 
 
-def read_in_z(dataset, z_dim, algorithm, shuffled_data=False):
+def read_in_matrices(dataset, z_dim, algorithm, shuffled_data=False,
+                     load_weights=False):
     """
-    Read in dataset, algorithm, and dimensionality specific z matrix
+    Read in dataset, algorithm, and dimensionality specific z or weight matrix
 
     Arguments:
     dataset - a string indicating either "TCGA", "TARGET", or "GTEX"
     z_dim - a string indicating the bottleneck dimensionality
     algorithm - a string indicating which algorithm to focus on (can be 'all')
     shuffled_data - a boolean if the data was first shuffled before training
+    read_weights - a boolean if the weight matrices should be loaded instead
 
     Output:
     a list of mean SVCCA similarity scores for each cross comparison
     """
+
+    # What string to glob for and what output to expect
+    if load_weights:
+        lookfor = '_weight_'
+        out_dict = {}
+    else:
+        lookfor = '_z_'
+        out_dict = {'train': {}, 'test': {}}
 
     # Build the directory where the results are stored
     base_dir = os.path.join('..', '2.ensemble-z-analysis', 'results')
@@ -43,27 +53,31 @@ def read_in_z(dataset, z_dim, algorithm, shuffled_data=False):
     z_dim_dir = '{}_components_{}'.format(dataset.lower(), z_dim)
     full_dir = os.path.join(base_dir, dataset_dir, z_dim_dir)
 
-    z_dict = {'train': {}, 'test': {}}
-    for file_name in glob.glob('{}/*_z_*'.format(full_dir)):
+    for file_name in glob.glob('{}/*{}*'.format(full_dir, lookfor)):
         file = os.path.basename(file_name)
         seed = os.path.basename(file_name).split('_')[1]
-        z_df = pd.read_table(file_name, index_col=0)
+        df = pd.read_table(file_name, index_col=0)
 
         if algorithm != 'all':
-            z_df = z_df.loc[:, z_df.columns.str.contains(algorithm)]
+            df = df.loc[:, df.columns.str.contains(algorithm)]
 
-        if 'test' in file:
-            z_dict_key = 'test'
+        if load_weights:
+            out_dict[seed] = df
         else:
-            z_dict_key = 'train'
+            if 'test' in file:
+                out_key = 'test'
+            else:
+                out_key = 'train'
 
-        z_dict[z_dict_key][seed] = z_df.assign(train_or_test=z_dict_key)
+            out_dict[out_key][seed] = df.assign(train_or_test=out_key)
 
-    return z_dict
+    return out_dict
 
 
-def get_svcca_across_algorithm_stability(z_dict, algorithms,
-                                         train_or_test='train'):
+def get_svcca_across_algorithm_stability(z_dict,
+                                         algorithms,
+                                         train_or_test=None,
+                                         threshold=0.98):
     """
     Compile SVCCA results for all combinations of within algorithms for a given
     dataset and z
@@ -73,12 +87,14 @@ def get_svcca_across_algorithm_stability(z_dict, algorithms,
     algorithms - a list storing the algorithms to compare
     train_or_test - a string that indicates if the comparison should be
                     training or testing
+    threshold - remove trailing zeros if applicable (for cca_similarity)
 
     Output:
     a list of mean SVCCA similarity scores for each cross comparison
     """
 
-    z_dict = z_dict[train_or_test]
+    if train_or_test:
+        z_dict = z_dict[train_or_test]
 
     output_list = []
     for model_a in z_dict.keys():
@@ -97,8 +113,10 @@ def get_svcca_across_algorithm_stability(z_dict, algorithms,
                         z_a = model_a_df.loc[:, a_subset]
                         z_b = model_b_df.loc[:, b_subset]
 
-                        result = cca.get_cca_similarity(z_a.T, z_b.T,
-                                                        verbose=False)
+                        result = cca.robust_cca_similarity(z_a.T,
+                                                           z_b.T,
+                                                           verbose=False,
+                                                           threshold=threshold)
 
                         compile_list += [np.mean(result['mean'])]
 
@@ -110,7 +128,11 @@ def get_svcca_across_algorithm_stability(z_dict, algorithms,
     return pd.DataFrame(output_list, columns=out_cols)
 
 
-def get_svcca_across_z_stability(z_dict_a, z_dict_b, train_or_test='train'):
+def get_svcca_across_z_stability(z_dict_a,
+                                 z_dict_b,
+                                 algorithm,
+                                 train_or_test=None,
+                                 threshold=0.98):
     """
     Given two dictionaries, assess model stability between entries and output.
     The a dictionary should always contain fewer dimensions than b
@@ -119,14 +141,16 @@ def get_svcca_across_z_stability(z_dict_a, z_dict_b, train_or_test='train'):
     z_dict_a - a dict of the output of `read_in_z` for specific z and dataset
     z_dict_b - the same structure but a different z and dataset than z_dict_a
     train_or_test - a string that indicates if the comparison should be
-                    training or testing
+                    training or testing (or None if weight matrix)
+    threshold - remove trailing zeros if applicable (for cca_similarity)
 
     Output:
     A dataframe of SVCCA similarity scores comparing all models
     """
 
-    z_dict_a = z_dict_a[train_or_test]
-    z_dict_b = z_dict_b[train_or_test]
+    if train_or_test:
+        z_dict_a = z_dict_a[train_or_test]
+        z_dict_b = z_dict_b[train_or_test]
 
     output_list = []
     for model_a in z_dict_a.keys():
@@ -135,10 +159,18 @@ def get_svcca_across_z_stability(z_dict_a, z_dict_b, train_or_test='train'):
             if model_a != model_b:
                 model_b_df = z_dict_b[model_b]
 
-                result = cca.get_cca_similarity(model_a_df.T, model_b_df.T,
-                                                verbose=False)
+                a_subset = model_a_df.columns.str.contains(algorithm)
+                b_subset = model_b_df.columns.str.contains(algorithm)
 
-                output_list.append(np.mean(result['mean']))
+                z_a = model_a_df.loc[:, a_subset]
+                z_b = model_b_df.loc[:, b_subset]
+
+                result = cca.robust_cca_similarity(z_a.T,
+                                                   z_b.T,
+                                                   verbose=False,
+                                                   threshold=threshold)
+
+                output_list.append(np.mean(result['cca_coef1']))
 
     # Convert output to pandas dataframe
     return pd.DataFrame(output_list, columns=['svcca_mean_similarity'])

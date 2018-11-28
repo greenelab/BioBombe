@@ -7,7 +7,7 @@ When these samples pass through the bottleneck, they are variably activated by e
 The activations can represent biological or technical patterns present in a specific quantity for the given sample and feature.
 
 The samples are also reconstructed back into the original input gene expression dimensions.
-In this module, we explore the ability of compression models to reconstruct and capture variation in input samples.
+In this module, we explore the ability of compression models to reconstruct and capture signals present in input samples.
 
 ## Reproduce Analysis
 

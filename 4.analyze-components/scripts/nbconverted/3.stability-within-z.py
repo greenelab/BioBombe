@@ -21,7 +21,7 @@ import glob
 import numpy as np
 import pandas as pd
 
-from scripts.util import read_in_z, get_svcca_across_algorithm_stability
+from scripts.util import read_in_matrices, get_svcca_across_algorithm_stability
 
 
 # In[2]:
@@ -53,38 +53,20 @@ for dataset in datasets:
                   .format(dataset, shuffled_status, z))
 
             # Read in the z matrix of interest
-            z_dict = read_in_z(
+            z_dict = read_in_matrices(
                 dataset=dataset,
                 z_dim=z,
                 algorithm='all',
-                shuffled_data=signal
+                shuffled_data=signal,
+                load_weights=True
             )
 
             # Perform across algorithm SVCCA
-            # For training
-            svcca_out_train_df = (
+            svcca_out_df = (
                 get_svcca_across_algorithm_stability(z_dict=z_dict,
-                                                     algorithms=algorithms,
-                                                     train_or_test='train')
+                                                     algorithms=algorithms)
             )
-            svcca_out_train_df = svcca_out_train_df.assign(train_or_test='train')
-
-            # SVCCA cannot be calculated for TARGET test data because there are
-            # not enough datapoints
-            if dataset != 'TARGET':
-                # And for testing
-                svcca_out_test_df = (
-                    get_svcca_across_algorithm_stability(z_dict=z_dict,
-                                                         algorithms=algorithms,
-                                                         train_or_test='test')
-                )
-                svcca_out_test_df = svcca_out_test_df.assign(train_or_test='test')
-
-                # Concatenate training and testing
-                svcca_out_df = pd.concat([svcca_out_train_df, svcca_out_test_df])
-            else:
-                svcca_out_df = svcca_out_train_df
-
+            
             # Append info to the output dataframe
             svcca_out_df = svcca_out_df.assign(
                 dataset=dataset,
@@ -100,14 +82,13 @@ for dataset in datasets:
 
 svcca_results_df = pd.concat(large_svcca_results_list)
 svcca_results_df.columns = ['seed_1', 'seed_2', 'algorithm_1', 'algorithm_2',
-                            'svcca_mean_similarity', 'train_or_test',
-                            'dataset', 'z_dim', 'shuffled']
+                            'svcca_mean_similarity', 'dataset', 'z_dim', 'shuffled']
 svcca_results_df.head()
 
 
 # In[5]:
 
 
-out_file = os.path.join('results', 'svcca_mean_correlation_within_z.tsv.gz')
+out_file = os.path.join('results', 'svcca_within_mean_correlation_weights.tsv.gz')
 svcca_results_df.to_csv(out_file, sep='\t', index=False, compression='gzip')
 

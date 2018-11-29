@@ -24,7 +24,7 @@ import glob
 import numpy as np
 import pandas as pd
 
-from scripts.util import read_in_z, get_svcca_across_z_stability
+from scripts.util import read_in_matrices, get_svcca_across_z_stability
 
 
 # In[2]:
@@ -47,11 +47,12 @@ for dataset in datasets:
         for z_a in z_dims:
 
             # Read in the first dictionary
-            z_dict_a = read_in_z(
+            z_dict_a = read_in_matrices(
                 dataset=dataset,
                 z_dim=z_a,
                 algorithm=algorithm,
-                shuffled_data=False
+                shuffled_data=False,
+                load_weights=True
             )
             
             # Only compare to higher z dimensions
@@ -60,11 +61,12 @@ for dataset in datasets:
             for z_b in z_bs:
 
                 # Read in the second dictionary
-                z_dict_b = read_in_z(
+                z_dict_b = read_in_matrices(
                     dataset=dataset,
                     z_dim=z_b,
                     algorithm=algorithm,
-                    shuffled_data=False
+                    shuffled_data=False,
+                    load_weights=True
                 )
 
                 print("Calculating... dataset {}, algorithm {}, and dimension {} vs. {}"
@@ -73,7 +75,8 @@ for dataset in datasets:
                 # Perform across z dimension SVCCA
                 svcca_out = get_svcca_across_z_stability(
                     z_dict_a=z_dict_a,
-                    z_dict_b=z_dict_b
+                    z_dict_b=z_dict_b,
+                    algorithm=algorithm,
                 )
 
                 # Append info to the output dataframe
@@ -92,14 +95,7 @@ for dataset in datasets:
     svcca_results_df.columns = ['svcca_mean_similarity', 'dataset', 'algorithm',
                                 'z_dim_a', 'z_dim_b']
 
-    svcca_results_df = (
-        svcca_results_df
-        .groupby(['dataset', 'algorithm', 'z_dim_a', 'z_dim_b'])
-        .median()
-        .reset_index()
-    )
-
     out_file = os.path.join('results',
-                            'svcca_{}_mean_correlation_across_z.tsv.gz'.format(dataset))
+                            'svcca_across_z_{}_mean_correlation.tsv.gz'.format(dataset))
     svcca_results_df.to_csv(out_file, sep='\t', index=False, compression='gzip')
 

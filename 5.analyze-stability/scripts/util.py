@@ -101,11 +101,17 @@ def get_svcca_across_algorithm_stability(
     output_list = []
     for model_a in z_dict.keys():
         model_a_df = z_dict[model_a]
+
         for model_b in z_dict.keys():
             if model_a != model_b:
                 model_b_df = z_dict[model_b]
-                for algorithm_a in algorithms:
-                    for algorithm_b in algorithms:
+
+                for i in range(0, len(algorithms)):
+                    algorithm_a = algorithms[i]
+
+                    for j in range(i, len(algorithms)):
+                        algorithm_b = algorithms[j]
+
                         compile_list = [model_a, model_b, algorithm_a, algorithm_b]
 
                         a_subset = model_a_df.columns.str.contains(algorithm_a)
@@ -158,6 +164,7 @@ def get_svcca_across_z_stability(
     output_list = []
     for model_a in z_dict_a.keys():
         model_a_df = z_dict_a[model_a]
+
         for model_b in z_dict_b.keys():
             if model_a != model_b:
                 model_b_df = z_dict_b[model_b]

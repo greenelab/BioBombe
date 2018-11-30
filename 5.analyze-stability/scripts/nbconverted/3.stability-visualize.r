@@ -43,13 +43,13 @@ for(dataset in c("TARGET", "TCGA", "GTEX")) {
                       dataset == !!dataset)
 
         out_figure <- paste("stability_within_z", dataset, signal_contains, sep = '_')
-        out_figure <- file.path("figures", "svcca", out_figure)
+        out_figure <- file.path("figures", out_figure)
         plot_title <- paste0("SVCCA Mean Correlations\n", dataset, ' - ', signal_contains)
 
         g <- ggplot(svcca_subset_df,
                     aes(x = z_dim, y = svcca_mean_similarity,
                         fill = algorithm_1)) +
-                geom_boxplot(outlier.size = 0.1, lwd = 0.8) +
+                geom_boxplot(outlier.size = 0.1, lwd = 0.5) +
                 facet_grid(algorithm_1 ~ algorithm_2) +
                 xlab("Z Dimension") +
                 ylab("SVCCA Mean Similarity") +

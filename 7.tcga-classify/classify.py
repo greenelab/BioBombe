@@ -6,7 +6,7 @@ Predict Ras and TP53 status in TCGA based on compressed expression features
 
 Usage:
 
-    python geneset_tracking.py
+    python classify.py
 
 Output:
 Three DataFrames storing ROC, precision-recall, and classifier coefficients

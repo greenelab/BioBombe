@@ -24,9 +24,10 @@ To reproduce the results of the analysis, the modules should be run in order.
 | [2.ensemble-z-analysis](2.ensemble-z-analysis/) | Train various algorithms to compress gene expression data across a large range of z dimensions |
 | [3.build-hetnets](3.build-hetnets/) | Download, process, and integrate various curated gene sets into a single heterogeneous network |
 | [4.analyze-components](4.analyze-components/) | Visualize the reconstruction and sample correlation results of the ensemble z analysis |
-| [5.analyze-weights](5.analyze-weights/) | Apply our matrix interpretation analysis and overrepresentation analyses to assign biological knowledge to compression features |
-| [6.gtex-interpret](6.gtex-interpret/) | Interpret compressed features in the GTEX data |
-| [7.tcga-classify](7.tcga-classify/) | Input compressed features from TCGA data into supervised machine learning classifiers to detect pathway aberration |
+| [5.analyze-stability](5.analyze-stability/) | Determine how stable compression solutions are between and across algorithms, and across dimensions |
+| [6.analyze-weights](6.analyze-weights/) | Apply our matrix interpretation analysis and overrepresentation analyses to assign biological knowledge to compression features |
+| [7.gtex-interpret](7.gtex-interpret/) | Interpret compressed features in the GTEX data |
+| [8.tcga-classify](8.tcga-classify/) | Input compressed features from TCGA data into supervised machine learning classifiers to detect pathway aberration |
 
 ## Algorithms
 

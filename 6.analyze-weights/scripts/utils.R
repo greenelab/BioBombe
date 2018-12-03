@@ -1,5 +1,5 @@
 # Interpreting Compression Features
-# 5.analyze-weights/scripts/utils.R
+# 6.analyze-weights/scripts/utils.R
 # Gregory Way 2018
 #
 # Usage: Import only
@@ -118,7 +118,7 @@ plot_gene_set <- function(gene_set, gene_set_dir, metaedge, dataset = "gtex",
   if (show_plot) {
     print(p)
   }
-  
+
   if (return_top) {
     return(top_results_df)
   }

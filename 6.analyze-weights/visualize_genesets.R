@@ -1,5 +1,5 @@
 # Gregory Way 2018
-# visualize_genesets.R
+# 6.analyze-weights/visualize_genesets.R
 #
 # Description:
 # Visualizes the results of the matrix approach to gene set compressed feature
@@ -82,7 +82,7 @@ for (gene_set in genesets) {
                                   dataset = dataset,
                                   show_plot = FALSE,
                                   shuffled = shuffled)
-  
+
   if (save_results) {
     out_file <- paste(dataset, metaedge, paste0(gene_set, ".tsv"), sep = "_")
     out_file <- file.path("results", "top_features", out_file)

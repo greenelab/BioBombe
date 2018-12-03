@@ -1,6 +1,6 @@
 """
 2018 Gregory Way
-5.analyze-components/geneset_tracking.py
+6.analyze-weights/geneset_tracking.py
 
 Apply interpret-compression approach to weight matrices
 

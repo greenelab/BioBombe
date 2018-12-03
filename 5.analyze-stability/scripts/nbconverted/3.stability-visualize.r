@@ -32,54 +32,70 @@ svcca_df$algorithm_2 <- factor(
     levels = algorithms
 )
 
+# Switch the order of the algorithms in the shuffled dataset to
+# enable plotting in the lower triangle on the same figure
+shuffled_df <- svcca_df %>% dplyr::filter(shuffled == 'shuffled')
+signal_df <- svcca_df %>% dplyr::filter(shuffled != 'shuffled')
+
+alg1_shuff <- shuffled_df$algorithm_1
+alg2_shuff <- shuffled_df$algorithm_2
+
+shuffled_df$algorithm_1 <- alg2_shuff
+shuffled_df$algorithm_2 <- alg1_shuff
+
+svcca_switched_df <- dplyr::bind_rows(signal_df, shuffled_df)
+
+# Visualize across algorithm similarity
 options(repr.plot.width = 15, repr.plot.height = 9)
 
 for(dataset in c("TARGET", "TCGA", "GTEX")) {
-    
-    for(signal_contains in c("signal", "shuffled")) {
 
-        svcca_subset_df <- svcca_df %>%
-        dplyr::filter(shuffled == !!signal_contains,
-                      dataset == !!dataset)
+    svcca_subset_df <- svcca_switched_df %>%
+        dplyr::filter(dataset == !!dataset)
 
-        out_figure <- paste("stability_within_z", dataset, signal_contains, sep = '_')
-        out_figure <- file.path("figures", "svcca", out_figure)
-        plot_title <- paste0("SVCCA Mean Correlations\n", dataset, ' - ', signal_contains)
+    out_figure <- file.path("figures", paste0("stability_within_z_", dataset))
+    plot_title <- paste0("SVCCA Mean Correlations\n", dataset)
 
-        g <- ggplot(svcca_subset_df,
-                    aes(x = z_dim, y = svcca_mean_similarity,
-                        fill = algorithm_1)) +
-                geom_boxplot(outlier.size = 0.1, lwd = 0.8) +
-                facet_grid(algorithm_1 ~ algorithm_2) +
-                xlab("Z Dimension") +
-                ylab("SVCCA Mean Similarity") +
-                scale_fill_manual(name = "Algorithm",
-                                  values = c("#e41a1c",
-                                             "#377eb8",
-                                             "#4daf4a",
-                                             "#984ea3",
-                                             "#ff7f00"),
-                                  labels = c("pca" = "PCA",
-                                             "ica" = "ICA",
-                                             "nmf" = "NMF",
-                                             "dae" = "DAE",
-                                             "vae" = "VAE")) +
-                ylim(c(0, 1)) +
-                ggtitle(plot_title) +
-                theme_bw() +
-                theme(axis.text.x = element_text(angle = 90, size = 5),
-                      plot.title = element_text(hjust = 0.5, size = 18),
-                      legend.text = element_text(size = 12),
-                      legend.key.size = unit(1, "lines"),
-                      strip.text.x = element_text(size = 20),
-                      strip.text.y = element_text(size = 20),
-                      strip.background = element_rect(colour = "black", fill = "lightgrey"))
+    g <- ggplot(svcca_subset_df,
+                aes(x = z_dim,
+                    y = svcca_mean_similarity,
+                    fill = algorithm_1,
+                    linetype = shuffled)) +
+            geom_boxplot(outlier.size = 0.1, lwd = 0.6) +
+            facet_grid(algorithm_1 ~ algorithm_2) +
+            xlab("Z Dimension") +
+            ylab("SVCCA Mean Similarity") +
+            scale_fill_manual(name = "Algorithm",
+                              values = c("#e41a1c",
+                                         "#377eb8",
+                                         "#4daf4a",
+                                         "#984ea3",
+                                         "#ff7f00"),
+                              labels = c("pca" = "PCA",
+                                         "ica" = "ICA",
+                                         "nmf" = "NMF",
+                                         "dae" = "DAE",
+                                         "vae" = "VAE")) +
+            scale_linetype_manual(name = "Signal",
+                                  values = c("dotted", "solid"),
+                                  labels = c("signal" = "Real",
+                                             "shuffled" = "Permuted")) +
+            ylim(c(0, 1)) +
+            ggtitle(plot_title) +
+            theme_bw() +
+            theme(axis.text.x = element_text(angle = 90, size = 5),
+                  plot.title = element_text(hjust = 0.5, size = 18),
+                  legend.text = element_text(size = 12),
+                  legend.key.size = unit(1, "lines"),
+                  strip.text.x = element_text(size = 20),
+                  strip.text.y = element_text(size = 20),
+                  strip.background = element_rect(colour = "black", fill = "lightgrey"))
 
-        ggsave(plot = g, filename = paste0(out_figure, ".png"), height = 8, width = 12)
-        ggsave(plot = g, filename = paste0(out_figure, ".pdf"), height = 8, width = 12)
+    ggsave(plot = g, filename = paste0(out_figure, ".png"), height = 8, width = 12)
+    ggsave(plot = g, filename = paste0(out_figure, ".pdf"), height = 8, width = 12)
 
-        print(g)
-    }
+    print(g)
+
 }
 
 svcca_subset_df <- svcca_df %>%
@@ -124,7 +140,7 @@ g <- ggplot(full_svcca_data, aes(x = z_dim, y = svcca_diff, color = dataset)) +
           strip.text.y = element_text(size = 20),
           strip.background = element_rect(colour = "black", fill = "lightgrey"))
 
-out_figure = file.path("figures", "svcca", "within_z_signal_difference")
+out_figure = file.path("figures", "within_z_signal_difference")
 
 ggsave(plot = g,filename = paste0(out_figure, ".png"), height = 8, width = 11)
 ggsave(plot = g, filename = paste0(out_figure, ".pdf"), height = 8, width = 11)
@@ -150,7 +166,7 @@ for (dataset in c("TARGET", "TCGA", "GTEX")) {
     # Setup title and output file name
     plot_title <- paste0("SVCCA Across Z\nMean Correlations - ", dataset)
     out_figure <- paste0("stability_across_z_", dataset)
-    out_figure <- file.path("figures", "svcca", out_figure)
+    out_figure <- file.path("figures", out_figure)
 
     # Make sure factors are in order
     svcca_df$z_dim_a <-

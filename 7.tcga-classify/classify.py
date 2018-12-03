@@ -2,7 +2,8 @@
 2018 Gregory Way
 7.tcga-classify/classify.py
 
-Predict Ras and TP53 status in TCGA based on compressed expression features
+Predict Ras and TP53 status in TCGA tumors based on compressed expression features by
+various algorithms and dimensionalities.
 
 Usage:
 
@@ -67,7 +68,7 @@ full_aupr_list = []
 full_coef_list = []
 all_failed_params = []
 
-# Obtain a list of locations for each feature matrix (X)
+# Obtain a dictionary of file directories for loading each feature matrix (X)
 z_matrix_dict = {}
 for signal in signals:
     z_matrix_dict[signal] = {}

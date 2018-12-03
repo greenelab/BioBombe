@@ -42,10 +42,10 @@ l1_ratios = [0.15, 0.16, 0.2, 0.25, 0.3, 0.4]
 
 # Load data to build y matrices
 base_url = "https://github.com/greenelab/pancancer/raw"
-commit = "9fd9afbecdbb4f855ecc85bb282fc59e75c7744f"
+commit = "2a0683b68017fb226f4053e63415e4356191734f"
 
 # Load data
-file = "../../pancancer/data/sample_freeze.tsv"
+file = "{}/{}/data/sample_freeze.tsv".format(base_url, commit)
 sample_freeze_df = pd.read_table(file, index_col=0)
 
 file = "{}/{}/data/pancan_mutation_freeze.tsv.gz".format(base_url, commit)

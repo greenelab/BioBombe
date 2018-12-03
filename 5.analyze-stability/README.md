@@ -23,7 +23,7 @@ The citation for the method is:
 
 ## Reproducible Analysis
 
-To reproduce the results of this analysis perform the following:
+To reproduce the results of the stability analysis perform the following:
 
 ```bash
 # Activate computational environment

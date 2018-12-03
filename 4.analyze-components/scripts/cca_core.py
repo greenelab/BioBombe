@@ -320,7 +320,8 @@ def get_cca_similarity(acts1, acts2, threshold=0.98, compute_dirns=True,
   return return_dict
 
 
-def robust_cca_similarity(acts1, acts2, threshold=0.98, compute_dirns=True):
+def robust_cca_similarity(acts1, acts2, threshold=0.98, compute_dirns=True,
+                          verbose=False):
   """Calls get_cca_similarity multiple times while adding noise.
 
   This function is very similar to get_cca_similarity, and can be used if
@@ -358,7 +359,8 @@ def robust_cca_similarity(acts1, acts2, threshold=0.98, compute_dirns=True):
 
   for trial in range(num_cca_trials):
     try:
-      return_dict = get_cca_similarity(acts1, acts2, threshold, compute_dirns)
+      return_dict = get_cca_similarity(acts1, acts2, threshold, compute_dirns,
+                                       verbose=verbose)
     except np.LinAlgError:
       acts1 = acts1 * 1e-1 + np.random.normal(size=acts1.shape) * epsilon
       acts2 = acts2 * 1e-1 + np.random.normal(size=acts1.shape) * epsilon

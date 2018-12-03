@@ -14,7 +14,7 @@
 PARAM_FILE_PREFIX='config/z_parameter_sweep_'
 PMACS_FILE='../config/pmacs_config.tsv'
 PYTHON_PATH='python'
-NUM_SEEDS=10
+NUM_SEEDS=5
 NUM_GENES=8000
 DATASETS=( 'TCGA' 'TARGET' 'GTEX')
 
@@ -52,4 +52,3 @@ do
           --local \
           --shuffle
 done
-

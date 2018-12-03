@@ -1,4 +1,7 @@
 #!/bin/bash
+#
+# Track and visualize gene set activity across compressed features
+# Gregory Way, 2018
 
 ####################
 # Analysis 1

@@ -115,6 +115,8 @@ def extract_coefficients(
         .assign(gene=gene, signal=signal, z_dim=z_dim, seed=seed, algorithm=algorithm)
     )
 
+    return coef_df
+
 
 def process_y_matrix(
     y_copy,

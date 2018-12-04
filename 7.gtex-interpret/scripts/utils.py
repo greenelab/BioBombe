@@ -1,6 +1,6 @@
 """
 2018 Gregory Way
-6.gtex-interpret/utils.py
+7.gtex-interpret/utils.py
 
 Various methods for the application of specific weight vectors to alternative
 gene expression datasets

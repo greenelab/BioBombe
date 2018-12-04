@@ -8,7 +8,7 @@
 # We previously identified a specific VAE feature (z = 3) that captured neutrophil signatures.
 # This signature was not captured in VAE z = 2, and, when present, contributed to a rapid increase in the ability to capture the signal in GTEX blood tissues.
 # 
-# ![cell_type_Neutrophils_IRIS.png](https://github.com/greenelab/interpret-compression/raw/master/5.analyze-weights/figures/GTEX/cell_type/cell_type_Neutrophils_IRIS.png)
+# ![cell_type_Neutrophils_IRIS.png](https://github.com/greenelab/interpret-compression/raw/master/6.analyze-weights/figures/GTEX/signal/GpXCELL/gene_set_Neutrophils_IRIS_1.png)
 # 
 # 
 # Here, take the specific feature from the specific weight matrix and multiply the feature by the genes in common in the publicly available neutrophil data.

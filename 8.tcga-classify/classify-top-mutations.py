@@ -2,7 +2,7 @@
 2018 Gregory Way
 7.tcga-classify/classify-top-mutations.py
 
-Predict Ras and TP53 status in TCGA tumors based on compressed expression features by
+Predict gene mutation status in TCGA tumors based on compressed expression features by
 various algorithms and dimensionalities.
 
 Usage:

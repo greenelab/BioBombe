@@ -126,6 +126,7 @@ def process_y_matrix(
     mutation_burden,
     filter_count,
     filter_prop,
+    output_directory,
     hyper_filter=5,
 ):
     """
@@ -139,6 +140,7 @@ def process_y_matrix(
     mutation_burden - pandas dataframe storing log10 mutation counts
     filter_count - the number of positives or negatives required per cancer-type
     filter_prop - the proportion of positives or negatives required per cancer-type
+    output_directory - the name of the directory to store the gene summary
     hyper_filter - the number of std dev above log10 mutation burden to filter
 
     Output:
@@ -181,7 +183,7 @@ def process_y_matrix(
     ).merge(filter_disease_df, left_index=True, right_index=True)
 
     filter_file = "{}_filtered_cancertypes.tsv".format(gene)
-    filter_file = os.path.join("results", filter_file)
+    filter_file = os.path.join(output_directory, filter_file)
     disease_stats_df.to_csv(filter_file, sep="\t")
 
     # Filter

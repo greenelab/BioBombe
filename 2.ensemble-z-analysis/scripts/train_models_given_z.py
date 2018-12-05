@@ -195,7 +195,9 @@ dm = DataModel(df=rnaseq_train_df, test_df=rnaseq_test_df)
 dm.transform(how='zeroone')
 
 # Set seed and list of algorithms for compression
+np.random.seed(1234)
 random_seeds = np.random.randint(0, high=1000000, size=num_seeds)
+
 algorithms = ['pca', 'ica', 'nmf', 'dae', 'vae']
 
 # Save population of models in specific folder
@@ -210,6 +212,9 @@ sample_correlation_results = []
 tybalt_training_histories = []
 adage_training_histories = []
 for seed in random_seeds:
+
+    np.random.seed(seed)
+
     seed_file = os.path.join(comp_out_dir, 'model_{}'.format(seed))
 
     if shuffle:

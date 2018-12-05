@@ -28,6 +28,7 @@ from scripts.tcga_util import (
     align_matrices,
     process_y_matrix,
     train_model,
+    build_feature_dictionary,
 )
 
 np.random.seed(123)
@@ -69,34 +70,7 @@ mut_burden_df = pd.read_table(file, index_col=0)
 full_metrics_list = []
 
 # Obtain a dictionary of file directories for loading each feature matrix (X)
-z_matrix_dict = {}
-for signal in signals:
-    z_matrix_dict[signal] = {}
-
-    if signal == "signal":
-        results_dir = "TCGA_results"
-    else:
-        results_dir = "TCGA_shuffled_results"
-
-    matrix_dir = os.path.join(
-        "..", "2.ensemble-z-analysis", "results", results_dir, "ensemble_z_matrices"
-    )
-
-    for comp_dir in os.listdir(matrix_dir):
-        matrix_comp_dir = os.path.join(matrix_dir, comp_dir)
-        z_dim = comp_dir.split("_")[2]
-        z_matrix_dict[signal][z_dim] = {}
-
-        for z_file in glob.glob("{}/*_z_*".format(matrix_comp_dir)):
-            seed = os.path.basename(z_file).split("_")[1]
-
-            if seed not in z_matrix_dict[signal][z_dim].keys():
-                z_matrix_dict[signal][z_dim][seed] = {}
-
-            if "_test_" in z_file:
-                z_matrix_dict[signal][z_dim][seed]["test"] = z_file
-            else:
-                z_matrix_dict[signal][z_dim][seed]["train"] = z_file
+z_matrix_dict = build_feature_dictionary()
 
 for gene_idx, gene_series in genes_df.iterrows():
 
@@ -183,12 +157,13 @@ for gene_idx, gene_series in genes_df.iterrows():
                     coef_df = extract_coefficients(
                         cv_pipeline=cv_pipeline,
                         feature_names=x_train_df.columns,
-                        gene=gene_name,
                         signal=signal,
                         z_dim=z_dim,
                         seed=seed,
                         algorithm=alg,
                     )
+
+                    coef_df = coef_df.assign(gene=gene_name)
 
                     # Store all results
                     train_metrics_, train_roc_df, train_pr_df = summarize_results(

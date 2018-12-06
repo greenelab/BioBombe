@@ -2,8 +2,8 @@
 2018 Gregory Way
 7.tcga-classify/classify-top-mutations.py
 
-Predict gene mutation status in TCGA tumors based on compressed expression features by
-various algorithms and dimensionalities.
+Predict if specific genes are mutated across TCGA tumors based on compressed expression
+features by various algorithms and dimensionalities.
 
 Usage:
 
@@ -12,8 +12,9 @@ Usage:
 Output:
 Gene specific DataFrames storing ROC, precision-recall, and classifier coefficients
 for every compression model trained in their ability to predict mutations. The genes
-used are the top 50 most mutated genes in TCGA PanCanAtlas. An additional metrics file
-that stores all gene AUROC and AUPR is also saved.
+used are the top 50 most mutated genes in TCGA PanCanAtlas. A gene was considered
+mutated if a non-silent mutation was observed by the MC3 mutation calling effort. An
+additional metrics file that stores all gene AUROC and AUPR is also saved.
 """
 
 import os
@@ -88,7 +89,8 @@ for gene_idx, gene_series in genes_df.iterrows():
     # Process the y matrix for the given gene or pathway
     y_mutation_df = mutation_df.loc[:, gene_name]
 
-    # Include copy number gains for oncogenes and copy number loss for tumor suppressors
+    # Include copy number gains for oncogenes
+    # and copy number loss for tumor suppressor genes (TSG)
     if classification == "Oncogene":
         y_copy_number_df = copy_gain_df.loc[:, gene_name]
     elif classification == "TSG":

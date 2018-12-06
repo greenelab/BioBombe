@@ -6,6 +6,8 @@
 # **Gregory Way, 2018**
 # 
 # Using the MC3 mutation calling effort, determine the top 50 most mutated genes in the TCGA PanCanAtlas.
+# Details describing the mutation calling approach can be reviewed in [Ellrott et al. 2018](https://doi.org/10.1016/j.cels.2018.03.002).
+# 
 # These genes will be input into an elastic net logistic regression model to predict mutation status.
 
 # In[1]:

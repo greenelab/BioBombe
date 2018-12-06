@@ -83,7 +83,7 @@ for gene_idx, gene_series in genes_df.iterrows():
     gene_coef_list = []
 
     # Create directory for the gene
-    gene_dir = os.path.join("results", gene_name)
+    gene_dir = os.path.join("results", "mutation", gene_name)
     os.makedirs(gene_dir, exist_ok=True)
 
     # Process the y matrix for the given gene or pathway

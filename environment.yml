@@ -1,4 +1,4 @@
-name: interpret-compression
+name: biobombe
 channels:
 - conda-forge
 dependencies:
@@ -19,6 +19,7 @@ dependencies:
 - conda-forge::r-readr=1.1.1
 - conda-forge::r-readxl=1.1.0
 - conda-forge::r-ggplot2=2.2.1
+- conda-forge::r-cowplot=0.9.3
 - conda-forge::r-heatmap3=1.1.1
 - conda-forge::r-ggrepel=0.8.0
 - conda-forge::r-irkernel=0.8.11

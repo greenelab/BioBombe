@@ -1,5 +1,6 @@
 
-library(ggplot2)
+suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(cowplot))
 
 set.seed(123)
 
@@ -69,11 +70,15 @@ tcga_adage_converge_df <- tcga_adage$all_results$select_df %>%
     dplyr::filter(end_loss < 0.01, learning_rate != 'Learn: 1e-05')
 
 # Replot and Save Update
-plotFinalLoss(tcga_adage_converge_df,
-              dataset = "TCGA",
-              algorithm = "ADAGE",
-              output_fig_dir = tcga_fig_dir,
-              plot_converge = TRUE) + theme(text = element_text(size = 15))
+tcga_adage_converge <- (
+    plotFinalLoss(tcga_adage_converge_df,
+                  dataset = "TCGA",
+                  algorithm = "ADAGE",
+                  output_fig_dir = tcga_fig_dir,
+                  plot_converge = TRUE)
+    )
+
+tcga_adage_converge + theme(text = element_text(size = 15))
 
 tcga_adage$one_model_plot + theme(text = element_text(size = 15))
 
@@ -150,11 +155,15 @@ gtex_adage_converge_df <- gtex_adage$all_results$select_df %>%
     dplyr::filter(end_loss < 0.01, learning_rate != 'Learn: 1e-05')
 
 # Replot and save update
-plotFinalLoss(gtex_adage_converge_df,
-              dataset = "GTEx",
-              algorithm = "ADAGE",
-              output_fig_dir = gtex_fig_dir,
-              plot_converge = TRUE) + theme(text = element_text(size = 15))
+gtex_adage_converge <- (
+    plotFinalLoss(gtex_adage_converge_df,
+                  dataset = "GTEx",
+                  algorithm = "ADAGE",
+                  output_fig_dir = gtex_fig_dir,
+                  plot_converge = TRUE)
+    )
+
+gtex_adage_converge + theme(text = element_text(size = 15))
 
 gtex_adage$one_model_plot + theme(text = element_text(size = 15))
 
@@ -246,3 +255,52 @@ plotBestModel(target_adage_good_training_df,
               dataset = "TARGET",
               algorithm = "ADAGE",
               output_fig_dir = target_fig_dir) + theme(text = element_text(size = 15))
+
+adage_label <- cowplot::ggdraw() + cowplot::draw_label(label = 'DAE', hjust = 1, vjust = 0.8)
+tybalt_label <- cowplot::ggdraw() + cowplot::draw_label(label = 'VAE', hjust = 1, vjust = 0.8)
+gtex_label <- cowplot::ggdraw() + cowplot::draw_label(label = 'GTEX', angle = 90, vjust = 1)
+tcga_label <- cowplot::ggdraw() + cowplot::draw_label(label = 'TCGA', angle = 90, vjust = 1)
+target_label <- cowplot::ggdraw() + cowplot::draw_label(label = 'TARGET', angle = 90, vjust = 1)
+
+alg_main <- cowplot::plot_grid(adage_label, tybalt_label, ncol = 2)
+dataset_main <- cowplot::plot_grid(gtex_label, tcga_label, target_label, nrow = 3)
+
+main_plot <- (
+    cowplot::plot_grid(
+        gtex_adage_converge + ggtitle('') + xlab('') +
+            theme(plot.margin = margin(t = 0, r = 0, b = 0, l = 0)),
+        gtex_tybalt$final_val_plot + ggtitle('') + ylab('') + xlab('') +
+            theme(plot.margin = margin(t = 0, r = 0, b = 0, l = 0)),
+        tcga_adage_converge + ggtitle('') + xlab('') +
+            theme(plot.margin = margin(t = 0, r = 0, b = 0, l = 0)),
+        tcga_tybalt$final_val_plot + ggtitle('') + ylab('') + xlab('') +
+            theme(plot.margin = margin(t = 0, r = 0, b = 0, l = 0)),
+        target_adage$final_val_plot + ggtitle('') +
+            theme(plot.margin = margin(t = 0, r = 0, b = 0, l = 0)),
+        target_tybalt$final_val_plot + ggtitle('') + ylab('') +
+            theme(plot.margin = margin(t = 0, r = 0, b = 0, l = 0)),
+        labels = c("A", "B", "C", "D", "E", "F"),
+        ncol = 2,
+        nrow = 3
+    )
+)
+
+
+
+main_with_alg <- cowplot::plot_grid(alg_main, main_plot, nrow = 2,
+                                    rel_heights = c(0.04, 1))
+
+full_plot <- cowplot::plot_grid(dataset_main, main_with_alg, rel_widths = c(0.1, 1))
+full_plot
+
+sup_file <- file.path("figures", "z_dimension_sweep_summary.png")
+cowplot::save_plot(filename = sup_file,
+                   plot = full_plot,
+                   base_height = 9,
+                   base_width = 10)
+
+sup_file <- file.path("figures", "z_dimension_sweep_summary.pdf")
+cowplot::save_plot(filename = sup_file,
+                   plot = full_plot,
+                   base_height = 9,
+                   base_width = 10)

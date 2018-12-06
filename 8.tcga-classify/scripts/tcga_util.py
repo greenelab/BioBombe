@@ -247,7 +247,7 @@ def process_y_matrix_cancertype(
     acronym, sample_freeze, mutation_burden, hyper_filter=5
 ):
     """
-    Build a y vector based on cancer-type memership
+    Build a y vector based on cancer-type membership
 
     Arguments:
     acronym - the TCGA cancer-type barcode

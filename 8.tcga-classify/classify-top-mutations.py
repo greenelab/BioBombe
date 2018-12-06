@@ -1,22 +1,23 @@
 """
 2018 Gregory Way
-7.tcga-classify/classify.py
+7.tcga-classify/classify-top-mutations.py
 
-Predict Ras and TP53 status in TCGA tumors based on compressed expression features by
-various algorithms and dimensionalities.
+Predict if specific genes are mutated across TCGA tumors based on compressed expression
+features by various algorithms and dimensionalities.
 
 Usage:
 
-    python classify.py
+    python classify-top-mutations.py
 
 Output:
-Three DataFrames storing ROC, precision-recall, and classifier coefficients
-for every compression model trained in their ability to predict Ras pathway
-activation and TP53 pathway inactivation
+Gene specific DataFrames storing ROC, precision-recall, and classifier coefficients
+for every compression model trained in their ability to predict mutations. The genes
+used are the top 50 most mutated genes in TCGA PanCanAtlas. A gene was considered
+mutated if a non-silent mutation was observed by the MC3 mutation calling effort. An
+additional metrics file that stores all gene AUROC and AUPR is also saved.
 """
 
 import os
-import glob
 import numpy as np
 import pandas as pd
 
@@ -27,12 +28,12 @@ from scripts.tcga_util import (
     align_matrices,
     process_y_matrix,
     train_model,
+    build_feature_dictionary,
 )
 
 np.random.seed(123)
 
 # Load constants
-genes = ["TP53", "RAS"]
 filter_prop = 0.05
 filter_count = 15
 folds = 5
@@ -40,6 +41,10 @@ algorithms = ["pca", "ica", "nmf", "dae", "vae"]
 signals = ["signal", "shuffled"]
 alphas = [0.1, 0.13, 0.15, 0.2, 0.25, 0.3]
 l1_ratios = [0.15, 0.16, 0.2, 0.25, 0.3, 0.4]
+
+# Load genes
+file = os.path.join("data", "top50_mutated_genes.tsv")
+genes_df = pd.read_table(file)
 
 # Load data to build y matrices
 base_url = "https://github.com/greenelab/pancancer/raw"
@@ -61,61 +66,45 @@ copy_gain_df = pd.read_table(file, index_col=0)
 file = "{}/{}/data/mutation_burden_freeze.tsv".format(base_url, commit)
 mut_burden_df = pd.read_table(file, index_col=0)
 
-# What results to track
+# Track total metrics for each gene in one file
 full_metrics_list = []
-full_auc_list = []
-full_aupr_list = []
-full_coef_list = []
-all_failed_params = []
 
 # Obtain a dictionary of file directories for loading each feature matrix (X)
-z_matrix_dict = {}
-for signal in signals:
-    z_matrix_dict[signal] = {}
+z_matrix_dict = build_feature_dictionary()
 
-    if signal == "signal":
-        results_dir = "TCGA_results"
-    else:
-        results_dir = "TCGA_shuffled_results"
+for gene_idx, gene_series in genes_df.iterrows():
 
-    matrix_dir = os.path.join(
-        "..", "2.ensemble-z-analysis", "results", results_dir, "ensemble_z_matrices"
-    )
+    gene_name = gene_series.gene
+    classification = gene_series.classification
 
-    for comp_dir in os.listdir(matrix_dir):
-        matrix_comp_dir = os.path.join(matrix_dir, comp_dir)
-        z_dim = comp_dir.split("_")[2]
-        z_matrix_dict[signal][z_dim] = {}
+    # Create list to store gene specific results
+    gene_auc_list = []
+    gene_aupr_list = []
+    gene_coef_list = []
 
-        for z_file in glob.glob("{}/*_z_*".format(matrix_comp_dir)):
-            seed = os.path.basename(z_file).split("_")[1]
+    # Create directory for the gene
+    gene_dir = os.path.join("results", gene_name)
+    os.makedirs(gene_dir, exist_ok=True)
 
-            if seed not in z_matrix_dict[signal][z_dim].keys():
-                z_matrix_dict[signal][z_dim][seed] = {}
-
-            if "_test_" in z_file:
-                z_matrix_dict[signal][z_dim][seed]["test"] = z_file
-            else:
-                z_matrix_dict[signal][z_dim][seed]["train"] = z_file
-
-for gene in genes:
     # Process the y matrix for the given gene or pathway
-    if gene == "RAS":
-        subset_gene = ["KRAS", "HRAS", "NRAS"]
-        y_copy_number_df = copy_gain_df.loc[:, subset_gene].max(axis="columns")
-        y_mutation_df = mutation_df.loc[:, subset_gene].max(axis="columns")
-    else:
-        y_copy_number_df = copy_loss_df.loc[:, gene]
-        y_mutation_df = mutation_df.loc[:, gene]
+    y_mutation_df = mutation_df.loc[:, gene_name]
+
+    # Include copy number gains for oncogenes
+    # and copy number loss for tumor suppressor genes (TSG)
+    if classification == "Oncogene":
+        y_copy_number_df = copy_gain_df.loc[:, gene_name]
+    elif classification == "TSG":
+        y_copy_number_df = copy_loss_df.loc[:, gene_name]
 
     y_df = process_y_matrix(
         y_copy=y_copy_number_df,
         y_mutation=y_mutation_df,
-        gene=gene,
+        gene=gene_name,
         sample_freeze=sample_freeze_df,
         mutation_burden=mut_burden_df,
         filter_count=filter_count,
         filter_prop=filter_prop,
+        output_directory=gene_dir,
         hyper_filter=5,
     )
 
@@ -142,7 +131,7 @@ for gene in genes:
                     print(
                         "Training model... gene: {}, "
                         "algorithm: {}, signal: {}, z_dim: {}, "
-                        "seed: {}".format(gene, alg, signal, z_dim, seed)
+                        "seed: {}".format(gene_name, alg, signal, z_dim, seed)
                     )
 
                     # Fit the model
@@ -169,22 +158,23 @@ for gene in genes:
                     coef_df = extract_coefficients(
                         cv_pipeline=cv_pipeline,
                         feature_names=x_train_df.columns,
-                        gene=gene,
                         signal=signal,
                         z_dim=z_dim,
                         seed=seed,
                         algorithm=alg,
                     )
 
+                    coef_df = coef_df.assign(gene=gene_name)
+
                     # Store all results
                     train_metrics_, train_roc_df, train_pr_df = summarize_results(
-                        y_train_results, gene, signal, z_dim, seed, alg, "train"
+                        y_train_results, gene_name, signal, z_dim, seed, alg, "train"
                     )
                     test_metrics_, test_roc_df, test_pr_df = summarize_results(
-                        y_test_results, gene, signal, z_dim, seed, alg, "test"
+                        y_test_results, gene_name, signal, z_dim, seed, alg, "test"
                     )
                     cv_metrics_, cv_roc_df, cv_pr_df = summarize_results(
-                        y_cv_results, gene, signal, z_dim, seed, alg, "cv"
+                        y_cv_results, gene_name, signal, z_dim, seed, alg, "cv"
                     )
 
                     # Compile summary metrics
@@ -202,33 +192,37 @@ for gene in genes:
                     metric_df_ = pd.DataFrame(metrics_, columns=cols)
                     full_metrics_list.append(metric_df_)
 
-                    full_auc_df = pd.concat([train_roc_df, test_roc_df, cv_roc_df])
-                    full_auc_list.append(full_auc_df)
+                    gene_auc_df = pd.concat([train_roc_df, test_roc_df, cv_roc_df])
+                    gene_auc_list.append(gene_auc_df)
 
-                    full_aupr_df = pd.concat([train_pr_df, test_pr_df, cv_pr_df])
-                    full_aupr_list.append(full_aupr_df)
-                    full_coef_list.append(coef_df)
+                    gene_aupr_df = pd.concat([train_pr_df, test_pr_df, cv_pr_df])
+                    gene_aupr_list.append(gene_aupr_df)
+
+                    gene_coef_list.append(coef_df)
+
+    gene_auc_df = pd.concat(gene_auc_list)
+    gene_aupr_df = pd.concat(gene_aupr_list)
+    gene_coef_df = pd.concat(gene_coef_list)
+
+    file = os.path.join(gene_dir, "{}_auc_threshold_metrics.tsv.gz".format(gene_name))
+    gene_auc_df.to_csv(
+        file, sep="\t", index=False, compression="gzip", float_format="%.5g"
+    )
+
+    file = os.path.join(gene_dir, "{}_aupr_threshold_metrics.tsv.gz".format(gene_name))
+    gene_aupr_df.to_csv(
+        file, sep="\t", index=False, compression="gzip", float_format="%.5g"
+    )
+
+    file = os.path.join(gene_dir, "{}_coefficients.tsv.gz".format(gene_name))
+    gene_coef_df.to_csv(
+        file, sep="\t", index=False, compression="gzip", float_format="%.5g"
+    )
 
 # Now, compile all results and write to file
 final_metrics_df = pd.concat(full_metrics_list)
-final_auc_df = pd.concat(full_auc_list)
-final_aupr_df = pd.concat(full_aupr_list)
-final_coef_df = pd.concat(full_coef_list)
 
-file = os.path.join("results", "classify_metrics.tsv")
-final_metrics_df.to_csv(file, sep="\t", index=False)
-
-file = os.path.join("results", "auc_threshold_metrics.tsv.gz")
-final_auc_df.to_csv(
-    file, sep="\t", index=False, compression="gzip", float_format="%.5g"
-)
-
-file = os.path.join("results", "aupr_threshold_metrics.tsv.gz")
-final_aupr_df.to_csv(
-    file, sep="\t", index=False, compression="gzip", float_format="%.5g"
-)
-
-file = os.path.join("results", "coefficients.tsv.gz")
-final_coef_df.to_csv(
+file = os.path.join("results", "all_gene_classify_metrics.tsv.gz")
+final_metrics_df.to_csv(
     file, sep="\t", index=False, compression="gzip", float_format="%.5g"
 )

@@ -7,6 +7,52 @@ Usage: For import only
 """
 
 
+def build_feature_dictionary(dataset='TCGA'):
+    """
+    Generate a nested dictionary of the directory structure pointing to compressed
+    feature matrices for training and testing sets
+
+    Arguments:
+    dataset - which dataset to load the z matrices from (default - "TCGA")
+
+    Output: a nested dictionary storing the feature matrices from training and testing
+    sets
+    """
+    import os
+    import glob
+
+    z_matrix_dict = {}
+    for signal in ['signal', 'shuffled']:
+        z_matrix_dict[signal] = {}
+
+        if signal == "signal":
+            results_dir = "{}_results".format(dataset)
+        else:
+            results_dir = "{}_shuffled_results".format(dataset)
+
+        matrix_dir = os.path.join(
+            "..", "2.ensemble-z-analysis", "results", results_dir, "ensemble_z_matrices"
+        )
+
+        for comp_dir in os.listdir(matrix_dir):
+            matrix_comp_dir = os.path.join(matrix_dir, comp_dir)
+            z_dim = comp_dir.split("_")[2]
+            z_matrix_dict[signal][z_dim] = {}
+
+            for z_file in glob.glob("{}/*_z_*".format(matrix_comp_dir)):
+                seed = os.path.basename(z_file).split("_")[1]
+
+                if seed not in z_matrix_dict[signal][z_dim].keys():
+                    z_matrix_dict[signal][z_dim][seed] = {}
+
+                if "_test_" in z_file:
+                    z_matrix_dict[signal][z_dim][seed]["test"] = z_file
+                else:
+                    z_matrix_dict[signal][z_dim][seed]["train"] = z_file
+
+    return z_matrix_dict
+
+
 def get_threshold_metrics(y_true, y_pred, drop=False):
     """
     Retrieve true/false positive rates and auroc/aupr for class predictions
@@ -41,13 +87,15 @@ def get_threshold_metrics(y_true, y_pred, drop=False):
     return {"auroc": auroc, "aupr": aupr, "roc_df": roc_df, "pr_df": pr_df}
 
 
-def summarize_results(results, gene, signal, z_dim, seed, algorithm, data_type):
+def summarize_results(
+    results, gene_or_cancertype, signal, z_dim, seed, algorithm, data_type
+):
     """
     Given an input results file, summarize and output all pertinent files
 
     Arguments:
     results - a results object output from `get_threshold_metrics`
-    gene - the gene of interest
+    gene_or_cancertype - the gene or cancertype of interest
     signal - the signal of interest
     z_dim - the internal bottleneck dimension of the compression model
     seed - the seed used to compress the data
@@ -55,7 +103,8 @@ def summarize_results(results, gene, signal, z_dim, seed, algorithm, data_type):
     data_type - the type of data (either training, testing, or cv)
     """
 
-    results_append_list = [gene, signal, z_dim, seed, algorithm, data_type]
+    results_append_list = [gene_or_cancertype, signal, z_dim, seed, algorithm,
+                           data_type]
 
     metrics_out_ = [results["auroc"], results["aupr"]] + results_append_list
 
@@ -63,7 +112,7 @@ def summarize_results(results, gene, signal, z_dim, seed, algorithm, data_type):
     pr_df_ = results["pr_df"]
 
     roc_df_ = roc_df_.assign(
-        gene=gene,
+        predictor=gene_or_cancertype,
         signal=signal,
         z_dim=z_dim,
         seed=seed,
@@ -72,7 +121,7 @@ def summarize_results(results, gene, signal, z_dim, seed, algorithm, data_type):
     )
 
     pr_df_ = pr_df_.assign(
-        gene=gene,
+        predictor=gene_or_cancertype,
         signal=signal,
         z_dim=z_dim,
         seed=seed,
@@ -84,7 +133,7 @@ def summarize_results(results, gene, signal, z_dim, seed, algorithm, data_type):
 
 
 def extract_coefficients(
-    cv_pipeline, feature_names, gene, signal, z_dim, seed, algorithm
+    cv_pipeline, feature_names, signal, z_dim, seed, algorithm
 ):
     """
     Pull out the coefficients from the trained classifiers
@@ -112,7 +161,7 @@ def extract_coefficients(
         coef_df.assign(abs=coef_df["weight"].abs())
         .sort_values("abs", ascending=False)
         .reset_index(drop=True)
-        .assign(gene=gene, signal=signal, z_dim=z_dim, seed=seed, algorithm=algorithm)
+        .assign(signal=signal, z_dim=z_dim, seed=seed, algorithm=algorithm)
     )
 
     return coef_df
@@ -126,6 +175,7 @@ def process_y_matrix(
     mutation_burden,
     filter_count,
     filter_prop,
+    output_directory,
     hyper_filter=5,
 ):
     """
@@ -139,6 +189,7 @@ def process_y_matrix(
     mutation_burden - pandas dataframe storing log10 mutation counts
     filter_count - the number of positives or negatives required per cancer-type
     filter_prop - the proportion of positives or negatives required per cancer-type
+    output_directory - the name of the directory to store the gene summary
     hyper_filter - the number of std dev above log10 mutation burden to filter
 
     Output:
@@ -181,7 +232,7 @@ def process_y_matrix(
     ).merge(filter_disease_df, left_index=True, right_index=True)
 
     filter_file = "{}_filtered_cancertypes.tsv".format(gene)
-    filter_file = os.path.join("results", filter_file)
+    filter_file = os.path.join(output_directory, filter_file)
     disease_stats_df.to_csv(filter_file, sep="\t")
 
     # Filter
@@ -192,7 +243,41 @@ def process_y_matrix(
     return y_df
 
 
-def align_matrices(x_file, y, algorithm=None):
+def process_y_matrix_cancertype(
+    acronym, sample_freeze, mutation_burden, hyper_filter=5
+):
+    """
+    Build a y vector based on cancer-type membership
+
+    Arguments:
+    acronym - the TCGA cancer-type barcode
+    sample_freeze - a dataframe storing TCGA barcodes and cancer-types
+    mutation_burden - a log10 mutation count per sample (added as covariate)
+
+    Output:
+    A y status DataFrame and a status count dataframe
+    """
+
+    import pandas as pd
+
+    y_df = sample_freeze.assign(status=0)
+    y_df.loc[y_df.DISEASE == acronym, 'status'] = 1
+
+    y_df = (
+        y_df.set_index("SAMPLE_BARCODE")
+        .merge(mutation_burden, left_index=True, right_index=True)
+    )
+
+    burden_filter = y_df["log10_mut"] < hyper_filter * y_df["log10_mut"].std()
+    y_df = y_df.loc[burden_filter, :]
+
+    count_df = pd.DataFrame(y_df.status.value_counts()).reset_index()
+    count_df.columns = ['status', acronym]
+
+    return y_df, count_df
+
+
+def align_matrices(x_file, y, add_cancertype_covariate=True, algorithm=None):
     """
     Process the x matrix for the given input file and align x and y together
 
@@ -224,13 +309,14 @@ def align_matrices(x_file, y, algorithm=None):
 
     # create covariate info
     covariate_df = pd.get_dummies(y.DISEASE)
-
     mutation_covariate_df = pd.DataFrame(y.loc[:, "log10_mut"], index=y.index)
 
-    # Merge features with covariate data
-    x_df = x_df.merge(covariate_df, left_index=True, right_index=True).merge(
-        mutation_covariate_df, left_index=True, right_index=True
-    )
+    # Merge log10 mutation burden covariate
+    x_df = x_df.merge(covariate_df, left_index=True, right_index=True)
+
+    if add_cancertype_covariate:
+        # Merge features with covariate data
+        x_df = x_df.merge(mutation_covariate_df, left_index=True, right_index=True)
 
     return use_samples, x_df, y
 

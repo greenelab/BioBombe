@@ -1,9 +1,9 @@
 """
 2018 Gregory Way
-7.tcga-classify/classify-cancer-types.py
+8.tcga-classify/classify-cancer-types.py
 
-Predict cancer-types using elastic net logistic regression and compressed gene
-expression features
+Predicting 33 different cancer-types using elastic net logistic regression and
+compressed gene expression features in TCGA PanCanAtlas
 
 Usage:
 

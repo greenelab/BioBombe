@@ -20,7 +20,11 @@ In other words, we want to isolate the effect of changing dimensionality on the 
 Therefore, we perform a parameter sweep over several hyperparameters for the two unsupervised neural network models.
 The models include a variational autoencoder (VAE; Tybalt) and a denoising autoencoder (DAE; ADAGE).
 
-The analysis is provided, with results visualized, in [`visualize-parameter-sweep.ipynb`](visualize-parameter-sweep.ipynb).
+The full analysis is provided, with results visualized, in [`visualize-parameter-sweep.ipynb`](visualize-parameter-sweep.ipynb).
+
+### Summary Figure
+
+![summary sweep figure](https://raw.githubusercontent.com/greenelab/interpret-compression/master/1.initial-z-sweep/figures/z_dimension_sweep_summary.png)
 
 ### Datasets
 

@@ -8,7 +8,7 @@
 #           source('scripts/viz_utils.R')
 
 processParamSweepResults <- function(param_file, algorithm, dataset,
-                                     output_fig_dir) {
+                                     output_fig_dir, save_plot=TRUE) {
   # Read, process, and plot results for each algorithm by dataset
   #
   # Arguments:
@@ -16,6 +16,7 @@ processParamSweepResults <- function(param_file, algorithm, dataset,
   # algorithm - a string indicating either `ADAGE` or `Tybalt`
   # dataset - a string indicating `TCGA`, `GTEx` or `TARGET`
   # output_fig_dir - a string pointing to the location of output figures
+  # save_plot - a boolean if the plots should be saved to file (default: TRUE)
   #
   # Output:
   # An R list with several indices storing summarized results and figures
@@ -64,11 +65,13 @@ processParamSweepResults <- function(param_file, algorithm, dataset,
                                dataset = dataset)
 
   # Save output files
-  ggsave(final_val_fig_file_png, plot = final_val_gg, height = 3, width = 5.5)
-  ggsave(final_val_fig_file_pdf, plot = final_val_gg, height = 3, width = 5.5)
-
-  ggsave(one_model_fig_file_png, plot = one_model_gg, height = 2.5, width = 5)
-  ggsave(one_model_fig_file_pdf, plot = one_model_gg, height = 2.5, width = 5)
+  if (save_plot) {
+    ggsave(final_val_fig_file_png, plot = final_val_gg, height = 3, width = 5.5)
+    ggsave(final_val_fig_file_pdf, plot = final_val_gg, height = 3, width = 5.5)
+    
+    ggsave(one_model_fig_file_png, plot = one_model_gg, height = 2.5, width = 5)
+    ggsave(one_model_fig_file_pdf, plot = one_model_gg, height = 2.5, width = 5)
+  }
 
   readr::write_tsv(param_sweep_results$best_params, best_param_file)
 
@@ -213,7 +216,10 @@ plotFinalLoss <- function(select_df, algorithm, dataset, output_fig_dir,
   #   dataset - a string indicating the name of the dataset
   #   output_fig_dir - the location to save the output figures
   #   plot_converge - boolean to determine if figure is replotted and saved
-
+  #
+  # Output:
+  # A ggplot object of the loss at the final parameter combination
+  
   # Set title
   title <- paste0(dataset, ' - ', algorithm)
   if (plot_converge) {
@@ -225,29 +231,40 @@ plotFinalLoss <- function(select_df, algorithm, dataset, output_fig_dir,
     scale_x_continuous(breaks = c(5, 25, 50, 75, 100, 125)) +
     xlab("Latent Space Dimensionality") +
     ylab("Final Validation Loss") +
-    theme_bw() + base_theme
+    scale_shape_discrete(name = "Epochs") +
+    theme_bw() +
+    base_theme
   if (algorithm == 'Tybalt') {
     p <- p +
-      geom_point(aes(shape = epochs, color = kappa), size = 0.8, alpha = 0.7,
+      geom_point(aes(shape = epochs, color = kappa),
+                 size = 0.8,
+                 alpha = 0.7,
                  position = position_jitter(w = 5, h = 0)) +
-      scale_color_brewer(palette = "Dark2") +
-      facet_grid(batch_size ~ learning_rate)
+        scale_color_brewer(name = "Kappa", palette = "Dark2") +
+        facet_grid(batch_size ~ learning_rate) +
+        guides(shape = guide_legend(order = 1),
+               color = guide_legend(order = 2))
   } else {
     if (dataset %in% c('TARGET', 'GTEx')) {
       p <- p +
       geom_point(aes(shape = epochs, size = sparsity, color = batch_size),
                  alpha = 0.7, position = position_jitter(w = 5, h = 0)) +
-      scale_color_brewer(name = "Batch Size", palette = "Dark2") +
-      scale_size_manual(values = c(0.8, 0.4), name = "Sparsity")
+        scale_color_brewer(name = "Batch Size", palette = "Dark2") +
+        scale_size_manual(values = c(0.8, 0.4), name = "Sparsity") +
+        guides(shape = guide_legend(order = 1),
+               color = guide_legend(order = 2),
+               size = guide_legend(order = 3))
     } else {
       p <- p +
       geom_point(aes(shape = epochs, size = batch_size, color = sparsity),
                  alpha = 0.7, position = position_jitter(w = 5, h = 0)) +
-      scale_color_brewer(name = "Sparsity", palette = "Dark2") +
-      scale_size_manual(values = c(0.8, 0.4), name = "Batch Size")
+        scale_color_brewer(name = "Sparsity", palette = "Dark2") +
+        scale_size_manual(values = c(0.8, 0.4), name = "Batch Size") +
+        guides(shape = guide_legend(order = 1),
+               size = guide_legend(order = 2),
+               color = guide_legend(order = 3))
     }
-    p <- p + facet_grid(noise ~ learning_rate) +
-    scale_shape_discrete(name = "Epochs")
+    p <- p + facet_grid(noise ~ learning_rate)
   }
 
   p <- p + ggtitle(title)
@@ -298,7 +315,8 @@ plotOneModel <- function(one_model_df, algorithm, dataset) {
   return(p)
 }
 
-plotBestModel <- function(best_model_df, algorithm, dataset, output_fig_dir) {
+plotBestModel <- function(best_model_df, algorithm, dataset, output_fig_dir,
+                          save_plot = TRUE) {
   # Plot and save the training curves of the best models for each algorithm
   #
   # Arguments:
@@ -306,6 +324,10 @@ plotBestModel <- function(best_model_df, algorithm, dataset, output_fig_dir) {
   #   algorithm - a string indicating the algorithm to be plotted
   #   dataset - a string indicating the name of the dataset
   #   output_fig_dir - a directory of where to save figure
+  #   save_plot - a boolean if the plots should be saved to file (default: TRUE)
+  #
+  # Output:
+  #   A plot of the learning rates for the best model across z dimensions
 
   # Set title and output
   title <- paste0(dataset, ' - ', algorithm)
@@ -327,8 +349,10 @@ plotBestModel <- function(best_model_df, algorithm, dataset, output_fig_dir) {
     theme(axis.text.x = element_text(angle = 0)) +
     ggtitle(title)
 
-  ggsave(best_model_fig_file_png, plot = p, height = 2.5, width = 4)
-  ggsave(best_model_fig_file_pdf, plot = p, height = 2.5, width = 4)
+  if (save_plot) {
+    ggsave(best_model_fig_file_png, plot = p, height = 2.5, width = 4)
+    ggsave(best_model_fig_file_pdf, plot = p, height = 2.5, width = 4)
+  }
 
   return(p)
 }

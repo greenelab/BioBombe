@@ -120,6 +120,13 @@ compile_reconstruction_data <- function(dataset_name, data_focus = "all") {
     reconstruction_cost_df$algorithm <-
       factor(reconstruction_cost_df$algorithm,
              levels = c("pca", "ica", "nmf", "dae", "vae"))
+    
+    reconstruction_cost_df$algorithm <- 
+      reconstruction_cost_df$algorithm %>% dplyr::recode_factor("pca" = "PCA",
+                                                                "ica" = "ICA",
+                                                                "nmf" = "NMF",
+                                                                "dae" = "DAE",
+                                                                "vae" = "VAE")
 
     reconstruction_cost_df$reconstruction_cost <-
       as.numeric(paste(reconstruction_cost_df$reconstruction_cost))

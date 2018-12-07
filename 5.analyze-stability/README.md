@@ -27,7 +27,7 @@ To reproduce the results of the stability analysis perform the following:
 
 ```bash
 # Activate computational environment
-conda activate interpret-compression
+conda activate biobombe
 
 # Perform the analysis
 # (ensure that `2.ensemble-z-analysis/analysis.sh` is complete)
@@ -42,7 +42,7 @@ The results are compared within each bottleneck dimensions for each dataset inde
 
 ### TCGA
 
-![TCGA Within](https://raw.githubusercontent.com/greenelab/interpret-compression/master/5.analyze-stability/figures/stability_within_z_TCGA.png)
+![TCGA Within](https://raw.githubusercontent.com/greenelab/BioBombe/master/5.analyze-stability/figures/stability_within_z_TCGA.png)
 
 **Figure 1** - Assessing the similarity of latent representations in TCGA between algorithms using SVCCA.
 Each boxplot represents 20 distinct points.
@@ -59,7 +59,7 @@ We do observe a consistent and slight increase of similarity in higher dimension
 
 ### GTEx
 
-![GTEX Within](https://raw.githubusercontent.com/greenelab/interpret-compression/master/5.analyze-stability/figures/stability_within_z_GTEX.png)
+![GTEX Within](https://raw.githubusercontent.com/greenelab/BioBombe/master/5.analyze-stability/figures/stability_within_z_GTEX.png)
 
 **Figure 2** - Assessing the similarity of latent representations in GTEX between algorithms using SVCCA.
 Each boxplot represents 20 distinct points.
@@ -70,7 +70,7 @@ We observe very similar patterns in GTEX as we do in TCGA.
 
 ### TARGET
 
-![GTEX Within](https://raw.githubusercontent.com/greenelab/interpret-compression/master/5.analyze-stability/figures/stability_within_z_TARGET.png)
+![GTEX Within](https://raw.githubusercontent.com/greenelab/BioBombe/master/5.analyze-stability/figures/stability_within_z_TARGET.png)
 
 **Figure 3** - Assessing the similarity of latent representations in TARGET between algorithms using SVCCA.
 Each boxplot represents 20 distinct points.
@@ -84,7 +84,7 @@ All other algorithms remained relatively consistent, even when compressing a sma
 
 ### Comparing Signal to Shuffled Signal
 
-![Signal Difference](https://raw.githubusercontent.com/greenelab/interpret-compression/master/5.analyze-stability/figures/within_z_signal_difference.png)
+![Signal Difference](https://raw.githubusercontent.com/greenelab/BioBombe/master/5.analyze-stability/figures/within_z_signal_difference.png)
 
 **Figure 4** - Mean stability estimates across datasets and z dimensions for each dataset.
 The value shown for each point represents the mean SVCCA similarity with real data subtracted from the mean SVCCA similarity of permuted data.
@@ -97,7 +97,7 @@ These comparisons were done within each algorithm and within each dataset, indep
 
 ### TCGA
 
-![TCGA Across](https://raw.githubusercontent.com/greenelab/interpret-compression/master/5.analyze-stability/figures/stability_across_z_TCGA.png)
+![TCGA Across](https://raw.githubusercontent.com/greenelab/BioBombe/master/5.analyze-stability/figures/stability_across_z_TCGA.png)
 
 **Figure 5** - Assessing the similarity of latent representations in TCGA across different z dimensions within each algorithm using SVCCA.
 Each square in the heatmap represents the mean SVCCA similarity metric for canonical correlation estimates identified in the smallest dimension.
@@ -112,7 +112,7 @@ Comparing high dimensions to one another resulted in the lowest correlation esti
 
 ### GTEX
 
-![GTEX Across](https://raw.githubusercontent.com/greenelab/interpret-compression/master/5.analyze-stability/figures/stability_across_z_GTEX.png)
+![GTEX Across](https://raw.githubusercontent.com/greenelab/BioBombe/master/5.analyze-stability/figures/stability_across_z_GTEX.png)
 
 **Figure 6** - Assessing the similarity of latent representations in GTEX across different z dimensions within each algorithm using SVCCA.
 Each square in the heatmap represents the mean SVCCA similarity metric for canonical correlation estimates identified in the smallest dimension.
@@ -122,7 +122,7 @@ The GTEX observations are nearly identical, and perhaps even more exaggerated, t
 
 ### TARGET
 
-![TARGET Across](https://raw.githubusercontent.com/greenelab/interpret-compression/master/5.analyze-stability/figures/stability_across_z_TARGET.png)
+![TARGET Across](https://raw.githubusercontent.com/greenelab/BioBombe/master/5.analyze-stability/figures/stability_across_z_TARGET.png)
 
 **Figure 7** - Assessing the similarity of latent representations in TARGET across different z dimensions within each algorithm using SVCCA.
 Each square in the heatmap represents the mean SVCCA similarity metric for canonical correlation estimates identified in the smallest dimension.

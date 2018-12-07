@@ -14,7 +14,7 @@ In this module, we explore the ability of compression models to reconstruct and 
 The following results were obtained by running the following
 
 ```bash
-conda activate interpret-compression
+conda activate biobombe
 
 # Navigate into this module folder
 cd 4.analyze-components

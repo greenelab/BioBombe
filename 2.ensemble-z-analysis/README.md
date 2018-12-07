@@ -38,7 +38,7 @@ The population of weight and z matrices are saved for alternative downstream ana
 To rerun the analysis, perform the following:
 
 ```bash
-conda activate interpret-compression
+conda activate biobombe
 
 # Navigate into this module folder
 cd 2.ensemble-z-analysis

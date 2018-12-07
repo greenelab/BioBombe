@@ -1,17 +1,23 @@
-# Interpretation of Serially Compressed Gene Expression Features
+![logo](https://raw.githubusercontent.com/greenelab/BioBombe/master/logo.png)
 
-**Gregory Way 2018**
+# Biological Interpretation of Serially Compressed Gene Expression Features using Network Projection
+
+**Gregory Way and Casey Greene 2018**
 
 **University of Pennsylvania**
 
 The repository stores data and data processing modules to enable compressed gene expression feature interpretation.
-Here, we serially compress three different gene expression datasets across different bottleneck dimensions (_z_) for five different algorithms.
+
+Named after the [mechanical device developed by cryptologists in World War II](https://en.wikipedia.org/wiki/Bombe) to decipher secret messages sent by [Enigma machines](https://en.wikipedia.org/wiki/Enigma_machine), BioBombe is used to decipher hidden signals in gene expression data.
+Inspired by the number-crunching knobs of [Alan Turing's](https://en.wikipedia.org/wiki/Alan_Turing) device, BioBombe serially compresses gene expression input with increasing bottleneck dimensionality and deciphers the learned compressed features using biological network projection approaches.
+
+In this repository, we serially compress three different gene expression datasets across different bottleneck dimensions (_z_) for five different algorithms.
 We evaluate each algorithm and dimension on a variety of metrics.
 Our goal is to construct reproducible gene expression features with unsupervised learning, and to begin interpreting what these compression features represent using network projection approaches.
 
 Our approach is outlined below:
 
-![overview](https://raw.githubusercontent.com/greenelab/interpret-compression/master/compression-overview.png)
+![overview](https://raw.githubusercontent.com/greenelab/BioBombe/master/compression-overview.png)
 
 ## Modules
 
@@ -42,5 +48,5 @@ To build and activate this environment run:
 # conda version 4.5.0
 conda env create --force --file environment.yml
 
-conda activate interpret-compression
+conda activate biobombe
 ```

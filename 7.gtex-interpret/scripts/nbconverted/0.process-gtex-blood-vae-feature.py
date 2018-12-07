@@ -2,25 +2,25 @@
 # coding: utf-8
 
 # # Capturing Blood Tissue in GTEx Data
-# 
+#
 # **Gregory Way, 2018**
-# 
+#
 # When viewing sample correlation differences across z dimensions stratified by tissue-type, we often observed a rapid increase in correlation after increasing model capacity by one.
-# 
+#
 # For example, the ability of variational autoencoders to capture blood tissue correlation jumps by nearly 50% between bottleneck dimensions 2 and 3 (see below).
-# 
-# ![sample-correlation_Blood_GTEX_signal_pearson.png](https://raw.githubusercontent.com/greenelab/interpret-compression/master/4.analyze-components/figures/GTEX/sample-correlation/sample-type/sample-correlation_Blood_GTEX_signal_pearson.png)
-# 
+#
+# ![sample-correlation_Blood_GTEX_signal_pearson.png](https://raw.githubusercontent.com/greenelab/BioBombe/master/4.analyze-components/figures/GTEX/sample-correlation/sample-type/sample-correlation_Blood_GTEX_signal_pearson.png)
+#
 # ## Procedure
-# 
+#
 # In the following notebook, we extract two representative weight matrices for VAE latent space dimensions 2 and 3.
-# We apply two compression feature interpretaion approaches to the weight vectors for each latent space feature. 
-# 
+# We apply two compression feature interpretaion approaches to the weight vectors for each latent space feature.
+#
 # 1. Our matrix interpretation approach
 # 2. Overrepresentation Tests using high weight genes
-# 
+#
 # In both approaches we use genesets derived in the XCELL paper that represent cell-types ([Aran et al. 2017](https://doi.org/10.1186/s13059-017-1349-1))
-# 
+#
 # We output the results of both approaches and analyze the results in subsequent notebooks.
 
 # In[1]:
@@ -159,7 +159,7 @@ real_df.sort_values(by='z_score').to_csv(file, sep='\t')
 
 
 # ## Perform overrepresentation tests on the same features
-# 
+#
 # ### Split into positive and negative tails and extract high weight genes
 
 # In[14]:
@@ -249,4 +249,3 @@ overrepresented_results_df.head()
 
 file = os.path.join('results', 'gtex_vae_example_overrepresentation.tsv')
 overrepresented_results_df.sort_values(by='pval').to_csv(file, sep='\t')
-

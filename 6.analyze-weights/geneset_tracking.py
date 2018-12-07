@@ -2,7 +2,8 @@
 2018 Gregory Way
 6.analyze-weights/geneset_tracking.py
 
-Apply interpret-compression approach to weight matrices
+Apply BioBombe network projection approach to weight matrices to decipher compressed
+gene expression signals
 
 Usage:
 

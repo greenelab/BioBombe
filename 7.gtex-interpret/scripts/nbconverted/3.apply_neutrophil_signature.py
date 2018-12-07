@@ -2,19 +2,19 @@
 # coding: utf-8
 
 # # Application of Neutrophil Signature
-# 
+#
 # **Gregory Way, 2018**
-# 
+#
 # We previously identified a specific VAE feature (z = 3) that captured neutrophil signatures.
 # This signature was not captured in VAE z = 2, and, when present, contributed to a rapid increase in the ability to capture the signal in GTEX blood tissues.
-# 
-# ![cell_type_Neutrophils_IRIS.png](https://github.com/greenelab/interpret-compression/raw/master/6.analyze-weights/figures/GTEX/signal/GpXCELL/gene_set_Neutrophils_IRIS_1.png)
-# 
-# 
+#
+# ![cell_type_Neutrophils_IRIS.png](https://github.com/greenelab/BioBombe/raw/master/6.analyze-weights/figures/GTEX/signal/GpXCELL/gene_set_Neutrophils_IRIS_1.png)
+#
+#
 # Here, take the specific feature from the specific weight matrix and multiply the feature by the genes in common in the publicly available neutrophil data.
-# 
+#
 # ## We also test the highest scoring neutrophil IRIS 1 signature
-# 
+#
 # * DAE feature 2 in weight matrix from seed 229564
 
 # In[1]:
@@ -348,9 +348,8 @@ for h, l in zip(handles, labels):
     if l != 'classification':
         use_handles.append(h)
         use_labels.append(l)
-        
+
 l = plt.legend(use_handles, use_labels, bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., fancybox=True)
 l.set_title('Gene Classification')
 plt.tight_layout()
 plt.savefig('test.png', dpi=600, width=10, height=6)
-

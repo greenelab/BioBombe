@@ -161,7 +161,11 @@ plot_reconstruction_loss <- function(data_df) {
     scale_color_manual(name = "Algorithm",
                        values = c("#e41a1c", "#377eb8", "#4daf4a", "#984ea3",
                                   "#ff7f00"),
-                       labels = c("PCA", "ICA", "NMF", "DAE", "VAE")) +
+                       labels = c("pca" = "PCA",
+                                  "ica" = "ICA",
+                                  "nmf" = "NMF",
+                                  "dae" = "DAE",
+                                  "vae" = "VAE")) +
     facet_grid(~ algorithm) +
     xlab("Latent Space Dimensions (z)") +
     ylab("Reconstruction Cost") +

@@ -308,20 +308,20 @@ def align_matrices(x_file, y, add_cancertype_covariate=True, algorithm=None):
     x_df = pd.DataFrame(x_scaled, columns=x_df.columns, index=x_df.index)
 
     # create covariate info
-    covariate_df = pd.get_dummies(y.DISEASE)
     mutation_covariate_df = pd.DataFrame(y.loc[:, "log10_mut"], index=y.index)
 
     # Merge log10 mutation burden covariate
-    x_df = x_df.merge(covariate_df, left_index=True, right_index=True)
+    x_df = x_df.merge(mutation_covariate_df, left_index=True, right_index=True)
 
     if add_cancertype_covariate:
         # Merge features with covariate data
-        x_df = x_df.merge(mutation_covariate_df, left_index=True, right_index=True)
+        covariate_df = pd.get_dummies(y.DISEASE)
+        x_df = x_df.merge(covariate_df, left_index=True, right_index=True)
 
     return use_samples, x_df, y
 
 
-def train_model(x_train, x_test, y_train, alphas, l1_ratios, n_folds=5):
+def train_model(x_train, x_test, y_train, alphas, l1_ratios, n_folds=5, max_iter=1000):
     """
     Build the logic and sklearn pipelines to train x matrix based on input y
 
@@ -332,6 +332,7 @@ def train_model(x_train, x_test, y_train, alphas, l1_ratios, n_folds=5):
     alphas - list of alphas to perform cross validation over
     l1_ratios - list of l1 mixing parameters to perform cross validation over
     n_folds - int of how many folds of cross validation to perform
+    max_iter - the maximum number of iterations to test until convergence
 
     Output:
     The full pipeline sklearn object and y matrix predictions for training, testing,
@@ -358,7 +359,7 @@ def train_model(x_train, x_test, y_train, alphas, l1_ratios, n_folds=5):
                     random_state=0,
                     class_weight="balanced",
                     loss="log",
-                    max_iter=100,
+                    max_iter=max_iter,
                     tol=1e-3,
                 ),
             )

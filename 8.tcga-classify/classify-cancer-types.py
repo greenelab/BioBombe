@@ -1,20 +1,18 @@
 """
 2018 Gregory Way
-7.tcga-classify/classify-top-mutations.py
+8.tcga-classify/classify-cancer-types.py
 
-Predict if specific genes are mutated across TCGA tumors based on compressed expression
-features by various algorithms and dimensionalities.
+Predicting 33 different cancer-types using elastic net logistic regression and
+compressed gene expression features in TCGA PanCanAtlas
 
 Usage:
 
-    python classify-top-mutations.py
+    python classify-cancer-types.py
 
 Output:
-Gene specific DataFrames storing ROC, precision-recall, and classifier coefficients
-for every compression model trained in their ability to predict mutations. The genes
-used are the top 50 most mutated genes in TCGA PanCanAtlas. A gene was considered
-mutated if a non-silent mutation was observed by the MC3 mutation calling effort. An
-additional metrics file that stores all gene AUROC and AUPR is also saved.
+Cancer-type specific DataFrames storing ROC, precision-recall, and classifier
+coefficients for every compression model trained in their ability to predict
+cancer-type.
 """
 
 import os
@@ -26,25 +24,20 @@ from scripts.tcga_util import (
     summarize_results,
     extract_coefficients,
     align_matrices,
-    process_y_matrix,
     train_model,
     build_feature_dictionary,
+    process_y_matrix_cancertype,
 )
 
 np.random.seed(123)
 
 # Load constants
-filter_prop = 0.05
-filter_count = 15
 folds = 5
+max_iter = 100
 algorithms = ["pca", "ica", "nmf", "dae", "vae"]
 signals = ["signal", "shuffled"]
 alphas = [0.1, 0.13, 0.15, 0.2, 0.25, 0.3]
 l1_ratios = [0.15, 0.16, 0.2, 0.25, 0.3, 0.4]
-
-# Load genes
-file = os.path.join("data", "top50_mutated_genes.tsv")
-genes_df = pd.read_table(file)
 
 # Load data to build y matrices
 base_url = "https://github.com/greenelab/pancancer/raw"
@@ -54,59 +47,37 @@ commit = "2a0683b68017fb226f4053e63415e4356191734f"
 file = "{}/{}/data/sample_freeze.tsv".format(base_url, commit)
 sample_freeze_df = pd.read_table(file, index_col=0)
 
-file = "{}/{}/data/pancan_mutation_freeze.tsv.gz".format(base_url, commit)
-mutation_df = pd.read_table(file, index_col=0)
-
-file = "{}/{}/data/copy_number_loss_status.tsv.gz".format(base_url, commit)
-copy_loss_df = pd.read_table(file, index_col=0)
-
-file = "{}/{}/data/copy_number_gain_status.tsv.gz".format(base_url, commit)
-copy_gain_df = pd.read_table(file, index_col=0)
-
 file = "{}/{}/data/mutation_burden_freeze.tsv".format(base_url, commit)
 mut_burden_df = pd.read_table(file, index_col=0)
 
 # Track total metrics for each gene in one file
 full_metrics_list = []
+count_list = []
 
 # Obtain a dictionary of file directories for loading each feature matrix (X)
 z_matrix_dict = build_feature_dictionary()
 
-for gene_idx, gene_series in genes_df.iterrows():
+# Provide one vs all classifications for all 33 different cancertypes in TCGA
+for acronym in sample_freeze_df.DISEASE.unique():
 
-    gene_name = gene_series.gene
-    classification = gene_series.classification
+    # Create list to store cancer-type specific results
+    cancertype_auc_list = []
+    cancertype_aupr_list = []
+    cancertype_coef_list = []
 
-    # Create list to store gene specific results
-    gene_auc_list = []
-    gene_aupr_list = []
-    gene_coef_list = []
+    # Create directory for the cancer-type
+    cancertype_dir = os.path.join("results", "cancer-type", acronym)
+    os.makedirs(cancertype_dir, exist_ok=True)
 
-    # Create directory for the gene
-    gene_dir = os.path.join("results", "mutation", gene_name)
-    os.makedirs(gene_dir, exist_ok=True)
-
-    # Process the y matrix for the given gene or pathway
-    y_mutation_df = mutation_df.loc[:, gene_name]
-
-    # Include copy number gains for oncogenes
-    # and copy number loss for tumor suppressor genes (TSG)
-    if classification == "Oncogene":
-        y_copy_number_df = copy_gain_df.loc[:, gene_name]
-    elif classification == "TSG":
-        y_copy_number_df = copy_loss_df.loc[:, gene_name]
-
-    y_df = process_y_matrix(
-        y_copy=y_copy_number_df,
-        y_mutation=y_mutation_df,
-        gene=gene_name,
+    y_df, count_df = process_y_matrix_cancertype(
+        acronym=acronym,
         sample_freeze=sample_freeze_df,
         mutation_burden=mut_burden_df,
-        filter_count=filter_count,
-        filter_prop=filter_prop,
-        output_directory=gene_dir,
         hyper_filter=5,
     )
+
+    # Track the status counts of all classifiers
+    count_list.append(count_df)
 
     # Now, perform all the analyses for each X matrix
     for signal in z_matrix_dict.keys():
@@ -120,18 +91,24 @@ for gene_idx, gene_series in genes_df.iterrows():
                 for alg in algorithms:
                     # Load and process data
                     train_samples, x_train_df, y_train_df = align_matrices(
-                        x_file=z_train_file, y=y_df, algorithm=alg
+                        x_file=z_train_file,
+                        y=y_df,
+                        add_cancertype_covariate=False,
+                        algorithm=alg,
                     )
 
                     test_samples, x_test_df, y_test_df = align_matrices(
-                        x_file=z_test_file, y=y_df, algorithm=alg
+                        x_file=z_test_file,
+                        y=y_df,
+                        add_cancertype_covariate=False,
+                        algorithm=alg,
                     )
 
                     # Train the model
                     print(
-                        "Training model... gene: {}, "
+                        "Training model... cancer-type: {}, "
                         "algorithm: {}, signal: {}, z_dim: {}, "
-                        "seed: {}".format(gene_name, alg, signal, z_dim, seed)
+                        "seed: {}".format(acronym, alg, signal, z_dim, seed)
                     )
 
                     # Fit the model
@@ -142,6 +119,7 @@ for gene_idx, gene_series in genes_df.iterrows():
                         alphas=alphas,
                         l1_ratios=l1_ratios,
                         n_folds=folds,
+                        max_iter=max_iter,
                     )
                     # Get metric  predictions
                     y_train_results = get_threshold_metrics(
@@ -164,17 +142,35 @@ for gene_idx, gene_series in genes_df.iterrows():
                         algorithm=alg,
                     )
 
-                    coef_df = coef_df.assign(gene=gene_name)
+                    coef_df = coef_df.assign(acronym=acronym)
 
                     # Store all results
                     train_metrics_, train_roc_df, train_pr_df = summarize_results(
-                        y_train_results, gene_name, signal, z_dim, seed, alg, "train"
+                        results=y_train_results,
+                        gene_or_cancertype=acronym,
+                        signal=signal,
+                        z_dim=z_dim,
+                        seed=seed,
+                        algorithm=alg,
+                        data_type="train",
                     )
                     test_metrics_, test_roc_df, test_pr_df = summarize_results(
-                        y_test_results, gene_name, signal, z_dim, seed, alg, "test"
+                        results=y_test_results,
+                        gene_or_cancertype=acronym,
+                        signal=signal,
+                        z_dim=z_dim,
+                        seed=seed,
+                        algorithm=alg,
+                        data_type="test",
                     )
                     cv_metrics_, cv_roc_df, cv_pr_df = summarize_results(
-                        y_cv_results, gene_name, signal, z_dim, seed, alg, "cv"
+                        results=y_cv_results,
+                        gene_or_cancertype=acronym,
+                        signal=signal,
+                        z_dim=z_dim,
+                        seed=seed,
+                        algorithm=alg,
+                        data_type="cv",
                     )
 
                     # Compile summary metrics
@@ -192,37 +188,47 @@ for gene_idx, gene_series in genes_df.iterrows():
                     metric_df_ = pd.DataFrame(metrics_, columns=cols)
                     full_metrics_list.append(metric_df_)
 
-                    gene_auc_df = pd.concat([train_roc_df, test_roc_df, cv_roc_df])
-                    gene_auc_list.append(gene_auc_df)
+                    auc_df = pd.concat([train_roc_df, test_roc_df, cv_roc_df])
+                    cancertype_auc_list.append(auc_df)
 
-                    gene_aupr_df = pd.concat([train_pr_df, test_pr_df, cv_pr_df])
-                    gene_aupr_list.append(gene_aupr_df)
+                    aupr_df = pd.concat([train_pr_df, test_pr_df, cv_pr_df])
+                    cancertype_aupr_list.append(aupr_df)
 
-                    gene_coef_list.append(coef_df)
+                    cancertype_coef_list.append(coef_df)
 
-    gene_auc_df = pd.concat(gene_auc_list)
-    gene_aupr_df = pd.concat(gene_aupr_list)
-    gene_coef_df = pd.concat(gene_coef_list)
+    cancertype_auc_df = pd.concat(cancertype_auc_list)
+    cancertype_aupr_df = pd.concat(cancertype_aupr_list)
+    cancertype_coef_df = pd.concat(cancertype_coef_list)
 
-    file = os.path.join(gene_dir, "{}_auc_threshold_metrics.tsv.gz".format(gene_name))
-    gene_auc_df.to_csv(
+    file = os.path.join(
+        cancertype_dir, "{}_auc_threshold_metrics.tsv.gz".format(acronym)
+    )
+    cancertype_auc_df.to_csv(
         file, sep="\t", index=False, compression="gzip", float_format="%.5g"
     )
 
-    file = os.path.join(gene_dir, "{}_aupr_threshold_metrics.tsv.gz".format(gene_name))
-    gene_aupr_df.to_csv(
+    file = os.path.join(
+        cancertype_dir, "{}_aupr_threshold_metrics.tsv.gz".format(acronym)
+    )
+    cancertype_aupr_df.to_csv(
         file, sep="\t", index=False, compression="gzip", float_format="%.5g"
     )
 
-    file = os.path.join(gene_dir, "{}_coefficients.tsv.gz".format(gene_name))
-    gene_coef_df.to_csv(
+    file = os.path.join(cancertype_dir, "{}_coefficients.tsv.gz".format(acronym))
+    cancertype_coef_df.to_csv(
         file, sep="\t", index=False, compression="gzip", float_format="%.5g"
     )
 
 # Now, compile all results and write to file
 final_metrics_df = pd.concat(full_metrics_list)
 
-file = os.path.join("results", "all_gene_classify_metrics.tsv.gz")
+file = os.path.join("results", "all_cancertype_classify_metrics.tsv.gz")
 final_metrics_df.to_csv(
     file, sep="\t", index=False, compression="gzip", float_format="%.5g"
 )
+
+# Write out a combined status matrix as well
+final_count_list_df = pd.concat(count_list)
+
+file = os.path.join("results", "all_cancertype_status_counts.tsv")
+final_count_list_df.to_csv(file, sep="\t", index=False)

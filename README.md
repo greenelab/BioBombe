@@ -9,7 +9,7 @@
 The repository stores data and data processing modules to enable compressed gene expression feature interpretation.
 
 Named after the [mechanical device developed by cryptologists in World War II](https://en.wikipedia.org/wiki/Bombe) to decipher secret messages sent by [Enigma machines](https://en.wikipedia.org/wiki/Enigma_machine), BioBombe is used to decipher hidden signals in gene expression data.
-Inspired by the number-crunching knobs of [Alan Turing's](https://en.wikipedia.org/wiki/Alan_Turing) device, BioBombe serially compresses gene expression input with increasing bottleneck dimensionality and deciphers the learned compressed features using network projection approaches.
+Inspired by the number-crunching knobs of [Alan Turing's](https://en.wikipedia.org/wiki/Alan_Turing) device, BioBombe serially compresses gene expression input with increasing bottleneck dimensionality and deciphers the learned compressed features using biological network projection approaches.
 
 In this repository, we serially compress three different gene expression datasets across different bottleneck dimensions (_z_) for five different algorithms.
 We evaluate each algorithm and dimension on a variety of metrics.

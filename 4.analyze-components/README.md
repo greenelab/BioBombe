@@ -28,6 +28,8 @@ The analysis is provided in [1.visualize-reconstruction.ipynb](1.visualize-recon
 
 The results are stored in the [results](results/) folder and the figures are stored in dataset specific folders in [figures](figures/).
 
+![reconstruction](https://raw.githubusercontent.com/greenelab/BioBombe/master/4.analyze-components/figures/reconstruction_summary.png)
+
 ## Correlation
 
 We also track the Pearson and Spearman correlations of input samples to reconstructed output samples.

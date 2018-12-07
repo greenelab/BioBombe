@@ -24,7 +24,7 @@ The full analysis is provided, with results visualized, in [`visualize-parameter
 
 ### Summary Figure
 
-![summary sweep figure](https://raw.githubusercontent.com/greenelab/interpret-compression/master/1.initial-z-sweep/figures/z_dimension_sweep_summary.png)
+![summary sweep figure](https://raw.githubusercontent.com/greenelab/BioBombe/master/1.initial-z-sweep/figures/z_dimension_sweep_summary.png)
 
 ### Datasets
 
@@ -41,7 +41,7 @@ To reproduce the data for this analysis run the following command:
 
 ```bash
 # From the top directory
-conda activate interpret-compression
+conda activate biobombe
 
 # Navigate into z-sweep directory
 cd 1.initial-z-sweep

@@ -38,6 +38,17 @@ readr::write_tsv(sample_correlation_list[[dataset_name]], out_file)
 
 head(sample_correlation_list[[dataset_name]], 2)
 
+# 4) Summarize correlations per sample-type and write to file
+disease_summary_df <- sample_correlation_list[[dataset_name]] %>%
+    dplyr::group_by(algorithm, sample_type, num_comp, cor_type, shuffled, data) %>%
+    dplyr::summarize(mean_cor = mean(correlation),
+                     var_cor = var(correlation))
+
+out_file <- file.path("results", paste0(dataset_name, "_sample_correlation_phenotype_summary.tsv.gz"))
+readr::write_tsv(disease_summary_df, out_file)
+
+head(disease_summary_df)
+
 dataset_name <- "TCGA"
 
 # 1) Load phenotype data
@@ -62,6 +73,17 @@ out_file <- file.path("results", "TCGA_sample_correlation_phenotype.tsv.gz")
 readr::write_tsv(sample_correlation_list[[dataset_name]], out_file)
 
 head(sample_correlation_list[[dataset_name]], 2)
+
+# 4) Summarize correlations per sample-type and write to file
+disease_summary_df <- sample_correlation_list[[dataset_name]] %>%
+    dplyr::group_by(algorithm, sample_type, num_comp, cor_type, shuffled, data) %>%
+    dplyr::summarize(mean_cor = mean(correlation),
+                     var_cor = var(correlation))
+
+out_file <- file.path("results", paste0(dataset_name, "_sample_correlation_phenotype_summary.tsv.gz"))
+readr::write_tsv(disease_summary_df, out_file)
+
+head(disease_summary_df)
 
 dataset_name <- "GTEX"
 
@@ -92,6 +114,17 @@ out_file <- file.path("results", "GTEX_sample_correlation_phenotype.tsv.gz")
 readr::write_tsv(sample_correlation_list[[dataset_name]], out_file)
 
 head(sample_correlation_list[[dataset_name]], 2)
+
+# 4) Summarize correlations per sample-type and write to file
+disease_summary_df <- sample_correlation_list[[dataset_name]] %>%
+    dplyr::group_by(algorithm, sample_type, num_comp, cor_type, shuffled, data) %>%
+    dplyr::summarize(mean_cor = mean(correlation),
+                     var_cor = var(correlation))
+
+out_file <- file.path("results", paste0(dataset_name, "_sample_correlation_phenotype_summary.tsv.gz"))
+readr::write_tsv(disease_summary_df, out_file)
+
+head(disease_summary_df)
 
 for (dataset_name in names(sample_correlation_list)) {
     # Extract out the specific dataset correlation data

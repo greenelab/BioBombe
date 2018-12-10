@@ -344,9 +344,16 @@ plot_sample_correlation <- function(data_df,
                  size = 0.1,
                  outlier.size = 0.05) +
     scale_color_manual(name = "Algorithm",
-                       values = c("#e41a1c", "#377eb8", "#4daf4a", "#984ea3",
+                       values = c("#e41a1c",
+                                  "#377eb8",
+                                  "#4daf4a",
+                                  "#984ea3",
                                   "#ff7f00"),
-                       labels = c("PCA", "ICA", "NMF", "DAE", "VAE")) +
+                       labels = c("pca" = "PCA",
+                                  "ica" = "ICA",
+                                  "nmf" = "NMF",
+                                  "dae" = "DAE",
+                                  "vae" = "VAE")) +
     facet_grid(data ~ algorithm) +
     xlab("Latent Space Dimensions (z)") +
     ylab("Sample Correlation") +
@@ -376,9 +383,16 @@ plot_sample_correlation <- function(data_df,
                  size = 0.1,
                  outlier.size = 0.05) +
     scale_color_manual(name = "Algorithm",
-                       values = c("#e41a1c", "#377eb8", "#4daf4a", "#984ea3",
+                       values = c("#e41a1c",
+                                  "#377eb8",
+                                  "#4daf4a",
+                                  "#984ea3",
                                   "#ff7f00"),
-                       labels = c("PCA", "ICA", "NMF", "DAE", "VAE")) +
+                       labels = c("pca" = "PCA",
+                                  "ica" = "ICA",
+                                  "nmf" = "NMF",
+                                  "dae" = "DAE",
+                                  "vae" = "VAE")) +
     scale_linetype_manual(name = "Data Split",
                           values = c("solid", "dashed"),
                           labels = c("training" = "Training",
@@ -432,9 +446,16 @@ plot_sample_correlation <- function(data_df,
       geom_boxplot(aes(color = algorithm), size = 0.1, outlier.size = 0.05) +
       facet_wrap( ~ data, nrow = 2) +
       scale_color_manual(name = "Algorithm",
-                         values = c("#e41a1c", "#377eb8", "#4daf4a", "#984ea3",
+                         values = c("#e41a1c",
+                                    "#377eb8",
+                                    "#4daf4a",
+                                    "#984ea3",
                                     "#ff7f00"),
-                         labels = c("PCA", "ICA", "NMF", "DAE", "VAE")) +
+                         labels = c("pca" = "PCA",
+                                    "ica" = "ICA",
+                                    "nmf" = "NMF",
+                                    "dae" = "DAE",
+                                    "vae" = "VAE")) +
       xlab("Latent Space Dimensions (z)") +
       ylab("Sample Correlation") +
       ggtitle(paste0(dataset_name, " Sample Correlation (", sample_type, ")\n(",
@@ -460,4 +481,267 @@ plot_sample_correlation <- function(data_df,
     return_plot_list[["individual_cancertypes"]] <- sample_type_specific_list
     return(return_plot_list)
   }
+}
+
+subset_correlations <- function(df, cor_type, data_type, signal_type) {
+  # Given a correlations dataframe, subset based on correlation, data
+  # and signal types
+  # 
+  # Arguments:
+  # df - the dataframe of interest to subset
+  # cor_type - a string of correlation to subset ('pearson' or 'spearman')
+  # data_type - a string of type of data used ('training' or 'testing')
+  # signal_type - a string of the signal type ('signal' or 'shuffled')
+  #
+  # Output:
+  # a subset dataframe with correlations summarized across all 5 seeds (median)
+  
+  subset_df <- df %>%
+    dplyr::filter(cor_type == !!cor_type,
+                  data == !!data_type,
+                  shuffled == !!signal_type) %>%
+    dplyr::group_by(id, data, num_comp, algorithm, sample_type) %>%
+    dplyr::summarise(median_corr = median(correlation, na.rm = TRUE))
+  
+  subset_df$num_comp <-
+    factor(subset_df$num_comp,
+           levels = sort(as.numeric(paste(unique(subset_df$num_comp)))))
+  
+  subset_df$algorithm <-
+    factor(subset_df$algorithm,
+           levels = c("pca", "ica", "nmf", "dae", "vae"))
+  
+  subset_df$correlation <-
+    as.numeric(paste(subset_df$median_corr))
+  
+  return(subset_df)
+}
+
+plot_correlation_summary <- function(df, cor_type = "Pearson", ylimits = c(0, 1)) {
+  # Plot a full distribution of correlation summary across dimensions
+  #
+  # Arguments:
+  # df - a summary dataframe (output from `subset_correlations`)
+  # cor_type - a string indicating which correlation type was used (for title)
+  # ylimits - a vector of length two indicating where limits should be drawn
+  #
+  # Output:
+  # a ggplot2 object plot describing sample correlations across models
+  
+  full_corr_gg <- 
+    ggplot(data = df, aes(x = num_comp, y = median_corr)) +
+    geom_boxplot(aes(fill = algorithm),
+                 size = 0.1,
+                 outlier.size = 0.05,
+                 outlier.color = 'lightgrey') +
+    scale_fill_manual(name = "Algorithm",
+                      values = c("#e41a1c",
+                                 "#377eb8",
+                                 "#4daf4a",
+                                 "#984ea3",
+                                 "#ff7f00"),
+                      labels = c("pca" = "PCA",
+                                 "ica" = "ICA",
+                                 "nmf" = "NMF",
+                                 "dae" = "DAE",
+                                 "vae" = "VAE")) +
+    xlab("Latent Space Dimensions (z)") +
+    ylab(paste0("Sample Correlation (", cor_type, ")")) +
+    ylim(ylimits) +
+    theme_bw() +
+    theme(axis.text.x = element_text(angle = 90, size = 8),
+          axis.text.y = element_text(size = 8),
+          axis.title = element_text(size = 10),
+          plot.title = element_text(hjust = 0.5, size = 18),
+          legend.text = element_text(size = 9),
+          legend.key.size = unit(1, "lines"),
+          strip.text.y = element_text(size = 12))
+
+  return(full_corr_gg)
+}
+
+process_capacity <- function(summary_df, select_sample_types) {
+  # Given a dataset summary dataframe, calculate the difference in correlation
+  # values as the model capacity increases
+  #
+  # Arguments:
+  # summary_df - dataset specific dataframe of sample correlations
+  # select_samples - a character vector of samples of choice to subset
+  #
+  # Output:
+  # A dataframe storing how correlation increases with capacity + 1
+  
+  capacity_gain_df <- summary_df %>%
+    dplyr::group_by(algorithm, sample_type, cor_type, shuffled, data) %>%
+    dplyr::arrange(num_comp, .by_group = TRUE) %>%
+    dplyr::mutate(capacity_diff = 
+                    mean_cor - dplyr::lag(mean_cor, 
+                                          default = dplyr::first(mean_cor)))
+  
+  capacity_gain_df <- capacity_gain_df %>%
+    dplyr::filter(cor_type == 'pearson', shuffled == 'signal') %>%
+    dplyr::filter(sample_type %in% select_sample_types)
+  
+  capacity_gain_df$sample_type <- (
+    factor(capacity_gain_df$sample_type, levels = select_sample_types)
+  )
+  
+  capacity_gain_df$num_comp <-
+    factor(capacity_gain_df$num_comp,
+           levels = as.character(
+             sort(as.numeric(paste(unique(capacity_gain_df$num_comp))))
+             ))
+  
+  capacity_gain_df$algorithm <- 
+    capacity_gain_df$algorithm %>%
+    dplyr::recode("pca" = "PCA",
+                  "ica" = "ICA",
+                  "nmf" = "NMF",
+                  "dae" = "DAE",
+                  "vae" = "VAE")
+  
+  capacity_gain_df$algorithm <-
+    factor(capacity_gain_df$algorithm,
+           levels = c("PCA", "ICA", "NMF", "DAE", "VAE"))
+  
+  capacity_gain_df <- capacity_gain_df %>%
+    dplyr::mutate(group_var = paste0(algorithm, '_', data))
+
+    factor(capacity_gain_df$algorithm,
+           levels = c("PCA", "ICA", "NMF", "DAE", "VAE"))
+  
+  return(capacity_gain_df)
+}
+
+plot_capacity_difference <- function(capacity_df) {
+  # Given a capacity dataframe, visualize sample increases with capacity
+  #
+  # Arguments:
+  # capacity_df - dataframe storing specific sample correlation increases
+  #
+  # Output:
+  # A ggplot object plot
+  
+  gg <- ggplot(capacity_df,
+         aes(x = num_comp,
+             y = capacity_diff,
+             color = algorithm,
+             linetype = data,
+             group = group_var)) +
+    stat_summary(fun.y = mean,
+                 geom = 'line',
+                 size = 0.25,
+                 aes(group = group_var,
+                     color = algorithm,
+                     linetype = data)) +
+    facet_grid(sample_type ~ .) +
+    scale_color_manual(name = "Algorithm",
+                       values = c("#e41a1c",
+                                  "#377eb8",
+                                  "#4daf4a",
+                                  "#984ea3",
+                                  "#ff7f00"),
+                       labels = c("pca" = "PCA",
+                                  "ica" = "ICA",
+                                  "nmf" = "NMF",
+                                  "dae" = "DAE",
+                                  "vae" = "VAE")) +
+    scale_linetype_manual(name = "Data Split",
+                          values = c("solid", "dotted"),
+                          labels = c("training" = "Training",
+                                     "testing" = "Testing")) +
+    theme_bw(base_size = 9) +
+    theme(axis.text.x = element_text(angle = 90, size = 8),
+          axis.text.y = element_text(size = 8),
+          axis.title = element_text(size = 10),
+          plot.title = element_text(hjust = 0.5, size = 18),
+          legend.text = element_text(size = 9),
+          legend.key.size = unit(1, "lines"),
+          strip.text.y = element_text(size = 12),
+          strip.background = element_rect(colour = "black", fill = "#fdfff4")) +
+    labs(x = "Latent Space Dimensions (z)",
+         y = expression(paste("Correlation Gain ",
+                              '(z'['i'], ' - ', 'z'['i - 1'], ')'))) +
+    scale_x_discrete(expand = c(0, 0))
+  
+  return(gg)
+}
+
+process_summary_df <- function(summary_df, select_sample_types, cor_type,
+                               data_type, signal_type) {
+  # Given a dataset summary df, subset specific model types and sample types
+  # values as the model capacity increases
+  #
+  # Arguments:
+  # summary_df - dataset specific dataframe of sample correlations
+  # select_samples - a character vector of samples of choice to subset
+  # cor_type - a string of correlation to subset ('pearson' or 'spearman')
+  # data_type - a string of type of data used ('training' or 'testing')
+  # signal_type - a string of the signal type ('signal' or 'shuffled')
+  #
+  # Output:
+  # Subset data ready for plotting
+  
+  subset_summary_df <- summary_df %>%
+    dplyr::filter(cor_type == !!cor_type,
+                  shuffled == !!signal_type,
+                  data == !!data_type)
+  
+  subset_summary_df$num_comp <-
+    factor(subset_summary_df$num_comp,
+           levels = as.character(sort(as.numeric(
+             paste(unique(subset_summary_df$num_comp)))
+             )))
+  
+  subset_summary_df$algorithm <- subset_summary_df$algorithm %>%
+    dplyr::recode("pca" = "PCA",
+                  "ica" = "ICA",
+                  "nmf" = "NMF",
+                  "dae" = "DAE",
+                  "vae" = "VAE")
+  
+  subset_summary_df$algorithm <-
+    factor(subset_summary_df$algorithm,
+           levels = rev(c("PCA", "ICA", "NMF", "DAE", "VAE")))
+  
+  subset_summary_df <- subset_summary_df %>%
+    dplyr::filter(sample_type %in% select_sample_types)
+  
+  subset_summary_df$sample_type <- factor(subset_summary_df$sample_type,
+                                          levels = select_sample_types)
+  
+  return(subset_summary_df)
+}
+
+plot_subset_summary <- function(subset_summary_df, palette) {
+  # Plot heatmap of summarized sample correlations
+  #
+  # Arguments:
+  # subset_summary_df - a summarized and subset dataframe ready for plotting
+  #
+  # Output:
+  # a ggplot object of median correlations across algorithms and dimensionality
+  
+  select_sampletype_gg <-
+    ggplot(subset_summary_df, aes(x = num_comp, y = algorithm)) +
+    geom_tile(aes(fill = mean_cor), colour = "white") +
+    scale_fill_gradientn(name = "Mean Pearson\nCorrelation",
+                         colours = palette(100),
+                         values = scales::rescale(c(1, 0.85, 0.6))) +
+    facet_grid(sample_type ~ .) +
+    theme_bw(base_size = 9) +
+    theme(axis.text.x = element_text(angle = 90, size = 8),
+          axis.text.y = element_text(size = 8),
+          axis.title = element_text(size = 10),
+          plot.title = element_text(hjust = 0.5, size = 18),
+          legend.text = element_text(size = 9),
+          legend.key.size = unit(1, "lines"),
+          strip.text.y = element_text(size = 12),
+          strip.background = element_rect(colour = "black", fill = "#fdfff4")) +
+    xlab("Latent Space Dimensions (z)") +
+    ylab("Algorithm") +
+    scale_x_discrete(expand = c(0, 0)) +
+    scale_y_discrete(expand = c(0, 0))
+  
+  return(select_sampletype_gg)
 }

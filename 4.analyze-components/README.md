@@ -36,3 +36,5 @@ We also track the Pearson and Spearman correlations of input samples to reconstr
 This analysis is provided in [2.visualize-sample-correlation.ipynb](2.visualize-sample-correlation.ipynb).
 
 The results are stored as gzipped files in the [results](results/) folder and the figures are stored in dataset specific folders in [figures](figures/).
+
+![correlation](https://raw.githubusercontent.com/greenelab/BioBombe/master/4.analyze-components/figures/correlation_summary.png)

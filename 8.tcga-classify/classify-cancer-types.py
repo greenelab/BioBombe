@@ -27,6 +27,7 @@ from scripts.tcga_util import (
     train_model,
     build_feature_dictionary,
     process_y_matrix_cancertype,
+    check_status,
 )
 
 np.random.seed(123)
@@ -50,9 +51,19 @@ sample_freeze_df = pd.read_table(file, index_col=0)
 file = "{}/{}/data/mutation_burden_freeze.tsv".format(base_url, commit)
 mut_burden_df = pd.read_table(file, index_col=0)
 
-# Track total metrics for each gene in one file
+# Track total metrics for each cancer-type in one file
 full_metrics_list = []
 count_list = []
+metric_cols = [
+    "auroc",
+    "aupr",
+    "gene_or_cancertype",
+    "signal",
+    "z_dim",
+    "seed",
+    "algorithm",
+    "data_type",
+]
 
 # Obtain a dictionary of file directories for loading each feature matrix (X)
 z_matrix_dict = build_feature_dictionary()
@@ -79,6 +90,11 @@ for acronym in sample_freeze_df.DISEASE.unique():
     # Track the status counts of all classifiers
     count_list.append(count_df)
 
+    # Check if cancer-type has been processed already
+    check_file = os.path.join(cancertype_dir, "{}_coefficients.tsv.gz".format(acronym))
+    if check_status(check_file):
+        continue
+
     # Now, perform all the analyses for each X matrix
     for signal in z_matrix_dict.keys():
         z_dim_dict = z_matrix_dict[signal]
@@ -91,14 +107,14 @@ for acronym in sample_freeze_df.DISEASE.unique():
                 for alg in algorithms:
                     # Load and process data
                     train_samples, x_train_df, y_train_df = align_matrices(
-                        x_file=z_train_file,
+                        x_file_or_df=z_train_file,
                         y=y_df,
                         add_cancertype_covariate=False,
                         algorithm=alg,
                     )
 
                     test_samples, x_test_df, y_test_df = align_matrices(
-                        x_file=z_test_file,
+                        x_file_or_df=z_test_file,
                         y=y_df,
                         add_cancertype_covariate=False,
                         algorithm=alg,
@@ -174,18 +190,8 @@ for acronym in sample_freeze_df.DISEASE.unique():
                     )
 
                     # Compile summary metrics
-                    cols = [
-                        "auroc",
-                        "aupr",
-                        "gene",
-                        "signal",
-                        "z_dim",
-                        "seed",
-                        "algorithm",
-                        "data_type",
-                    ]
                     metrics_ = [train_metrics_, test_metrics_, cv_metrics_]
-                    metric_df_ = pd.DataFrame(metrics_, columns=cols)
+                    metric_df_ = pd.DataFrame(metrics_, columns=metric_cols)
                     full_metrics_list.append(metric_df_)
 
                     auc_df = pd.concat([train_roc_df, test_roc_df, cv_roc_df])
@@ -214,18 +220,17 @@ for acronym in sample_freeze_df.DISEASE.unique():
         file, sep="\t", index=False, compression="gzip", float_format="%.5g"
     )
 
-    file = os.path.join(cancertype_dir, "{}_coefficients.tsv.gz".format(acronym))
     cancertype_coef_df.to_csv(
-        file, sep="\t", index=False, compression="gzip", float_format="%.5g"
+        check_file, sep="\t", index=False, compression="gzip", float_format="%.5g"
     )
 
-# Now, compile all results and write to file
-final_metrics_df = pd.concat(full_metrics_list)
+    # Now, compile all results and write to file
+    final_metrics_df = pd.concat(full_metrics_list)
 
-file = os.path.join("results", "all_cancertype_classify_metrics.tsv.gz")
-final_metrics_df.to_csv(
-    file, sep="\t", index=False, compression="gzip", float_format="%.5g"
-)
+    file = os.path.join("results", "all_cancertype_classify_metrics.tsv.gz")
+    final_metrics_df.to_csv(
+        file, sep="\t", index=False, compression="gzip", float_format="%.5g"
+    )
 
 # Write out a combined status matrix as well
 final_count_list_df = pd.concat(count_list)

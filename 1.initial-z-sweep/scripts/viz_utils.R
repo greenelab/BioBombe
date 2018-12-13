@@ -200,7 +200,7 @@ recodeParamSweep <- function(df, algorithm) {
 # Store base theme for plotting
 base_theme <- theme(axis.text = element_text(size = rel(0.5)),
                     axis.title = element_text(size = rel(0.7)),
-                    axis.text.x = element_text(angle = 45),
+                    axis.text.x = element_text(angle = 90),
                     strip.text = element_text(size = rel(0.5)),
                     legend.text = element_text(size = rel(0.6)),
                     legend.title = element_text(size = rel(0.8)),

@@ -256,15 +256,15 @@ plotBestModel(target_adage_good_training_df,
               algorithm = "ADAGE",
               output_fig_dir = target_fig_dir) + theme(text = element_text(size = 15))
 
-adage_label <- cowplot::ggdraw() + cowplot::draw_label(label = 'DAE', hjust = 1, vjust = 0.4)
-adage_converge_label <- cowplot::ggdraw() + cowplot::draw_label(label = 'DAE (converged)',
-                                                                hjust = 0.7, vjust = 0.4)
+adage_unconverge_label <- cowplot::ggdraw() + cowplot::draw_label(label = 'DAE (all params)',
+                                                                  hjust = 0.7, vjust = 0.4)
+adage_label <- cowplot::ggdraw() + cowplot::draw_label(label = 'DAE ', hjust = 1, vjust = 0.4)
 tybalt_label <- cowplot::ggdraw() + cowplot::draw_label(label = 'VAE', hjust = 1, vjust = 0.4)
 gtex_label <- cowplot::ggdraw() + cowplot::draw_label(label = 'GTEX', angle = 90, hjust = 0.8, vjust = 0)
 tcga_label <- cowplot::ggdraw() + cowplot::draw_label(label = 'TCGA', angle = 90, hjust = 0.8, vjust = 0)
 target_label <- cowplot::ggdraw() + cowplot::draw_label(label = 'TARGET', angle = 90, hjust = 0.5, vjust = 16)
 
-alg_main <- cowplot::plot_grid(adage_label, adage_converge_label, tybalt_label, ncol = 3)
+alg_main <- cowplot::plot_grid(adage_unconverge_label, adage_label, tybalt_label, ncol = 3)
 dataset_main <- cowplot::plot_grid(gtex_label, tcga_label, cowplot::ggdraw(), nrow = 3)
 
 main_plot <- (

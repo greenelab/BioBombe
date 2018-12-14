@@ -7,7 +7,7 @@ Usage: For import only
 """
 
 
-def build_feature_dictionary(dataset='TCGA'):
+def build_feature_dictionary(dataset="TCGA"):
     """
     Generate a nested dictionary of the directory structure pointing to compressed
     feature matrices for training and testing sets
@@ -22,7 +22,7 @@ def build_feature_dictionary(dataset='TCGA'):
     import glob
 
     z_matrix_dict = {}
-    for signal in ['signal', 'shuffled']:
+    for signal in ["signal", "shuffled"]:
         z_matrix_dict[signal] = {}
 
         if signal == "signal":
@@ -103,8 +103,14 @@ def summarize_results(
     data_type - the type of data (either training, testing, or cv)
     """
 
-    results_append_list = [gene_or_cancertype, signal, z_dim, seed, algorithm,
-                           data_type]
+    results_append_list = [
+        gene_or_cancertype,
+        signal,
+        z_dim,
+        seed,
+        algorithm,
+        data_type,
+    ]
 
     metrics_out_ = [results["auroc"], results["aupr"]] + results_append_list
 
@@ -132,9 +138,7 @@ def summarize_results(
     return metrics_out_, roc_df_, pr_df_
 
 
-def extract_coefficients(
-    cv_pipeline, feature_names, signal, z_dim, seed, algorithm
-):
+def extract_coefficients(cv_pipeline, feature_names, signal, z_dim, seed, algorithm):
     """
     Pull out the coefficients from the trained classifiers
 
@@ -168,8 +172,9 @@ def extract_coefficients(
 
 
 def process_y_matrix(
-    y_copy,
     y_mutation,
+    y_copy,
+    include_copy,
     gene,
     sample_freeze,
     mutation_burden,
@@ -182,8 +187,9 @@ def process_y_matrix(
     Combine copy number and mutation data and filter cancer-types to build y matrix
 
     Arguments:
-    y_copy - Pandas DataFrame of copy number status
     y_mutation - Pandas DataFrame of mutation status
+    y_copy - Pandas DataFrame of copy number status
+    include_copy - boolean if the copy number data should be included in status calc
     gene - string indicating gene of interest (used for writing proportion file)
     sample_feeze - pandas dataframe storing which samples to use
     mutation_burden - pandas dataframe storing log10 mutation counts
@@ -198,7 +204,11 @@ def process_y_matrix(
     import os
     import pandas as pd
 
-    y_df = y_copy + y_mutation
+    if include_copy:
+        y_df = y_copy + y_mutation
+    else:
+        y_df = y_mutation
+
     y_df.loc[y_df > 1] = 1
     y_df = pd.DataFrame(y_df)
     y_df.columns = ["status"]
@@ -261,28 +271,27 @@ def process_y_matrix_cancertype(
     import pandas as pd
 
     y_df = sample_freeze.assign(status=0)
-    y_df.loc[y_df.DISEASE == acronym, 'status'] = 1
+    y_df.loc[y_df.DISEASE == acronym, "status"] = 1
 
-    y_df = (
-        y_df.set_index("SAMPLE_BARCODE")
-        .merge(mutation_burden, left_index=True, right_index=True)
+    y_df = y_df.set_index("SAMPLE_BARCODE").merge(
+        mutation_burden, left_index=True, right_index=True
     )
 
     burden_filter = y_df["log10_mut"] < hyper_filter * y_df["log10_mut"].std()
     y_df = y_df.loc[burden_filter, :]
 
     count_df = pd.DataFrame(y_df.status.value_counts()).reset_index()
-    count_df.columns = ['status', acronym]
+    count_df.columns = ["status", acronym]
 
     return y_df, count_df
 
 
-def align_matrices(x_file, y, add_cancertype_covariate=True, algorithm=None):
+def align_matrices(x_file_or_df, y, add_cancertype_covariate=True, algorithm=None):
     """
     Process the x matrix for the given input file and align x and y together
 
     Arguments:
-    x_file - string location of the x matrix
+    x_file_or_df - string location of the x matrix or matrix df itself
     y - pandas DataFrame storing status of corresponding samples
     algorithm - a string indicating which algorithm to subset the z matrices
 
@@ -293,9 +302,12 @@ def align_matrices(x_file, y, add_cancertype_covariate=True, algorithm=None):
     from sklearn.preprocessing import StandardScaler
 
     # Load Data
-    x_df = pd.read_table(x_file, index_col=0)
-    if algorithm:
-        x_df = x_df.loc[:, x_df.columns.str.contains(algorithm)]
+    try:
+        x_df = pd.read_table(x_file_or_df, index_col=0)
+        if algorithm:
+            x_df = x_df.loc[:, x_df.columns.str.contains(algorithm)]
+    except:
+        x_df = x_file_or_df
 
     # Subset samples
     use_samples = set(y.index).intersection(set(x_df.index))
@@ -392,3 +404,19 @@ def train_model(x_train, x_test, y_train, alphas, l1_ratios, n_folds=5, max_iter
     y_predict_test = cv_pipeline.decision_function(x_test)
 
     return cv_pipeline, y_predict_train, y_predict_test, y_cv
+
+
+def check_status(file):
+    """
+    Check the status of a gene or cancer-type application
+
+    Arguments:
+    file - the file to check if it exists. If exists, then there is no need to rerun
+
+    Output:
+    boolean if the file exists or not
+    """
+
+    import os
+
+    return os.path.isfile(file)

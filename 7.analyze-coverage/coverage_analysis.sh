@@ -5,7 +5,7 @@
 
 ####################
 # Analysis 1
-# Apply the matrix interpretation approach to GTEX data using XCELL genesets
+# Extract coverage statistics for TCGA oncogenic genesets
 ####################
 python get-coverage.py \
         --dataset 'TCGA' \

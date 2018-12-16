@@ -1,6 +1,6 @@
 """
 2018 Gregory Way
-8.tcga-classify/classify-with-raw-expression.py
+9.tcga-classify/classify-with-raw-expression.py
 
 Predict if specific genes are mutated across TCGA tumors based on raw RNAseq gene
 expression features. Also make predictions on cancer types using raw gene expression.

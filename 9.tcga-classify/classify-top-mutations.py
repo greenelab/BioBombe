@@ -1,6 +1,6 @@
 """
 2018 Gregory Way
-8.tcga-classify/classify-top-mutations.py
+9.tcga-classify/classify-top-mutations.py
 
 Predict if specific genes are mutated across TCGA tumors based on compressed expression
 features by various algorithms and dimensionalities.

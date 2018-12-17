@@ -1,7 +1,7 @@
 """
 Gregory Way 2018
 Interpret Compression
-6.analyze-coverage/coverage-analysis.py
+7.analyze-coverage/coverage-analysis.py
 
 Track and visualize gene set activity across compressed features
 

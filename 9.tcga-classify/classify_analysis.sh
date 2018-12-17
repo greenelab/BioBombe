@@ -2,7 +2,7 @@
 #
 # Gregory Way 2018
 # Interpret compression
-# 8.tcga-classify/classify_analysis.sh
+# 9.tcga-classify/classify_analysis.sh
 #
 # Perform a series of classification tasks on compressed gene expression data
 

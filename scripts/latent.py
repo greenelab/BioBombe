@@ -22,7 +22,6 @@ import glob
 
 import scipy.stats as stats
 import pandas as pd
-import gseapy as gp
 
 import hetio.readwrite
 import hetmech.matrix
@@ -491,60 +490,6 @@ def parse_gmt(gene_sets):
                      for line in gmt.readlines()}
                  )
     return dict(ChainMap(*gene_set_dict_list))
-
-
-def run_gsea_prerank(gene_score_df, gene_sets, fdr_cutoff=0.05,
-                     **kwargs):
-    """
-    Method to perform ranked GSEA on an input gene list and score
-
-    Arguments:
-    gene_score_df - A two column pandas DataFrame (no column names) with
-                    the first column storing Hugo gene symbols and the
-                    second column storing the scores
-    gene_sets - a string or gmt list of gene sets to perform GSEA using
-    fdr_cutoff - decision to subset results based on FDR cutoff
-
-    Output:
-    A gseapy res2d dataframe
-    https://gseapy.readthedocs.io/en/master/run.html#gseapy.prerank
-
-    NOTE: To get list of all available genesets run:
-
-        import gseapy
-        names = gseapy.get_library_name()
-        print(names)
-    """
-
-    gene_sets_parsed = parse_gmt([gene_sets])
-
-    gene_score_df.columns = [0, 1]
-
-    processes = kwargs.pop('processes', 1)
-    permutation_num = kwargs.pop('permutation_num', 1000)
-    verbose = kwargs.pop('verbose', False)
-    outdir = kwargs.pop('outdir', None)
-    format = kwargs.pop('format', 'png')
-    no_plot = kwargs.pop('no_plot', True)
-    weighted_score_type = kwargs.pop('weighted_score_type', 1)
-
-    # Perform the GSEA prerank
-    result = gp.prerank(rnk=gene_score_df,
-                        gene_sets=gene_sets_parsed,
-                        processes=processes,
-                        permutation_num=permutation_num,
-                        outdir=outdir,
-                        format=format,
-                        no_plot=no_plot,
-                        weighted_score_type=weighted_score_type,
-                        verbose=verbose)
-
-    result = result.res2d
-
-    if fdr_cutoff:
-        result = result.query("fdr < @fdr_cutoff")
-
-    return result
 
 
 def run_overrepresentation(gene_list, gene_set_dict, background_genes):

@@ -31,19 +31,12 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-d', '--dataset', choices=['TCGA', 'GTEX', 'TARGET'],
                     help='the dataset used to explore results')
 parser.add_argument('-g', '--geneset', help='the geneset to evaluate coverage')
-parser.add_argument('-s', '--shuffled', action='store_true',
-                    help='if included, then use shuffled data')
 args = parser.parse_args()
 
 # Load command arguments
 dataset = args.dataset.lower()
 geneset = args.geneset.lower()
 shuffled = args.shuffled
-
-if shuffled:
-    signal = 'shuffled'
-else:
-    signal = 'signal'
 
 
 def get_minmax_geneset(row, minmax='min'):
@@ -94,7 +87,7 @@ base_gmt_dir = os.path.join('..', '3.build-hetnets', 'data')
 gmt_file_dict = {
     'gpc1': 'c1.all.v6.1.entrez.gmt',
     'gpc2cpg': 'c2.cgp.v6.1.entrez.gmt',
-    'gpc2cpreactome': 'c2.cp.reactome.v6.1.entrez.gmt',
+    'gpc2creactome': 'c2.cp.reactome.v6.1.entrez.gmt',
     'gpc3mir': 'c3.mir.v6.1.entrez.gmt',
     'gpc3tft': 'c3.tft.v6.1.entrez.gmt',
     'gpc4cgn': 'c4.cgn.v6.1.entrez.gmt',
@@ -119,7 +112,7 @@ ensemble_models = ['algorithm', 'model_type']
 all_models = ['model_type']
 
 # What is the directory to search for results in
-base_dir = os.path.join('..', '6.analyze-weights', 'results', dataset, geneset, signal)
+base_dir = os.path.join('..', '6.analyze-weights', 'results', dataset, geneset)
 
 model_results_list = []
 ensemble_results_list = []

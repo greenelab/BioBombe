@@ -278,7 +278,7 @@ for gene_idx, gene_series in genes_df.iterrows():
         check_file, sep="\t", index=False, compression="gzip", float_format="%.5g"
     )
 
-    file = os.path.join("results", "{}_raw_classify_metrics.tsv.gz".format(gene_name))
+    file = os.path.join(gene_dir, "{}_raw_classify_metrics.tsv.gz".format(gene_name))
     gene_metrics_df.to_csv(
         file, sep="\t", index=False, compression="gzip", float_format="%.5g"
     )

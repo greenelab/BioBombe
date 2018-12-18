@@ -33,9 +33,23 @@ For each of the populations, we will also track performance of training and test
 
 The population of weight and z matrices are saved for alternative downstream analyses.
 
+## Download Results
+
+This module takes a long time to run.
+For convenience, we include the option to download archived and versioned results from zenodo.
+
+To acquire these results, perform the following:
+
+```bash
+conda activate biobombe
+
+cd 2.ensemble-z-analysis
+python download-biobombe-archive.py
+```
+
 ## Reproduce Analysis
 
-To rerun the analysis, perform the following:
+To rerun the analysis from scratch, perform the following:
 
 ```bash
 conda activate biobombe

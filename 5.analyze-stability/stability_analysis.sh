@@ -9,17 +9,22 @@
 
 # Analysis 1 - Calculate within z stability across datasets and dimensions
 jupyter nbconvert --to=html \
-        --FilesWriter.build_directory=scripts/nbconverted \
+        --FilesWriter.build_directory=scripts/html \
         --ExecutePreprocessor.kernel_name=python3 \
-        --ExecutePreprocessor.timeout=100000 \
+        --ExecutePreprocessor.timeout=10000000 \
         --execute 1.stability-within-z.ipynb
 
 # Analysis 2 - Calculate across z stability within datasets
 jupyter nbconvert --to=html \
-        --FilesWriter.build_directory=scripts/nbconverted \
+        --FilesWriter.build_directory=scripts/html \
         --ExecutePreprocessor.kernel_name=python3 \
-        --ExecutePreprocessor.timeout=100000 \
+        --ExecutePreprocessor.timeout=10000000 \
         --execute 2.stability-across-z.ipynb
 
 # Analysis 3 - Visualize the results
 Rscript scripts/nbconverted/3.stability-visualize.r
+
+# Convert all notebooks to scripts
+jupyter nbconvert --to=script \
+        --FilesWriter.build_directory=scripts/nbconverted \
+        *.ipynb

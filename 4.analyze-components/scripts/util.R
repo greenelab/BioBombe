@@ -174,6 +174,7 @@ plot_reconstruction_loss <- function(data_df) {
     theme(axis.text.x = element_text(angle = 90, size = 4),
           plot.title = element_text(hjust = 0.5),
           legend.text = element_text(size = 8),
+          strip.background = element_rect(colour = "black", fill = "#fdfff4"),
           legend.key.size = unit(0.7, "lines"))
   
   return(p)
@@ -209,6 +210,7 @@ plot_vae_training <- function(data_df) {
     theme(axis.text.x = element_text(angle = 90, size = 4),
           plot.title = element_text(hjust = 0.5),
           legend.text = element_text(size = 8),
+          strip.background = element_rect(colour = "black", fill = "#fdfff4"),
           legend.key.size = unit(0.7, "lines"))
   
   return(p)

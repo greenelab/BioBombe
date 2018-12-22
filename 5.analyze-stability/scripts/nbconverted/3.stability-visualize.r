@@ -292,11 +292,11 @@ for (dataset in c('TCGA', 'GTEX', 'TARGET')) {
     dataset_main_plots[[dataset]] <- main_plot
 }
 
-# Main Figure - Stability in GTEX
-main_plot <- dataset_main_plots[['GTEX']]
+# Main Figure - Stability in TCGA
+main_plot <- dataset_main_plots[['TCGA']]
 
 for(extension in c('.png', '.pdf')) {
-    fig_file <- paste0("stability_summary_GTEX", extension)
+    fig_file <- paste0("stability_summary_TCGA", extension)
     fig_file <- file.path("figures", fig_file)
     cowplot::save_plot(filename = fig_file,
                        plot = main_plot,
@@ -306,10 +306,10 @@ for(extension in c('.png', '.pdf')) {
 
 main_plot
 
-# Supplementary Figure - Stability in TCGA and TARGET
+# Supplementary Figure - Stability in GTEX and TARGET
 sup_plot <- (
     cowplot::plot_grid(
-        dataset_main_plots[['TCGA']],
+        dataset_main_plots[['GTEX']],
         dataset_main_plots[['TARGET']],
         labels = c("", ""),
         ncol = 2,

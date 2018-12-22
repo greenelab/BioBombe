@@ -8,6 +8,7 @@ source(file.path("scripts", "util.R"))
 # Create theme
 correlation_theme <- theme(axis.text.x = element_text(angle = 90, size = 5),
                            plot.title = element_text(hjust = 0.5),
+                           strip.background = element_rect(colour = "black", fill = "#fdfff4"),
                            legend.text = element_text(size = 8),
                            legend.key.size = unit(0.7, 'lines'))
 

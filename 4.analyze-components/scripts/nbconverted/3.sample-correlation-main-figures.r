@@ -17,7 +17,7 @@ file <- file.path("results", "TCGA_sample_correlation_phenotype.tsv.gz")
 tcga_full_df <- readr::read_tsv(file,
                                 col_types = readr::cols(
                                     .default = readr::col_character(),
-                                    correlation = readr::col_double(),s
+                                    correlation = readr::col_double(),
                                     seed = readr::col_integer(),
                                     num_comp = readr::col_integer()
                                 )

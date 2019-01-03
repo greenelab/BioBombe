@@ -36,7 +36,6 @@ args = parser.parse_args()
 # Load command arguments
 dataset = args.dataset.lower()
 geneset = args.geneset.lower()
-shuffled = args.shuffled
 
 
 def get_minmax_geneset(row, minmax='min'):
@@ -61,7 +60,7 @@ def get_minmax_geneset(row, minmax='min'):
     return pd.Series([z_score, geneset], index=['top_z_score', 'geneset'])
 
 
-def assign_attributes(df, dataset, z_dim, signal, geneset):
+def assign_attributes(df, dataset, z_dim, geneset):
     """
     Create new columns for the given input data frame - will be used for plotting
 
@@ -69,7 +68,6 @@ def assign_attributes(df, dataset, z_dim, signal, geneset):
     df - a pandas dataframe storing individual, ensemble, or all results
     dataset - a string indicating the dataset of interest
     z_dim - a string of the internal dimensionality of the given model
-    signal - a string indicating either "signal" or "shuffled"
     geneset - a string indicating the geneset of interest
 
     Output:
@@ -78,7 +76,6 @@ def assign_attributes(df, dataset, z_dim, signal, geneset):
     df_copy = df.copy()
     return df_copy.assign(dataset=dataset,
                           z_dim=z_dim,
-                          signal=signal,
                           geneset_name=geneset)
 
 
@@ -112,11 +109,12 @@ ensemble_models = ['algorithm', 'model_type']
 all_models = ['model_type']
 
 # What is the directory to search for results in
-base_dir = os.path.join('..', '6.analyze-weights', 'results', dataset, geneset)
+base_dir = os.path.join('..', '6.analyze-weights', 'results', dataset, geneset, 'signal')
 
 model_results_list = []
 ensemble_results_list = []
 all_results_list = []
+top_list = []
 
 for file in os.listdir(base_dir):
     # Extract z dimension
@@ -223,21 +221,25 @@ for file in os.listdir(base_dir):
         assign_attributes(df=model_results_df,
                           dataset=dataset,
                           z_dim=z_dim,
-                          signal=signal,
                           geneset=geneset)
     )
     ensemble_results_df = (
         assign_attributes(df=ensemble_results_df,
                           dataset=dataset,
                           z_dim=z_dim,
-                          signal=signal,
                           geneset=geneset)
     )
     all_results_df = (
         assign_attributes(df=all_results_df,
                           dataset=dataset,
                           z_dim=z_dim,
-                          signal=signal,
+                          geneset=geneset)
+    )
+
+    top_df = (
+        assign_attributes(df=top_df,
+                          dataset=dataset,
+                          z_dim=z_dim,
                           geneset=geneset)
     )
 
@@ -245,21 +247,27 @@ for file in os.listdir(base_dir):
     model_results_list.append(model_results_df)
     ensemble_results_list.append(ensemble_results_df)
     all_results_list.append(all_results_df)
+    top_list.append(top_df)
 
 # Compile results
 complete_model_results_df = pd.concat(model_results_list).reset_index(drop=True)
 complete_ensemble_results_df = pd.concat(ensemble_results_list).reset_index(drop=True)
 complete_all_results_df = pd.concat(all_results_list).reset_index(drop=True)
+complete_top_results_df = pd.concat(top_list).reset_index(drop=True)
 
 # Save results to file
-file = 'model_results_{}_{}_{}.tsv'.format(dataset, signal, geneset)
+file = 'model_results_{}_{}.tsv'.format(dataset, geneset)
 file = os.path.join('results', file)
 complete_model_results_df.to_csv(file, sep='\t', index=False)
 
-file = 'ensemble_results_{}_{}_{}.tsv'.format(dataset, signal, geneset)
+file = 'ensemble_results_{}_{}.tsv'.format(dataset, geneset)
 file = os.path.join('results', file)
 complete_ensemble_results_df.to_csv(file, sep='\t', index=False)
 
-file = 'all_results_{}_{}_{}.tsv'.format(dataset, signal, geneset)
+file = 'all_results_{}_{}.tsv'.format(dataset, geneset)
 file = os.path.join('results', file)
 complete_all_results_df.to_csv(file, sep='\t', index=False)
+
+file = 'top_results_{}_{}.tsv'.format(dataset, geneset)
+file = os.path.join('results', file)
+complete_top_results_df.to_csv(file, sep='\t', index=False)

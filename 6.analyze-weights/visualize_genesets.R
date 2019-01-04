@@ -18,6 +18,7 @@
 #         --metaedge            The name of the metaedge used (e.g. "GpH")
 #         --gene_set_dir        The input directory of results
 #         --shuffled            If the input data is shuffled
+#         --save_results        If included, save intermediate results
 #
 # Output:
 # Significantly overrepresented pathways from a WebGestalt Analysis
@@ -76,6 +77,7 @@ while (length(geneset <- readLines(con, n = 1, warn = FALSE)) > 0) {
 close(con)
 
 for (gene_set in genesets) {
+  print(paste("curating results for:", gene_set))
   top_results_df <- plot_gene_set(gene_set = gene_set,
                                   gene_set_dir = gene_set_dir,
                                   metaedge = metaedge,

@@ -22,42 +22,36 @@ import csv
 import pandas as pd
 from sklearn import preprocessing
 
-from urllib.request import urlretrieve
+from scripts.utils import download_geo
 
 
 # In[2]:
 
 
-url = 'ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE103nnn/GSE103706/suppl/'
+base_url = 'ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE103nnn/GSE103706/suppl/'
 name = 'GSE103706_Merged_data_FPKM_and_normalized.xlsx'
-path = os.path.join('download', name)
+directory = 'download'
 
 
 # In[3]:
 
 
-if not os.path.exists:
-    os.makedirs('download')
+download_geo(base_url, name, directory)
 
 
 # In[4]:
 
 
-urlretrieve(url + name, path)
-
-
-# In[5]:
-
-
-get_ipython().system(" sha256sum 'download/GSE103706_Merged_data_FPKM_and_normalized.xlsx'")
+path = 'download/GSE103706_Merged_data_FPKM_and_normalized.xlsx'
+get_ipython().system(' sha256sum $path')
 
 
 # ## Process the Data
 
-# In[6]:
+# In[5]:
 
 
-# Load Additional File 3
+# Load Data
 geo_df = pd.read_excel(path, index_col=0, skiprows=1)
 
 print(geo_df.shape)
@@ -66,7 +60,7 @@ geo_df.head(2)
 
 # ## Update Gene Names
 
-# In[7]:
+# In[6]:
 
 
 # Load curated gene names from versioned resource 
@@ -83,7 +77,7 @@ symbol_to_entrez = dict(zip(gene_df.symbol,
                             gene_df.entrez_gene_id))
 
 
-# In[8]:
+# In[7]:
 
 
 # Add alternative symbols to entrez mapping dictionary
@@ -112,7 +106,7 @@ gene_with_syn_df = (
 )
 
 
-# In[9]:
+# In[8]:
 
 
 # Create a synonym to entrez mapping and add to dictionary
@@ -122,7 +116,7 @@ synonym_to_entrez = dict(zip(gene_with_syn_df.all_synonyms,
 symbol_to_entrez.update(synonym_to_entrez)
 
 
-# In[10]:
+# In[9]:
 
 
 # Load gene updater
@@ -132,7 +126,7 @@ old_to_new_entrez = dict(zip(updater_df.old_entrez_gene_id,
                              updater_df.new_entrez_gene_id))
 
 
-# In[11]:
+# In[10]:
 
 
 # Update the symbol column to entrez_gene_id
@@ -146,7 +140,7 @@ geo_df = geo_df.drop(['ens_gene_id', 'ncbi_gene_id', 'gene_short', 'symbol'], ax
 
 # ## Scale Data and Output to File
 
-# In[12]:
+# In[11]:
 
 
 # Scale RNAseq data using zero-one normalization
@@ -155,8 +149,7 @@ geo_scaled_zeroone_df = pd.DataFrame(geo_scaled_zeroone_df,
                                      columns=geo_df.index,
                                      index=geo_df.columns)
 
-if not os.path.exists('data'):
-    os.makedirs('data')
+os.makedirs('data', exist_ok=True)
 
 file = os.path.join('data', 'GSE103706_processed_matrix.tsv.gz')
 geo_scaled_zeroone_df.to_csv(file, sep='\t', compression='gzip')

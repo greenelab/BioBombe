@@ -29,7 +29,7 @@ for (plot_info in plot_info_list) {
     model_results <- file.path("results", paste0("model_results_", base_file))
     ensemble_results <- file.path("results", paste0("ensemble_results_", base_file))
     all_results <- file.path("results", paste0("all_results_", base_file))
-    top_results <- file.path('results', paste0('top_results_', base_file))
+    top_results <- file.path('results', paste0('top_results_', base_file, '.gz'))
 
     # Load data
     model_df <- readr::read_tsv(model_results,

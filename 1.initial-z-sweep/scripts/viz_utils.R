@@ -5,7 +5,7 @@
 #
 # Usage: Import Only
 #
-#           source('scripts/viz_utils.R')
+#           source("scripts/viz_utils.R")
 
 processParamSweepResults <- function(param_file, algorithm, dataset,
                                      output_fig_dir, save_plot=TRUE) {
@@ -21,14 +21,14 @@ processParamSweepResults <- function(param_file, algorithm, dataset,
   # Output:
   # An R list with several indices storing summarized results and figures
 
-  if (algorithm == 'ADAGE') {
+  if (algorithm == "ADAGE") {
       id_vars <-  c("learning_rate", "batch_size", "epochs", "noise",
                     "train_epoch", "num_components", "sparsity", "seed")
-  } else if (algorithm == 'Tybalt') {
+  } else if (algorithm == "Tybalt") {
       id_vars <- c("learning_rate", "batch_size", "epochs", "kappa",
                    "train_epoch", "num_components")
   } else {
-      stop('algorithm must be either "ADAGE" or "Tybalt"')
+      stop("algorithm must be either 'ADAGE' or 'Tybalt'")
   }
 
   # Create the output directory if it does not already exist
@@ -87,7 +87,7 @@ readParamSweep <- function(param_file, algorithm, id_vars) {
     #
     # Arguments:
     # param_file - a string storing the location of a tab separated file
-    # algorithm - a string indicating either 'ADAGE' or 'Tybalt'
+    # algorithm - a string indicating either "ADAGE" or "Tybalt"
     # id_vars - a vector of strings that indicate parameter sweep columns
     #
     # Output:
@@ -110,11 +110,11 @@ readParamSweep <- function(param_file, algorithm, id_vars) {
 
     # Select the lowest loss results across parameter combinations
     select_df <- melt_df %>% dplyr::filter(loss_type == "val_loss")
-    if (algorithm == 'ADAGE') {
+    if (algorithm == "ADAGE") {
         select_df <- select_df %>%
             dplyr::group_by(learning_rate, batch_size, epochs,
                             noise, sparsity, num_components)
-    } else if (algorithm == 'Tybalt') {
+    } else if (algorithm == "Tybalt") {
         select_df <- select_df %>%
             dplyr::group_by(learning_rate, batch_size, epochs,
                             kappa, num_components)
@@ -129,7 +129,7 @@ readParamSweep <- function(param_file, algorithm, id_vars) {
         dplyr::arrange(as.numeric(paste(num_components)))
 
     # Output training curves a single full model across dimensions
-    if (algorithm == 'Tybalt') {
+    if (algorithm == "Tybalt") {
       one_model_df <- full_df %>%
         dplyr::filter(learning_rate == "0.0005",
                       batch_size == "50",
@@ -158,7 +158,7 @@ readParamSweep <- function(param_file, algorithm, id_vars) {
 
 recodeParamSweep <- function(df, algorithm) {
     # Recode several variables before plotting input
-    if (algorithm == 'ADAGE') {
+    if (algorithm == "ADAGE") {
         df$noise <-
             dplyr::recode_factor(df$noise,
                                  "0.0" = "Noise: 0",
@@ -170,9 +170,9 @@ recodeParamSweep <- function(df, algorithm) {
         lr <- as.numeric(paste(df$learning_rate))
         lr <- paste("Learn:", lr)
         lr_levels <- paste("Learn:",
-                           unique(sort(as.numeric(gsub("Learn: ", '', lr)))))
+                           unique(sort(as.numeric(gsub("Learn: ", "", lr)))))
         df$learning_rate <- factor(lr, levels = lr_levels)
-    } else if (algorithm == 'Tybalt') {
+    } else if (algorithm == "Tybalt") {
         # Order batch size and epoch variables
         df$batch_size <- factor(df$batch_size,
                                 levels = sort(unique(df$batch_size)))
@@ -202,6 +202,8 @@ base_theme <- theme(axis.text = element_text(size = rel(0.5)),
                     axis.title = element_text(size = rel(0.7)),
                     axis.text.x = element_text(angle = 90),
                     strip.text = element_text(size = rel(0.5)),
+                    strip.background = element_rect(colour = "black",
+                                                    fill = "#fdfff4"),
                     legend.text = element_text(size = rel(0.6)),
                     legend.title = element_text(size = rel(0.8)),
                     legend.key.height = unit(0.5, "line"))
@@ -221,7 +223,7 @@ plotFinalLoss <- function(select_df, algorithm, dataset, output_fig_dir,
   # A ggplot object of the loss at the final parameter combination
   
   # Set title
-  title <- paste0(dataset, ' - ', algorithm)
+  title <- paste0(dataset, " - ", algorithm)
   if (plot_converge) {
     title <- paste0(title, " (Remove Unconverged)")
   }
@@ -234,7 +236,7 @@ plotFinalLoss <- function(select_df, algorithm, dataset, output_fig_dir,
     scale_shape_discrete(name = "Epochs") +
     theme_bw() +
     base_theme
-  if (algorithm == 'Tybalt') {
+  if (algorithm == "Tybalt") {
     p <- p +
       geom_point(aes(shape = epochs, color = kappa),
                  size = 0.8,
@@ -245,7 +247,7 @@ plotFinalLoss <- function(select_df, algorithm, dataset, output_fig_dir,
         guides(shape = guide_legend(order = 1),
                color = guide_legend(order = 2))
   } else {
-    if (dataset %in% c('TARGET', 'GTEx')) {
+    if (dataset %in% c("TARGET", "GTEx")) {
       p <- p +
       geom_point(aes(shape = epochs, size = sparsity, color = batch_size),
                  alpha = 0.7, position = position_jitter(w = 5, h = 0)) +
@@ -292,7 +294,7 @@ plotOneModel <- function(one_model_df, algorithm, dataset) {
   #   dataset - a string indicating the name of the dataset
 
   # Set title
-  title <- paste0(dataset, ' - ', algorithm)
+  title <- paste0(dataset, " - ", algorithm)
 
   p <- ggplot(one_model_df,
               aes(x = as.numeric(paste(train_epoch)),
@@ -330,7 +332,7 @@ plotBestModel <- function(best_model_df, algorithm, dataset, output_fig_dir,
   #   A plot of the learning rates for the best model across z dimensions
 
   # Set title and output
-  title <- paste0(dataset, ' - ', algorithm)
+  title <- paste0(dataset, " - ", algorithm)
   best_model_fig_file <- paste0("z_parameter_best_model_", algorithm, "_",
                                 dataset)
   best_model_fig_file_png <- file.path(output_fig_dir,
@@ -345,7 +347,8 @@ plotBestModel <- function(best_model_df, algorithm, dataset, output_fig_dir,
     scale_color_brewer(name = "Latent Dimensions", palette = "Dark2") +
     scale_linetype_manual(name = "Loss Type", values = c("solid", "dotted"),
                           labels = c("Train", "Validation")) +
-    theme_bw() + base_theme +
+    theme_bw() +
+    base_theme +
     theme(axis.text.x = element_text(angle = 0)) +
     ggtitle(title)
 

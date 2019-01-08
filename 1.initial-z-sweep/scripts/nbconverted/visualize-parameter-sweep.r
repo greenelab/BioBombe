@@ -292,22 +292,17 @@ main_plot <- (
     )
 )
 
-
-
 main_with_alg <- cowplot::plot_grid(alg_main, main_plot, nrow = 2,
                                     rel_heights = c(0.04, 1))
 
 full_plot <- cowplot::plot_grid(dataset_main, main_with_alg, rel_widths = c(0.04, 1))
 full_plot
 
-sup_file <- file.path("figures", "z_dimension_sweep_summary.png")
-cowplot::save_plot(filename = sup_file,
-                   plot = full_plot,
-                   base_height = 9.5,
-                   base_width = 16.5)
-
-sup_file <- file.path("figures", "z_dimension_sweep_summary.pdf")
-cowplot::save_plot(filename = sup_file,
-                   plot = full_plot,
-                   base_height = 9.5,
-                   base_width = 16.5)
+for(extension in c('.png', '.pdf')) {
+    sup_file <- paste0("z_dimension_sweep_summary", extension)
+    sup_file <- file.path("figures", sup_file)
+    cowplot::save_plot(filename = sup_file,
+                       plot = full_plot,
+                       base_height = 9.5,
+                       base_width = 16.5)
+}

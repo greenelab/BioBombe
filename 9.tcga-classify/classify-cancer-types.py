@@ -52,7 +52,6 @@ file = "{}/{}/data/mutation_burden_freeze.tsv".format(base_url, commit)
 mut_burden_df = pd.read_table(file, index_col=0)
 
 # Track total metrics for each cancer-type in one file
-full_metrics_list = []
 count_list = []
 metric_cols = [
     "auroc",
@@ -75,6 +74,7 @@ for acronym in sample_freeze_df.DISEASE.unique():
     cancertype_auc_list = []
     cancertype_aupr_list = []
     cancertype_coef_list = []
+    cancertype_metrics_list = []
 
     # Create directory for the cancer-type
     cancertype_dir = os.path.join("results", "cancer-type", acronym)
@@ -192,7 +192,7 @@ for acronym in sample_freeze_df.DISEASE.unique():
                     # Compile summary metrics
                     metrics_ = [train_metrics_, test_metrics_, cv_metrics_]
                     metric_df_ = pd.DataFrame(metrics_, columns=metric_cols)
-                    full_metrics_list.append(metric_df_)
+                    cancertype_metrics_list.append(metric_df_)
 
                     auc_df = pd.concat([train_roc_df, test_roc_df, cv_roc_df])
                     cancertype_auc_list.append(auc_df)
@@ -205,6 +205,7 @@ for acronym in sample_freeze_df.DISEASE.unique():
     cancertype_auc_df = pd.concat(cancertype_auc_list)
     cancertype_aupr_df = pd.concat(cancertype_aupr_list)
     cancertype_coef_df = pd.concat(cancertype_coef_list)
+    cancertype_metrics_df = pd.concat(cancertype_metrics_list)
 
     file = os.path.join(
         cancertype_dir, "{}_auc_threshold_metrics.tsv.gz".format(acronym)
@@ -224,11 +225,8 @@ for acronym in sample_freeze_df.DISEASE.unique():
         check_file, sep="\t", index=False, compression="gzip", float_format="%.5g"
     )
 
-    # Now, compile all results and write to file
-    final_metrics_df = pd.concat(full_metrics_list)
-
-    file = os.path.join("results", "all_cancertype_classify_metrics.tsv.gz")
-    final_metrics_df.to_csv(
+    file = os.path.join(cancertype_dir, "{}_classify_metrics.tsv.gz".format(acronym))
+    cancertype_metrics_df.to_csv(
         file, sep="\t", index=False, compression="gzip", float_format="%.5g"
     )
 

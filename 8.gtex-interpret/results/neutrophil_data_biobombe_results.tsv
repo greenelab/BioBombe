@@ -1,0 +1,15 @@
+full_id	vae_10	vae_0	cell_line	treatment	day
+PLB-985, not differentiated, replicate 1	15.02312415712807	-197.21225469980982	PLB-985	Not Differentiated	day 0
+PLB-985, DMSO, day 6, replicate 1	-30.062770940610033	-165.25783367679128	PLB-985	DMSO	day 6
+PLB-985, DMSO+Nutridoma, day 4	-28.914971998178814	-162.05620215366855	PLB-985	DMSO+Nutridoma	day 4
+PLB-985, DMSO+Nutridoma, day 6, replicate 1	-35.94725443506342	-153.0595850135358	PLB-985	DMSO+Nutridoma	day 6
+HL-60, not differentiated, replicate 1	3.711192452703509	-165.5412917160592	HL-60	Not Differentiated	day 0
+HL-60, DMSO, day 6, replicate 1	-36.60893237073869	-156.39006154870165	HL-60	DMSO	day 6
+HL-60, DMSO+Nutridoma, day 6, replicate 1	-36.797637736938064	-144.12111930484937	HL-60	DMSO+Nutridoma	day 6
+PLB-985, not differentiated, replicate 2	9.900077471385108	-145.73755448486142	PLB-985	Not Differentiated	day 0
+PLB-985, DMSO, day 6, replicate 2	-31.274221692780724	-116.19507560380593	PLB-985	DMSO	day 6
+PLB-985, DMSO+Nutridoma, day 2	-16.0687988369232	-136.13677693436927	PLB-985	DMSO+Nutridoma	day 2
+PLB-985, DMSO+Nutridoma, day 6, replicate 2	-24.05014108229926	-129.87756111126404	PLB-985	DMSO+Nutridoma	day 6
+HL-60, not differentiated, replicate 2	20.017671187631123	-131.1365458347646	HL-60	Not Differentiated	day 0
+HL-60, DMSO, day 6, replicate 2	-39.58639769152481	-115.96367540542694	HL-60	DMSO	day 6
+HL-60, DMSO+Nutridoma, day 6, replicate 2	-22.434761084606976	-106.25112806451595	HL-60	DMSO+Nutridoma	day 6

@@ -11,6 +11,18 @@ Usage:
 
 import os
 import pandas as pd
+from urllib.request import urlretrieve
+
+
+def download_geo(base_url, name, directory):
+    """
+    Download a dataset from GEO and save to file
+    """
+
+    os.makedirs(directory, exist_ok=True)
+
+    path = os.path.join(directory, name)
+    urlretrieve(base_url + name, path)
 
 
 def load_weight_matrix(dataset, z_dim, seed, shuffled=False):
@@ -51,7 +63,7 @@ def load_enrichment_results(dataset, z_dim, metaedge, algorithm=None,
     base_file = '{}_z_{}_{}__geneset_scores.tsv.gz'.format(dataset,
                                                            z_dim,
                                                            metaedge)
-    base_dir = os.path.join('..', '5.analyze-weights', 'results', dataset,
+    base_dir = os.path.join('..', '6.analyze-weights', 'results', dataset,
                             metaedge.lower(), signal_dir)
     enr_file = os.path.join(base_dir, base_file)
     enr_df = pd.read_table(enr_file)

@@ -1,0 +1,40 @@
+label	classification
+HSC1	HSC
+HSC2	HSC
+HSC3	HSC
+CMP	Myeloid
+MEP	Myeloid
+GMP	Myeloid
+ERY1	Erythroid
+ERY2	Erythroid
+ERY3	Erythroid
+ERY4	Erythroid
+ERY5	Erythroid
+MEGA1	Megakaryocytic
+MEGA2	Megakaryocytic
+GRAN1	Granulocytic
+GRAN2	Granulocytic
+GRAN3	Granulocytic
+MONO1	Monocyte
+MONO2	Monocyte
+BASO1	Basophil
+EOS2	Eosinophil
+PRE_BCELL2	B Lymphoid Progenitor
+PRE_BCELL3	B Lymphoid Progenitor
+BCELLA1	Naive Lymphoid
+TCELLA6	Naive Lymphoid
+TCELLA2	Naive Lymphoid
+BCELLA2	Differentiated B Cell
+BCELLA3	Differentiated B Cell
+BCELLA4	Differentiated B Cell
+TCELLA7	Differentiated T Cell
+TCELLA8	Differentiated T Cell
+TCELLA1	Differentiated T Cell
+TCELLA3	Differentiated T Cell
+TCELLA4	Differentiated T Cell
+NKA1	NK Cell
+NKA2	NK Cell
+NKA3	NK Cell
+NKA4	NK Cell
+DENDA1	Dendritic
+DENDA2	Dendritic

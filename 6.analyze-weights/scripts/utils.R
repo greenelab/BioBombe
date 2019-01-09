@@ -8,8 +8,8 @@
 
 
 plot_gene_set <- function(gene_set, gene_set_dir, metaedge, dataset = "gtex",
-                          show_plot = TRUE, shuffled = FALSE,
-                          return_top = TRUE) {
+                          show_plot = TRUE, shuffled = FALSE, return_top = TRUE,
+                          return_plot = FALSE) {
   # Logic to plot cell-type activation across z and across algorithm
   #
   # Arguments:
@@ -20,6 +20,7 @@ plot_gene_set <- function(gene_set, gene_set_dir, metaedge, dataset = "gtex",
   # show_plot - boolean to indicate if the plot should be printed
   # shuffled - boolean if the data were shuffled prior to analysis
   # return_top - boolean if the top results should be saved to a file
+  # return_plot - boolean if the plot should be returned
   #
   # Output:
   # Saves plot to file
@@ -72,7 +73,7 @@ plot_gene_set <- function(gene_set, gene_set_dir, metaedge, dataset = "gtex",
     dplyr::group_by(variable, algorithm, z) %>%
     dplyr::filter(abs_z_score == max(abs_z_score)) %>%
     dplyr::arrange(dplyr::desc(abs_z_score)) %>%
-    dplyr::distinct(abs_z_score, algorithm, feature_z, .keep_all = TRUE)
+    dplyr::distinct(abs_z_score, algorithm, feature, z, .keep_all = TRUE)
 
   # Plot and save to file
   p <- ggplot(top_results_df,
@@ -121,6 +122,10 @@ plot_gene_set <- function(gene_set, gene_set_dir, metaedge, dataset = "gtex",
 
   if (return_top) {
     return(top_results_df)
+  }
+
+  if (return_plot) {
+    return(p)
   }
 
 }

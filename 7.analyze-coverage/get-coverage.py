@@ -268,6 +268,6 @@ file = 'all_results_{}_{}.tsv'.format(dataset, geneset)
 file = os.path.join('results', file)
 complete_all_results_df.to_csv(file, sep='\t', index=False)
 
-file = 'top_results_{}_{}.tsv'.format(dataset, geneset)
+file = 'top_results_{}_{}.tsv.gz'.format(dataset, geneset)
 file = os.path.join('results', file)
-complete_top_results_df.to_csv(file, sep='\t', index=False)
+complete_top_results_df.to_csv(file, sep='\t', index=False, compression='gzip')

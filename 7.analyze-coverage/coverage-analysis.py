@@ -3,7 +3,11 @@ Gregory Way 2018
 Interpret Compression
 7.analyze-coverage/coverage-analysis.py
 
-Track gene set coverage across compressed features
+Track gene set coverage across compressed features. We consider a geneset as "covered"
+by the module if the geneset is discovered as the top feature in the BioBombe network
+projection applied to the specific dataset with given internal dimension. The gene set
+"coverage" refers to the percentage of individual genesets in a given resource (e.g.
+xCell genesets, or GO Biological Processes) that are captured by the specific model.
 
 Usage:
 

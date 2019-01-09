@@ -10,14 +10,20 @@
 
 load_results <- function(results_path, file_string = "classify_metrics",
                          process_output = FALSE) {
+
+  require(dplyr)
+  require(readr)
+
   # From the finalized results, load and process specific result files
   #
   # Arguments:
-  # results_path - the file path to scan for specific results
-  # file_string - a string indicating which type of data to load in
+  # results_path - the file path to scan for specific results of the tcga classify
+  #                pipeline performed, typically either cancer-type or mutation focused
+  # file_string - a string indicating which type of data to load in.
+  #               choices: "classify_metrics" or "coefficients"
   # process_output - boolean indicating if the output should be processed
-  #                  before returning
-  
+  #                  before returning. If False, output list of combined raw files
+
   # Setup column types for specific file strings
   if (file_string == "classify_metrics") {
     metric_cols <- readr::cols(
@@ -26,7 +32,7 @@ load_results <- function(results_path, file_string = "classify_metrics",
       aupr = readr::col_double(),
       z_dim = readr::col_integer(),
       seed = readr::col_integer())
-  } else {
+  } else if (file_string == "coefficients") {
     metric_cols <- readr::cols(
       feature = readr::col_character(),
       weight = readr::col_double(),
@@ -37,6 +43,8 @@ load_results <- function(results_path, file_string = "classify_metrics",
       algorithm = readr::col_character(),
       gene = readr::col_character()
     )
+  } else {
+    stop("specify `file_string` as `classify_metrics` or `coefficients`")
   }
   results <- list()
   raw_results <- list()
@@ -46,16 +54,16 @@ load_results <- function(results_path, file_string = "classify_metrics",
     metric_files <- results_files[grep(file_string, results_files)]
     for (file in metric_files) {
       metric_file <- file.path(results_dir, file)
-      
+
       results_df <- readr::read_tsv(metric_file, col_types = metric_cols)
-      
+
       if (grepl("raw", file)) {
         raw_results[[results_file]] <- results_df
       } else {
         results[[results_file]] <- results_df
       }
     }
-    
+
   }
 
   metrics_df <- dplyr::bind_rows(results)
@@ -65,24 +73,24 @@ load_results <- function(results_path, file_string = "classify_metrics",
   metrics_df <- metrics_df %>%
     dplyr::mutate(z_dim =
                     factor(z_dim, levels = sort(as.numeric(paste(unique(z_dim))))))
-  
+
   metrics_df$algorithm <-
     factor(metrics_df$algorithm,
            levels = c("pca", "ica", "nmf", "dae", "vae"))
-  
+
   metrics_df$algorithm <- metrics_df$algorithm %>%
     dplyr::recode_factor("pca" = "PCA",
                          "ica" = "ICA",
                          "nmf" = "NMF",
                          "dae" = "DAE",
                          "vae" = "VAE")
-  
+
   if (file_string == "classify_metrics") {
     metrics_df <- metrics_df %>%
       dplyr::mutate(data_type =
                       factor(data_type, levels = c("train", "test", "cv")))
   }
-  
+
   if (process_output) {
     return_obj <- process_results(df = metrics_df, raw_df = raw_metrics_df)
   } else {
@@ -94,56 +102,58 @@ load_results <- function(results_path, file_string = "classify_metrics",
 }
 
 process_results <- function(df, raw_df, data_type = "cv") {
-  # Filter and arrange metrics for plotting input
+  # Filter and arrange metrics for plotting input. Typically used only in the
+  # load_results function
   #
   # Arguments:
-  # df - a dataframe storing classification results
+  # df - a dataframe storing classification results. The data includes classification
+  #      performance and identiying information for each specific model.
   # raw_df - a dataframe storing classification results for raw data
   # data_type - which datatype to focus on plotting
   #
   # Output:
   # A processed dataframe for plotting
-  
+
   # Setup data
   data_df <- df %>% dplyr::filter(data_type == !!data_type)
   data_df$grouping_ <- paste0(data_df$gene_or_cancertype,
                               data_df$signal)
-  
+
   # Subset raw data
   raw_data_df <- raw_df %>%
     dplyr::filter(data_type == !!data_type) %>%
     dplyr::select(auroc, aupr, gene_or_cancertype, signal)
-  
+
   # Join Dataframes
   data_df <- data_df %>%
     dplyr::left_join(raw_data_df,
                      by = c("gene_or_cancertype", "signal"),
                      suffix = c("", "_raw"))
-  
+
   # Define a sorting mechanism
   mean_performance_df <- data_df %>%
     dplyr::group_by(gene_or_cancertype, signal) %>%
     dplyr::mutate(mean_auroc = mean(auroc))
-  
+
   mean_performance_df <- dplyr::as_data_frame(mean_performance_df)
-  
+
   signal_df <- mean_performance_df %>%
     dplyr::filter(signal == "signal") %>%
     dplyr::select(gene_or_cancertype, mean_auroc)
   shuffled_df <- mean_performance_df %>%
     dplyr::filter(signal == "shuffled") %>%
     dplyr::select(gene_or_cancertype, mean_auroc)
-  
+
   signal_df$difference <- signal_df$mean_auroc - shuffled_df$mean_auroc
-  
+
   difference_df <- signal_df[!duplicated(signal_df),]
   difference_df <- difference_df %>% dplyr::arrange(desc(difference))
-  
+
   # Order the gene or cancer-type factor by difference in mean AUROC
   data_df$gene_or_cancertype <-
     factor(data_df$gene_or_cancertype,
            levels = difference_df$gene_or_cancertype)
-  
+
   return(data_df)
 }
 
@@ -156,11 +166,11 @@ plot_mutation_figure <- function(df) {
   #
   # Output:
   # A ggplot grob of the figure
-  
+
   g <- ggplot(df, aes(x = z_dim, y = auroc, linetype = signal)) +
     geom_boxplot(outlier.size = 0.1, lwd = 0.3) +
     geom_hline(aes(yintercept = auroc_raw, color = signal),
-               linetype = "dashed") + 
+               linetype = "dashed") +
     geom_hline(yintercept = 0.5,
                color = "grey",
                linetype = "dashed",
@@ -173,7 +183,7 @@ plot_mutation_figure <- function(df) {
                        labels = c("signal" = "Real",
                                   "shuffled" = "Permuted")) +
     xlab("Z Dimension") +
-    ylab("AUROC") + 
+    ylab("AUROC") +
     facet_grid(algorithm ~ gene_or_cancertype) +
     theme_bw() +
     ylim(c(0.4, 1)) +
@@ -184,7 +194,7 @@ plot_mutation_figure <- function(df) {
           strip.background = element_rect(colour = "black",
                                           fill = "#fdfff4")) +
     guides(linetype = "none")
-  
+
   return(g)
 }
 
@@ -200,18 +210,18 @@ plot_final_performance <- function(metrics_df, metric, genes, signal,
   # genes - a character vector of the specific genes to plot
   # signal - the specific signal to plot (either 'signal' or 'shuffled')
   # data_type - the specific data_type to plot (either 'cv', 'train', or 'test)
-  
+
   metrics_sub_df <- metrics_df %>%
     dplyr::filter(gene_or_cancertype %in% !!genes,
                   signal == !!signal,
                   data_type == !!data_type)
-  
+
   if (metric == 'auroc') {
     g <- ggplot(metrics_sub_df, aes(x = z_dim, y = auroc, fill = algorithm))
   } else {
     g <- ggplot(metrics_sub_df, aes(x = z_dim, y = aupr, fill = algorithm))
   }
-  g <- g + 
+  g <- g +
     scale_fill_manual(name = "Algorithm",
                       values = c("#e41a1c",
                                  "#377eb8",
@@ -244,7 +254,7 @@ plot_final_performance <- function(metrics_df, metric, genes, signal,
     theme_bw() +
     guides(fill = guide_legend('none')) +
     theme(axis.text.x = element_text(angle = 90, size = 6))
-  
+
   return(g)
 }
 
@@ -259,9 +269,9 @@ plot_performance_panels <- function(plot_a, plot_b, gene, shuffled = FALSE) {
   #
   # Output:
   # The ggplot object and saving the plot to file
-  
+
   add_legend <- cowplot::get_legend(plot_a)
-  
+
   feature_plot <- (
     cowplot::plot_grid(
       plot_a + theme(legend.position = 'none'),
@@ -270,7 +280,7 @@ plot_performance_panels <- function(plot_a, plot_b, gene, shuffled = FALSE) {
       nrow = 2
     )
   )
-  
+
   if (shuffled) {
     title_label <- paste('Predicting', gene, 'Activation - Shuffled')
     figure_file <- file.path("figures",
@@ -285,7 +295,7 @@ plot_performance_panels <- function(plot_a, plot_b, gene, shuffled = FALSE) {
       title_label,
       fontface = 'bold'
       )
-  
+
   feature_plot <- cowplot::plot_grid(title,
                                      feature_plot,
                                      ncol = 1,
@@ -296,6 +306,6 @@ plot_performance_panels <- function(plot_a, plot_b, gene, shuffled = FALSE) {
 
   cowplot::save_plot(figure_file, feature_plot, base_aspect_ratio = 1.1,
                      base_height = 8, base_width = 10)
-  
+
   return(feature_plot)
 }

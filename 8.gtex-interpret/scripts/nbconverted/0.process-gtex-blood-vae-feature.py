@@ -154,7 +154,8 @@ real_df.sort_values(by='z_score').to_csv(file, sep='\t', index=False)
 # In[14]:
 
 
-# Determine the most distinguishing features between the two models
+# Determine the most distinguishing features between the two models. This will test
+# which genesets are the most differently enriched _in sum_ between z = 2 and z = 3
 feature_info_df = (
     pd.DataFrame(real_df['full_feature'].str.split('_').values.tolist(),
                  columns=['algorithm', 'feature', 'model_z'])

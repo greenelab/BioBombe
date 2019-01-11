@@ -19,6 +19,13 @@ Our approach is outlined below:
 
 ![overview](https://raw.githubusercontent.com/greenelab/BioBombe/master/compression-overview.png)
 
+## BioBombe Training Implementation
+
+To acquire our transformed data, we independently trained five different algorithms using three different datasets.
+Our model implementation is described below.
+
+![implementation](https://raw.githubusercontent.com/greenelab/BioBombe/master/biobombe-implementation.png)
+
 ## Modules
 
 To reproduce the results of the analysis, the modules should be run in order.

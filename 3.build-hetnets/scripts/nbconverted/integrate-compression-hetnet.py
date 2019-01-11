@@ -258,13 +258,6 @@ metanode_df
 # In[13]:
 
 
-# Total number of nodes
-metanode_df.nodes.sum()
-
-
-# In[14]:
-
-
 # Summary of metaedges and cooresponding edges
 metaedge_df = hetio.stats.get_metaedge_df(graph)
 
@@ -274,11 +267,24 @@ for metaedge, edges in graph.get_metaedge_to_edges(exclude_inverts=True).items()
 
 metaedge_file = os.path.join('results', 'interpret_metaedges.tsv')
 metaedge_df = metaedge_df.merge(pd.DataFrame(rows))
+
+sum_total = metaedge_df.sum()
+sum_total.metaedge = 'Total'
+sum_total.abbreviation = ''
+
+metaedge_df = (
+    pd.concat([metaedge_df.T, sum_total], axis='columns')
+    .transpose()
+    .reset_index(drop=True)
+)
+# Number of edges in the network
+metaedge_df.edges.sum()
+
 metaedge_df.to_csv(metaedge_file, sep='\t', index=False)
 metaedge_df
 
 
-# In[15]:
+# In[14]:
 
 
 # Summary of different styles for representing each metaedge
@@ -288,14 +294,7 @@ metaedge_style_df.to_csv(metaedge_style_file, sep='\t', index=False)
 metaedge_style_df
 
 
-# In[16]:
-
-
-# Number of edges in the network
-metaedge_df.edges.sum()
-
-
-# In[17]:
+# In[15]:
 
 
 # How many genesets were filtered per collection?
@@ -304,25 +303,25 @@ metaedge_df.edges.sum()
 
 # ## Save graph
 
-# In[18]:
+# In[16]:
 
 
 get_ipython().run_cell_magic('time', '', "# Write nodes to a table\nnodes_file = os.path.join('hetnets', 'interpret_nodes.tsv')\nhetio.readwrite.write_nodetable(graph, nodes_file)\n\n# Write edges to a table\nedges_file = os.path.join('hetnets', 'interpret_edges.sif.gz')\nhetio.readwrite.write_sif(graph, edges_file)")
 
 
-# In[19]:
+# In[17]:
 
 
 get_ipython().run_cell_magic('time', '', "# Write metagraph as json\nmetagraph_file = os.path.join('hetnets', 'interpret_metagraph.json')\nhetio.readwrite.write_metagraph(metagraph, metagraph_file)")
 
 
-# In[20]:
+# In[18]:
 
 
 get_ipython().run_cell_magic('time', '', "# Write graph as json\nhetnet_json_path = os.path.join('hetnets', 'interpret_hetnet.json.bz2')\nhetio.readwrite.write_graph(graph, hetnet_json_path)")
 
 
-# In[21]:
+# In[19]:
 
 
 get_ipython().system(" sha256sum 'hetnets/interpret_hetnet.json.bz2'")
@@ -330,7 +329,7 @@ get_ipython().system(" sha256sum 'hetnets/interpret_hetnet.json.bz2'")
 
 # ## Visualize hetnet node and edge counts
 
-# In[22]:
+# In[20]:
 
 
 ax = sns.barplot(x='metanode', y='nodes', data=metanode_df.sort_values('nodes'))
@@ -339,7 +338,7 @@ for tick in ax.get_xticklabels():
 ax.set_xlabel(''); ax.set_ylabel('nodes');
 
 
-# In[23]:
+# In[21]:
 
 
 ax = sns.barplot(x='metaedge', y='edges', data=metaedge_df.sort_values('edges'))

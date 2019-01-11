@@ -260,11 +260,11 @@ gene_weights_df$classification <- factor(gene_weights_df$classification,
 
 head(gene_weights_df, 3)
 
-color_labels <- c("Neutrophils" = "#4575b4",
-                  "Keratinocytes" = "#fc8d59",
-                  "Neurons" = "#542788",
-                  "Skeletal Muscle" = "#b35806",
-                  "Monocytes" = "#d73027",
+color_labels <- c("Neutrophils" = "#1b9e77",
+                  "Keratinocytes" = "#6a3d9a",
+                  "Neurons" = "#1f78b4",
+                  "Skeletal Muscle" = "#ff7f00",
+                  "Monocytes" = "#e7298a",
                   "Other Geneset" = "#CFDEDA",
                   "No Geneset" = "#F5B8D4")
 
@@ -275,11 +275,13 @@ panel_f_gg <- ggplot(gene_weights_df,
                          y = vae_10)) +
     geom_point(data = subset(gene_weights_df, other_points_logic),
                aes(color = classification),
+               shape = 16,
                size = 0.02,
                alpha = 0.4) +
     geom_point(data = subset(gene_weights_df, !other_points_logic),
                aes(color = classification),
-               size = 0.07,
+               shape = 16,
+               size = 0.2,
                alpha = 0.6) +
     geom_smooth(method = "lm",
                 se = TRUE,

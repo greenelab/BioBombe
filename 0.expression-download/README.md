@@ -28,9 +28,8 @@ We use [version 7](https://www.gtexportal.org/home/datasets) of GTEx RNAseq data
 
 ## Tissue Type Counts
 
-|                                           |      |         | 
-|-------------------------------------------|------|---------| 
 | tissue                                    | n =  | dataset | 
+|-------------------------------------------|------|---------| 
 | ACC                                       | 79   | TCGA    | 
 | ALL                                       | 194  | TARGET  | 
 | AML                                       | 196  | TARGET  | 

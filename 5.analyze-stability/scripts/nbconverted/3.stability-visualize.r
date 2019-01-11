@@ -268,9 +268,9 @@ for (dataset in c('TCGA', 'GTEX', 'TARGET')) {
 
 
     if (dataset == 'TARGET') {
-        labels = c("C", "D")
+        labels = c("B", "D")
     } else {
-        labels = c("A", "B")
+        labels = c("A", "C")
     }
 
     main_plot <- (
@@ -318,7 +318,7 @@ sup_plot <- (
 )
 
 for(extension in c('.png', '.pdf')) {
-    fig_file <- paste0("stability_summary_cancer", extension)
+    fig_file <- paste0("stability_summary_supplement", extension)
     fig_file <- file.path("figures", fig_file)
     cowplot::save_plot(filename = fig_file,
                        plot = sup_plot,

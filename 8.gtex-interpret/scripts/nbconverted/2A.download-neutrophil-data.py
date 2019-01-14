@@ -53,6 +53,7 @@ get_ipython().system(' sha256sum $path')
 
 # Load Data
 geo_df = pd.read_excel(path, index_col=0, skiprows=1)
+geo_df = geo_df[geo_df.symbol != 'N\A']
 
 print(geo_df.shape)
 geo_df.head(2)
@@ -130,25 +131,37 @@ old_to_new_entrez = dict(zip(updater_df.old_entrez_gene_id,
 
 
 # Update the symbol column to entrez_gene_id
-geo_df.symbol = geo_df.symbol.replace(symbol_to_entrez)
-geo_df = geo_df.loc[geo_df.symbol.isin(symbol_to_entrez.values()), :]
-geo_df.symbol = geo_df.symbol.replace(old_to_new_entrez)
-geo_df.index = geo_df.symbol
+geo_map = geo_df.symbol.replace(symbol_to_entrez)
+geo_map = geo_map.replace(old_to_new_entrez)
+geo_df.index = geo_map
 geo_df.index.name = 'entrez_gene_id'
 geo_df = geo_df.drop(['ens_gene_id', 'ncbi_gene_id', 'gene_short', 'symbol'], axis='columns')
+geo_df = geo_df.loc[geo_df.index.isin(symbol_to_entrez.values()), :]
 
-
-# ## Scale Data and Output to File
 
 # In[11]:
 
 
+geo_df.head()
+
+
+# ## Scale Data and Output to File
+
+# In[12]:
+
+
 # Scale RNAseq data using zero-one normalization
 geo_scaled_zeroone_df = preprocessing.MinMaxScaler().fit_transform(geo_df.transpose())
-geo_scaled_zeroone_df = pd.DataFrame(geo_scaled_zeroone_df,
-                                     columns=geo_df.index,
-                                     index=geo_df.columns)
+geo_scaled_zeroone_df = (
+    pd.DataFrame(geo_scaled_zeroone_df,
+                 columns=geo_df.index,
+                 index=geo_df.columns)
+    .sort_index(axis='columns')
+    .sort_index(axis='rows')
+)
 
+geo_scaled_zeroone_df.columns = geo_scaled_zeroone_df.columns.astype(str)
+geo_scaled_zeroone_df = geo_scaled_zeroone_df.loc[:, ~geo_scaled_zeroone_df.columns.duplicated(keep='first')]
 os.makedirs('data', exist_ok=True)
 
 file = os.path.join('data', 'GSE103706_processed_matrix.tsv.gz')

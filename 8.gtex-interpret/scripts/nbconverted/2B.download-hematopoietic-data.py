@@ -60,6 +60,62 @@ geo_df.head(2)
 # In[6]:
 
 
+# Load curated gene names from versioned resource 
+commit = '721204091a96e55de6dcad165d6d8265e67e2a48'
+url = 'https://raw.githubusercontent.com/cognoma/genes/{}/data/genes.tsv'.format(commit)
+gene_df = pd.read_table(url)
+
+# Only consider protein-coding genes
+gene_df = (
+    gene_df.query("gene_type == 'protein-coding'")
+)
+
+symbol_to_entrez = dict(zip(gene_df.symbol,
+                            gene_df.entrez_gene_id))
+
+
+# In[7]:
+
+
+# Add alternative symbols to entrez mapping dictionary
+gene_df = gene_df.dropna(axis='rows', subset=['synonyms'])
+gene_df.synonyms = gene_df.synonyms.str.split('|')
+
+all_syn = (
+    gene_df.apply(lambda x: pd.Series(x.synonyms), axis=1)
+    .stack()
+    .reset_index(level=1, drop=True)
+)
+
+# Name the synonym series and join with rest of genes
+all_syn.name = 'all_synonyms'
+gene_with_syn_df = gene_df.join(all_syn)
+
+# Remove rows that have redundant symbols in all_synonyms
+gene_with_syn_df = (
+    gene_with_syn_df
+    
+    # Drop synonyms that are duplicated - can't be sure of mapping
+    .drop_duplicates(['all_synonyms'], keep=False)
+
+    # Drop rows in which the symbol appears in the list of synonyms
+    .query('symbol not in all_synonyms')
+)
+
+
+# In[8]:
+
+
+# Create a synonym to entrez mapping and add to dictionary
+synonym_to_entrez = dict(zip(gene_with_syn_df.all_synonyms,
+                             gene_with_syn_df.entrez_gene_id))
+
+symbol_to_entrez.update(synonym_to_entrez)
+
+
+# In[9]:
+
+
 # Load gene updater
 commit = '721204091a96e55de6dcad165d6d8265e67e2a48'
 url = 'https://raw.githubusercontent.com/cognoma/genes/{}/data/updater.tsv'.format(commit)
@@ -68,29 +124,40 @@ old_to_new_entrez = dict(zip(updater_df.old_entrez_gene_id,
                              updater_df.new_entrez_gene_id))
 
 
-# In[7]:
+# In[10]:
 
 
-# Update the entrez gene IDs in the index
-#entrez_ids = geo_
-geo_df.index = geo_df.A_Name.replace(old_to_new_entrez)
+# Update the symbol column to entrez_gene_id
+geo_map = geo_df.A_Desc.replace(symbol_to_entrez)
+geo_map = geo_map.replace(old_to_new_entrez)
+geo_df.index = geo_map
 geo_df.index.name = 'entrez_gene_id'
 geo_df = geo_df.drop(['A_Name', 'A_Desc'], axis='columns')
-geo_df.head(2)
+geo_df = geo_df.loc[geo_df.index.isin(symbol_to_entrez.values()), :]
 
 
 # ## Scale Data and Output to File
 
-# In[8]:
+# In[11]:
 
 
 # Scale RNAseq data using zero-one normalization
 geo_scaled_zeroone_df = preprocessing.MinMaxScaler().fit_transform(geo_df.transpose())
-geo_scaled_zeroone_df = pd.DataFrame(geo_scaled_zeroone_df,
-                                     columns=geo_df.index,
-                                     index=geo_df.columns)
+geo_scaled_zeroone_df = (
+    pd.DataFrame(geo_scaled_zeroone_df,
+                 columns=geo_df.index,
+                 index=geo_df.columns)
+    .sort_index(axis='columns')
+    .sort_index(axis='rows')
+)
+
+geo_scaled_zeroone_df.columns = geo_scaled_zeroone_df.columns.astype(str)
+geo_scaled_zeroone_df = geo_scaled_zeroone_df.loc[:, ~geo_scaled_zeroone_df.columns.duplicated(keep='first')]
 
 os.makedirs('data', exist_ok=True)
+
+geo_scaled_zeroone_df.columns = geo_scaled_zeroone_df.columns.astype(str)
+geo_scaled_zeroone_df = geo_scaled_zeroone_df.loc[:, ~geo_scaled_zeroone_df.columns.duplicated(keep='first')]
 
 file = os.path.join('data', 'GSE24759_processed_matrix.tsv.gz')
 geo_scaled_zeroone_df.to_csv(file, sep='\t', compression='gzip')
@@ -102,7 +169,7 @@ geo_scaled_zeroone_df.head()
 # 
 # Data acquired from Supplementary Table 1 of [Novershtern et al. 2011](https://doi.org/10.1016/j.cell.2011.01.004)
 
-# In[9]:
+# In[12]:
 
 
 cell_class = {
@@ -175,9 +242,10 @@ cell_class = {
 }
 
 
-# In[10]:
+# In[13]:
 
 
+# Write data to file
 cell_class_df = (
     pd.DataFrame(cell_class, index=[0])
     .transpose()
@@ -188,7 +256,7 @@ cell_class_df = (
 cell_class_df.head()
 
 
-# In[11]:
+# In[14]:
 
 
 file = os.path.join('results', 'cell-type-classification.tsv')

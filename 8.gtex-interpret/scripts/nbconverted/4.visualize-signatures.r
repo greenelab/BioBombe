@@ -4,10 +4,13 @@ suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(ggplot2))
 suppressPackageStartupMessages(library(ggrepel))
 suppressPackageStartupMessages(library(cowplot))
+suppressPackageStartupMessages(library(ggpmisc))
 
 # Load custom plotting functions
 util_file = file.path("..", "6.analyze-weights", "scripts", "utils.R")
 source(util_file)
+
+set.seed(123)
 
 # Load and process data
 results_file <- file.path('results', 'gtex_vae_example_interpret_compression.tsv')
@@ -173,6 +176,9 @@ head(geneset_weights_df, 3)
 color_logic <- ((geneset_weights_df$z_score_z3 < -9 | geneset_weights_df$z_score_z3 > 10) |
                 (geneset_weights_df$z_score_z14 < -10 | geneset_weights_df$z_score_z14 > 10))
 
+# Formula to plot linear model
+formula <- x ~ y
+
 # Generate plot
 panel_e_gg <- ggplot(geneset_weights_df,
                      aes(x = z_score_z3, y = z_score_z14)) +
@@ -180,6 +186,11 @@ panel_e_gg <- ggplot(geneset_weights_df,
                size = 0.6,
                shape = 16,
                color = ifelse(color_logic, "red", "grey50")) +
+    geom_smooth(method = "lm",
+                se = TRUE,
+                color = "grey20",
+                alpha = 0.4,
+                lwd = 0.3) +
     geom_hline(yintercept = 0,
                linetype = 'dashed',
                color = 'grey50',
@@ -199,8 +210,25 @@ panel_e_gg <- ggplot(geneset_weights_df,
                     aes(x = z_score_z3,
                         y = z_score_z14,
                         label = variable)) +
+    stat_poly_eq(aes(label = paste(..rr.label..)),
+                 label.x.npc = 0.8,
+                 label.y.npc = 0.88,
+                 formula = formula,
+                 parse = TRUE,
+                 size = 2,
+                 na.rm = TRUE,
+                 rr.digits = 1) +
+    stat_fit_glance(method = "lm",
+                    geom = "text",
+                    label.x.npc = 0.8,
+                    label.y.npc = 0.97,
+                    method.args = list(formula = formula),
+                    size = 2,
+                    aes(label = paste("p = ",
+                                      signif(..p.value.., digits = 1),
+                                      sep = ""))) +
     xlab("Z Score for VAE z = 3 (Feature 0)") +
-    ylab("Z Score for VAE z = 14 (Feature 10)") +
+    ylab("Z Score for VAE z = 14\n(Feature 10)") +
     theme_bw() +
     theme(axis.title = element_text(size = 7),
           axis.text.x = element_text(size = 6),
@@ -232,11 +260,11 @@ gene_weights_df$classification <- factor(gene_weights_df$classification,
 
 head(gene_weights_df, 3)
 
-color_labels <- c("Neutrophils" = "#4575b4",
-                  "Keratinocytes" = "#fc8d59",
-                  "Neurons" = "#542788",
-                  "Skeletal Muscle" = "#b35806",
-                  "Monocytes" = "#d73027",
+color_labels <- c("Neutrophils" = "#1b9e77",
+                  "Keratinocytes" = "#6a3d9a",
+                  "Neurons" = "#1f78b4",
+                  "Skeletal Muscle" = "#ff7f00",
+                  "Monocytes" = "#e7298a",
                   "Other Geneset" = "#CFDEDA",
                   "No Geneset" = "#F5B8D4")
 
@@ -244,14 +272,22 @@ other_points_logic <- gene_weights_df$classification %in% c('Other Geneset', 'No
 
 panel_f_gg <- ggplot(gene_weights_df,
                      aes(x = vae_0_3,
-                         y = vae_10,
-                         color = classification)) +
+                         y = vae_10)) +
     geom_point(data = subset(gene_weights_df, other_points_logic),
+               aes(color = classification),
+               shape = 16,
                size = 0.02,
                alpha = 0.4) +
     geom_point(data = subset(gene_weights_df, !other_points_logic),
-               size = 0.07,
+               aes(color = classification),
+               shape = 16,
+               size = 0.2,
                alpha = 0.6) +
+    geom_smooth(method = "lm",
+                se = TRUE,
+                color = "grey20",
+                alpha = 0.4,
+                lwd = 0.3) +
     geom_hline(yintercept = 0,
                linetype = 'dashed',
                color = 'grey50',
@@ -260,11 +296,29 @@ panel_f_gg <- ggplot(gene_weights_df,
                linetype = 'dashed',
                color = 'grey50',
                lwd = 0.3) +
+    stat_poly_eq(data = gene_weights_df, 
+                 aes(label = paste(..rr.label..)),
+                 label.x.npc = 0.2,
+                 label.y.npc = 0.58,
+                 formula = formula,
+                 parse = TRUE,
+                 size = 2,
+                 na.rm = TRUE,
+                 rr.digits = 1) +
+    stat_fit_glance(method = "lm",
+                    geom = "text",
+                    label.x.npc = 0.2,
+                    label.y.npc = 0.67,
+                    method.args = list(formula = formula),
+                    size = 2,
+                    aes(label = paste("p = ",
+                                      signif(..p.value.., digits = 1),
+                                      sep = ""))) +
     scale_color_manual(name = "Gene Set Class",
                        values = color_labels,
                        breaks = geneset_classes) +
     xlab("Z Score for VAE z = 3 (Feature 0)") +
-    ylab("Z Score for VAE z = 14 (Feature 10)") +
+    ylab("Z Score for VAE z = 14\n(Feature 10)") +
     theme_bw() +
     theme(axis.title = element_text(size = 7),
           axis.text.x = element_text(size = 6),
@@ -317,8 +371,10 @@ panel_g_gg <- ggplot(full_neutrophil_results_df,
                                   "Not Differentiated" = "#695eff")) +
     xlab('') +
     ylab('BioBombe Score') +
+    ggtitle("GSE103706") +
     theme_bw() +
-    theme(strip.background = element_rect(colour = "black", fill = "#fdfff4"),
+    theme(plot.title = element_text(hjust = 0.5, size = 9),
+          strip.background = element_rect(colour = "black", fill = "#fdfff4"),
           strip.text = element_text(size = 6),
           axis.title = element_text(size = 7),
           axis.text.x = element_text(size = 6),
@@ -375,8 +431,10 @@ panel_h_gg <- ggplot(full_heme_results_df,
     scale_color_manual(values = colorRampPalette(RColorBrewer::brewer.pal(8, "Dark2"))(n_colors)) +
     xlab('') +
     ylab('BioBombe Score') +
+    ggtitle("GSE24759") +
     theme_bw() +
-    theme(strip.background = element_rect(colour = "black", fill = "#fdfff4"),
+    theme(plot.title = element_text(hjust = 0.5, size = 9),
+          strip.background = element_rect(colour = "black", fill = "#fdfff4"),
           strip.text = element_text(size = 6),
           axis.title = element_text(size = 7),
           axis.text.x = element_text(size = 6),
@@ -437,7 +495,7 @@ full_gg <- cowplot::plot_grid(
     e_and_f_gg,
     g_and_h_gg,
     nrow = 3,
-    rel_heights = c(1.2, 0.75, 0.95)
+    rel_heights = c(1.15, 0.70, 1.05)
 )
 
 full_gg

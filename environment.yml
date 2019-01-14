@@ -22,6 +22,7 @@ dependencies:
 - conda-forge::r-cowplot=0.9.3
 - conda-forge::r-heatmap3=1.1.1
 - conda-forge::r-ggrepel=0.8.0
+- conda-forge::r-ggpmisc=0.2.16
 - conda-forge::r-irkernel=0.8.11
 - conda-forge::r-optparse=1.6.0
 - pip:

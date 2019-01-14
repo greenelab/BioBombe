@@ -475,7 +475,7 @@ heme_z200_feature = '{}_{}'.format(gtex_z200_scores_df.algorithm.values[0],
 heme_z200_feature
 
 
-# In[ ]:
+# In[32]:
 
 
 # Obtain this transformation too
@@ -490,7 +490,7 @@ result_heme_nmf_200_feat6, _ = apply_signature(weight_df=weight_heme_z200_df,
                                             align=True)
 
 
-# In[ ]:
+# In[33]:
 
 
 # Combine the full scores and output for downstream visualization
@@ -501,7 +501,7 @@ full_heme_result_df = (
 )
 
 
-# In[ ]:
+# In[34]:
 
 
 heme_cell_type_recode_df = (
@@ -512,7 +512,7 @@ heme_cell_type_recode_df = (
 heme_cell_type_recode_df.loc[~heme_cell_type_recode_df.additional.isna(), 'cell_type'] = "PRE_BCELL2"
 
 
-# In[ ]:
+# In[35]:
 
 
 full_heme_result_df = (
@@ -521,7 +521,7 @@ full_heme_result_df = (
 )
 
 
-# In[ ]:
+# In[36]:
 
 
 # Recode cell-type into larger classification
@@ -533,7 +533,7 @@ cell_updater = dict(zip(cell_class_df.label, cell_class_df.classification))
 cell_class_df.head()
 
 
-# In[ ]:
+# In[37]:
 
 
 full_heme_result_df = (
@@ -547,7 +547,7 @@ full_heme_result_df.to_csv(file, index=False, sep='\t')
 full_heme_result_df.head()
 
 
-# In[ ]:
+# In[38]:
 
 
 # Quickly plot results for both features
@@ -561,7 +561,7 @@ l = plt.legend(handles,
                bbox_to_anchor=(1.02, 0.8), loc=2, borderaxespad=0.)
 
 
-# In[ ]:
+# In[39]:
 
 
 plt.rcParams['figure.figsize'] = 5, 3

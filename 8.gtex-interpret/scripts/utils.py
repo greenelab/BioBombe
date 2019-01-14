@@ -31,14 +31,15 @@ def load_weight_matrix(dataset, z_dim, seed, shuffled=False):
     """
 
     if shuffled:
-        results_dir = '{}_shuffled_results'.format(dataset)
+        results_dir = "{}_shuffled_results".format(dataset)
     else:
-        results_dir = '{}_results'.format(dataset)
+        results_dir = "{}_results".format(dataset)
 
-    base_dir = os.path.join('..', '2.ensemble-z-analysis', 'results',
-                            results_dir, 'ensemble_z_matrices')
-    z_dir = '{}_components_{}'.format(dataset.lower(), str(z_dim))
-    weight_file = 'model_{}_weight_matrix.tsv.gz'.format(str(seed))
+    base_dir = os.path.join(
+        "..", "2.ensemble-z-analysis", "results", results_dir, "ensemble_z_matrices"
+    )
+    z_dir = "{}_components_{}".format(dataset.lower(), str(z_dim))
+    weight_file = "model_{}_weight_matrix.tsv.gz".format(str(seed))
 
     full_file = os.path.join(base_dir, z_dir, weight_file)
     weight_df = pd.read_table(full_file, index_col=0)
@@ -47,8 +48,9 @@ def load_weight_matrix(dataset, z_dim, seed, shuffled=False):
     return weight_df
 
 
-def load_enrichment_results(dataset, z_dim, metaedge, algorithm=None,
-                            feature=None, seed=None, shuffled=False):
+def load_enrichment_results(
+    dataset, z_dim, metaedge, algorithm=None, feature=None, seed=None, shuffled=False
+):
     """
     Load enrichment results for the given dimension, algorithm, and seed
     """
@@ -56,15 +58,14 @@ def load_enrichment_results(dataset, z_dim, metaedge, algorithm=None,
     dataset = dataset.lower()
 
     if shuffled:
-        signal_dir = 'shuffled'
+        signal_dir = "shuffled"
     else:
-        signal_dir = 'signal'
+        signal_dir = "signal"
 
-    base_file = '{}_z_{}_{}__geneset_scores.tsv.gz'.format(dataset,
-                                                           z_dim,
-                                                           metaedge)
-    base_dir = os.path.join('..', '6.analyze-weights', 'results', dataset,
-                            metaedge.lower(), signal_dir)
+    base_file = "{}_z_{}_{}__geneset_scores.tsv.gz".format(dataset, z_dim, metaedge)
+    base_dir = os.path.join(
+        "..", "6.analyze-weights", "results", dataset, metaedge.lower(), signal_dir
+    )
     enr_file = os.path.join(base_dir, base_file)
     enr_df = pd.read_table(enr_file)
 
@@ -85,10 +86,14 @@ def apply_signature(weight_df, other_df, feature, align=False):
     Apply a signature to alternative datasets
     """
 
+    missing_genes = list(
+        set(weight_df.index.astype(int)).difference(set(other_df.columns.astype(int)))
+    )
+
     if align:
-        other_df = other_df.reindex(weight_df.index, axis='columns').fillna(0)
+        other_df = other_df.reindex(weight_df.index, axis="columns").fillna(0)
 
     signature_df = pd.DataFrame(weight_df.loc[:, feature])
     result_df = other_df @ signature_df
 
-    return result_df
+    return result_df, missing_genes

@@ -62,9 +62,19 @@ get_ipython().run_line_magic('matplotlib', 'inline')
 np.random.seed(123)
 
 
+# In[4]:
+
+
+# First, load the XCELL dataset and extract genes
+geneset_file = os.path.join('..', '3.build-hetnets', 'data', 'xcell_all_entrez.gmt')
+
+xcell_genesets_gmt = parse_gmt(gene_sets=[geneset_file])
+len(xcell_genesets_gmt)
+
+
 # ## 1.0. Load and Process External Neutrophil Dataset
 
-# In[4]:
+# In[5]:
 
 
 file = os.path.join('data', 'GSE103706_processed_matrix.tsv.gz')
@@ -78,24 +88,42 @@ geo_scaled_zeroone_df.head(2)
 # 
 # We are using feature 0 from VAE z = 3 because we previously observed an enrichment of a Neutrophil signature in this specific feature.
 
-# In[5]:
+# In[6]:
 
 
 vae_z3_seed = 908341
 vae_z3_feature = 'vae_0'
 
 
-# In[6]:
+# In[7]:
 
 
 weight_z3_df = load_weight_matrix(dataset='GTEX',
                                   z_dim=3,
                                   seed=vae_z3_seed)
 
-result_vae_3_feat0 = apply_signature(weight_df=weight_z3_df,
-                                     other_df=geo_scaled_zeroone_df,
-                                     feature=vae_z3_feature,
-                                     align=True)
+result_vae_3_feat0, neutrophil_missing_genes = (
+    apply_signature(weight_df=weight_z3_df,
+                    other_df=geo_scaled_zeroone_df,
+                    feature=vae_z3_feature,
+                    align=True)
+)
+
+print('{}% of genes are missing'.format(len(neutrophil_missing_genes) / weight_z3_df.shape[0] * 100 ))
+
+
+# In[8]:
+
+
+neutrophil_hpca_genes = xcell_genesets_gmt['Neutrophils_HPCA_2']
+neutrophil_hpca_genes
+
+
+# In[9]:
+
+
+# But how many of the missing genes belong to the specific Neutrophil signature
+[x for x in neutrophil_hpca_genes if int(x) in neutrophil_missing_genes]
 
 
 # ## 1.2. Apply Signature from VAE z = 14 (feature 10)
@@ -105,7 +133,7 @@ result_vae_3_feat0 = apply_signature(weight_df=weight_z3_df,
 # 
 # We identified feature 10 as the feature with the greatest enrichment by visually scanning the biobombe results in `results/gtex/gpxcell/signal/gtex_z_14_GpXCELL__geneset_scores.tsv`
 
-# In[7]:
+# In[10]:
 
 
 z_14_df = load_enrichment_results(dataset="GTEX",
@@ -122,7 +150,7 @@ z_14_df = (
 z_14_df.head(1)
 
 
-# In[8]:
+# In[11]:
 
 
 vae_z14_seed = z_14_df.head(1).seed.values[0]
@@ -133,22 +161,22 @@ print(vae_z14_seed)
 vae_z14_feature
 
 
-# In[9]:
+# In[12]:
 
 
 weight_z14_df = load_weight_matrix(dataset='GTEX',
                                    z_dim=14,
                                    seed=vae_z14_seed)
 
-result_vae_14_feat10 = apply_signature(weight_df=weight_z14_df,
-                                       other_df=geo_scaled_zeroone_df,
-                                       feature=vae_z14_feature,
-                                       align=True)
+result_vae_14_feat10, _ = apply_signature(weight_df=weight_z14_df,
+                                          other_df=geo_scaled_zeroone_df,
+                                          feature=vae_z14_feature,
+                                          align=True)
 
 
 # ## 1.3. Combine Data and Add Phenotype Information
 
-# In[10]:
+# In[13]:
 
 
 full_neutrophil_results_df = result_vae_14_feat10.merge(result_vae_3_feat0,
@@ -156,7 +184,7 @@ full_neutrophil_results_df = result_vae_14_feat10.merge(result_vae_3_feat0,
                                                         right_index=True)
 
 
-# In[11]:
+# In[14]:
 
 
 # Process phenotype data
@@ -166,7 +194,7 @@ day = [x[2].strip(' ') if 'replicate' not in x[2] else 'day 0'
        for x in result_vae_3_feat0.index.str.split(',')]
 
 
-# In[12]:
+# In[15]:
 
 
 full_neutrophil_results_df = (
@@ -194,7 +222,7 @@ full_neutrophil_results_df
 # 
 # Note the final figure is compiled in an alternative notebook
 
-# In[13]:
+# In[16]:
 
 
 # Quickly visualize results
@@ -220,7 +248,7 @@ ax.set_xlabel('Cell Lines')
 plt.tight_layout()
 
 
-# In[14]:
+# In[17]:
 
 
 # Quickly visualize results
@@ -251,7 +279,7 @@ plt.tight_layout()
 # Use the function `load_enrichment_results` to retrieve and subset previously compiled BioBombe results.
 # The files are located in `6.analyze-weights/results/`.
 
-# In[15]:
+# In[18]:
 
 
 # What other genesets are enriched in VAE z = 3 feature?
@@ -280,7 +308,7 @@ full_test_df.to_csv(file, index=False, sep='\t')
 full_test_df.head(3)
 
 
-# In[16]:
+# In[19]:
 
 
 # Save dataframe for better plotting in R, but visualize quickly here
@@ -291,17 +319,7 @@ sns.scatterplot(data=full_test_df, x='z_score_z3', y='z_score_z14');
 # 
 # Also assign labels to which genesets the genes contribute to
 
-# In[17]:
-
-
-# First, load the XCELL dataset and extract genes that belong to neutrophil processes
-geneset_file = os.path.join('..', '3.build-hetnets', 'data', 'xcell_all_entrez.gmt')
-
-xcell_genesets_gmt = parse_gmt(gene_sets=[geneset_file])
-len(xcell_genesets_gmt)
-
-
-# In[18]:
+# In[20]:
 
 
 unique_genes = []
@@ -330,7 +348,7 @@ for geneset_name, geneset in xcell_genesets_gmt.items():
             classification_genes.append([classification, gene, geneset_name])
 
 
-# In[19]:
+# In[21]:
 
 
 result_df = (
@@ -345,13 +363,13 @@ result_df.index = result_df.gene
 result_df.head()
 
 
-# In[20]:
+# In[22]:
 
 
 result_df.classification.value_counts()
 
 
-# In[21]:
+# In[23]:
 
 
 both_weight_df = (
@@ -370,7 +388,7 @@ both_weight_df.to_csv(file, index=False, sep='\t')
 
 # ## 2.0. Load and Process External Hematopoietic Dataset
 
-# In[22]:
+# In[24]:
 
 
 file = os.path.join('data', 'GSE24759_processed_matrix.tsv.gz')
@@ -380,14 +398,14 @@ print(heme_zeroone_df.shape)
 heme_zeroone_df.head(2)
 
 
-# In[23]:
+# In[25]:
 
 
 heme_z3_seed = 908341
 heme_z3_feature = 'vae_2'
 
 
-# In[24]:
+# In[26]:
 
 
 # Transform the external dataset with this learned feature
@@ -395,13 +413,38 @@ weight_heme_z3_df = load_weight_matrix(dataset='GTEX',
                                        z_dim=3,
                                        seed=heme_z3_seed)
 
-result_heme_vae_3_feat2 = apply_signature(weight_df=weight_heme_z3_df,
-                                          other_df=heme_zeroone_df,
-                                          feature=heme_z3_feature,
-                                          align=True)
+result_heme_vae_3_feat2, monocyte_missing_genes = (
+    apply_signature(weight_df=weight_heme_z3_df,
+                    other_df=heme_zeroone_df,
+                    feature=heme_z3_feature,
+                    align=True)
+)
+
+print('{}% of genes are missing'.format(len(monocyte_missing_genes) / weight_heme_z3_df.shape[0] * 100 ))
 
 
-# In[25]:
+# In[27]:
+
+
+monocyte_fantom_genes = xcell_genesets_gmt['Monocytes_FANTOM_2']
+monocyte_fantom_genes
+
+
+# In[28]:
+
+
+# But how many of the missing genes belong to the specific Monocyte signature
+monocyte_signature_genes_missing = [x for x in monocyte_fantom_genes if int(x) in monocyte_missing_genes]
+monocyte_signature_genes_missing
+
+
+# In[29]:
+
+
+print('{:.2f}% of monocyte genes are missing'.format(len(monocyte_signature_genes_missing) / len(monocyte_fantom_genes) * 100 ))
+
+
+# In[30]:
 
 
 # Additionall, the top scoring feature for Monocytes_FANTOM_2 is in the nmf model with 200 features
@@ -423,7 +466,7 @@ gtex_z200_scores_df = (
 gtex_z200_scores_df
 
 
-# In[26]:
+# In[31]:
 
 
 heme_z200_feature = '{}_{}'.format(gtex_z200_scores_df.algorithm.values[0],
@@ -432,7 +475,7 @@ heme_z200_feature = '{}_{}'.format(gtex_z200_scores_df.algorithm.values[0],
 heme_z200_feature
 
 
-# In[27]:
+# In[ ]:
 
 
 # Obtain this transformation too
@@ -441,13 +484,13 @@ weight_heme_z200_df = load_weight_matrix(dataset='GTEX',
                                          seed=gtex_z200_scores_df.seed.values[0])
 
 
-result_heme_nmf_200_feat6 = apply_signature(weight_df=weight_heme_z200_df,
+result_heme_nmf_200_feat6, _ = apply_signature(weight_df=weight_heme_z200_df,
                                             other_df=heme_zeroone_df,
                                             feature=heme_z200_feature,
                                             align=True)
 
 
-# In[28]:
+# In[ ]:
 
 
 # Combine the full scores and output for downstream visualization
@@ -458,7 +501,7 @@ full_heme_result_df = (
 )
 
 
-# In[29]:
+# In[ ]:
 
 
 heme_cell_type_recode_df = (
@@ -469,7 +512,7 @@ heme_cell_type_recode_df = (
 heme_cell_type_recode_df.loc[~heme_cell_type_recode_df.additional.isna(), 'cell_type'] = "PRE_BCELL2"
 
 
-# In[30]:
+# In[ ]:
 
 
 full_heme_result_df = (
@@ -478,7 +521,7 @@ full_heme_result_df = (
 )
 
 
-# In[31]:
+# In[ ]:
 
 
 # Recode cell-type into larger classification
@@ -490,7 +533,7 @@ cell_updater = dict(zip(cell_class_df.label, cell_class_df.classification))
 cell_class_df.head()
 
 
-# In[32]:
+# In[ ]:
 
 
 full_heme_result_df = (
@@ -504,7 +547,7 @@ full_heme_result_df.to_csv(file, index=False, sep='\t')
 full_heme_result_df.head()
 
 
-# In[33]:
+# In[ ]:
 
 
 # Quickly plot results for both features
@@ -518,7 +561,7 @@ l = plt.legend(handles,
                bbox_to_anchor=(1.02, 0.8), loc=2, borderaxespad=0.)
 
 
-# In[34]:
+# In[ ]:
 
 
 plt.rcParams['figure.figsize'] = 5, 3

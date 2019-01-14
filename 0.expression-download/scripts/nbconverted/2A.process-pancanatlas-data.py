@@ -84,7 +84,7 @@ gene_df.head(2)
 # In[8]:
 
 
-# Load gene updater - old to new Entrez gene identifiers
+# Load gene updater - define up to date Entrez gene identifiers where appropriate
 url = 'https://raw.githubusercontent.com/cognoma/genes/{}/data/updater.tsv'.format(genes_commit)
 updater_df = pd.read_table(url)
 
@@ -133,7 +133,8 @@ tcga_expr_df.index.rename('sample_id', inplace=True)
 # In[12]:
 
 
-# Update sample IDs
+# Update sample IDs to remove multiple samples measured on the same tumor
+# and to map with the clinical information
 tcga_expr_df.index = tcga_expr_df.index.str.slice(start=0, stop=15)
 tcga_expr_df = tcga_expr_df.loc[~tcga_expr_df.index.duplicated(), :]
 

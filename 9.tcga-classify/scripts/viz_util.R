@@ -9,7 +9,7 @@
 # source("scripts/viz_util.R")
 
 load_results <- function(results_path, file_string = "classify_metrics",
-                         process_output = FALSE) {
+                         process_output = FALSE, uses_top_features = FALSE) {
 
   require(dplyr)
   require(readr)
@@ -23,26 +23,45 @@ load_results <- function(results_path, file_string = "classify_metrics",
   #               choices: "classify_metrics" or "coefficients"
   # process_output - boolean indicating if the output should be processed
   #                  before returning. If False, output list of combined raw files
+  # uses_top_features - boolean if the data to load was precompiled by top features
 
   # Setup column types for specific file strings
   if (file_string == "classify_metrics") {
-    metric_cols <- readr::cols(
-      .default = readr::col_character(),
-      auroc = readr::col_double(),
-      aupr = readr::col_double(),
-      z_dim = readr::col_integer(),
-      seed = readr::col_integer())
+    if (uses_top_features) {
+      metric_cols <- readr::cols(
+        .default = readr::col_character(),
+        auroc = readr::col_double(),
+        aupr = readr::col_double()
+        )
+    } else {
+      metric_cols <- readr::cols(
+        .default = readr::col_character(),
+        auroc = readr::col_double(),
+        aupr = readr::col_double(),
+        z_dim = readr::col_integer(),
+        seed = readr::col_integer()
+        )
+    }
+
   } else if (file_string == "coefficients") {
-    metric_cols <- readr::cols(
-      feature = readr::col_character(),
-      weight = readr::col_double(),
-      abs = readr::col_double(),
-      signal = readr::col_character(),
-      z_dim = readr::col_integer(),
-      seed = readr::col_integer(),
-      algorithm = readr::col_character(),
-      gene = readr::col_character()
-    )
+    if (uses_top_features) {
+      metric_cols <- readr::cols(
+        .default = readr::col_character(),
+        weight = readr::col_double(),
+        abs = readr::col_double()
+        )
+    } else {
+      metric_cols <- readr::cols(
+        feature = readr::col_character(),
+        weight = readr::col_double(),
+        abs = readr::col_double(),
+        signal = readr::col_character(),
+        z_dim = readr::col_integer(),
+        seed = readr::col_integer(),
+        algorithm = readr::col_character(),
+        gene = readr::col_character()
+      )
+    }
   } else {
     stop("specify `file_string` as `classify_metrics` or `coefficients`")
   }
@@ -70,13 +89,18 @@ load_results <- function(results_path, file_string = "classify_metrics",
   raw_metrics_df <- dplyr::bind_rows(raw_results)
 
   # Process data for plotting
-  metrics_df <- metrics_df %>%
-    dplyr::mutate(z_dim =
-                    factor(z_dim, levels = sort(as.numeric(paste(unique(z_dim))))))
+  if (!uses_top_features) {
+    metrics_df <- metrics_df %>%
+      dplyr::mutate(z_dim =
+                      factor(z_dim,
+                             levels = sort(as.numeric(paste(unique(z_dim))))))
+    algorithm_levels <- c("pca", "ica", "nmf", "dae", "vae")
+  } else {
+    algorithm_levels <- c("pca", "ica", "nmf", "dae", "vae", "all")
+  }
 
   metrics_df$algorithm <-
-    factor(metrics_df$algorithm,
-           levels = c("pca", "ica", "nmf", "dae", "vae"))
+    factor(metrics_df$algorithm, levels = algorithm_levels)
 
   metrics_df$algorithm <- metrics_df$algorithm %>%
     dplyr::recode_factor("pca" = "PCA",
@@ -188,7 +212,7 @@ plot_mutation_figure <- function(df) {
     theme_bw() +
     ylim(c(0.4, 1)) +
     theme(axis.text.x = element_blank(),
-          legend.position = 'top',
+          legend.position = "top",
           legend.text = element_text(size = 12),
           legend.key.size = unit(1, "lines"),
           strip.background = element_rect(colour = "black",
@@ -206,17 +230,17 @@ plot_final_performance <- function(metrics_df, metric, genes, signal,
   #
   # Arguments:
   # metrics_df - dataframe storing the final metrics across all models
-  # metric - the specific metric to plot (either 'auroc' or 'aupr')
+  # metric - the specific metric to plot (either "auroc" or "aupr")
   # genes - a character vector of the specific genes to plot
-  # signal - the specific signal to plot (either 'signal' or 'shuffled')
-  # data_type - the specific data_type to plot (either 'cv', 'train', or 'test)
+  # signal - the specific signal to plot (either "signal" or "shuffled")
+  # data_type - the specific data_type to plot (either "cv", "train", or "test)
 
   metrics_sub_df <- metrics_df %>%
     dplyr::filter(gene_or_cancertype %in% !!genes,
                   signal == !!signal,
                   data_type == !!data_type)
 
-  if (metric == 'auroc') {
+  if (metric == "auroc") {
     g <- ggplot(metrics_sub_df, aes(x = z_dim, y = auroc, fill = algorithm))
   } else {
     g <- ggplot(metrics_sub_df, aes(x = z_dim, y = aupr, fill = algorithm))
@@ -248,11 +272,11 @@ plot_final_performance <- function(metrics_df, metric, genes, signal,
     xlab("Z Dimensions") +
     geom_boxplot(outlier.size = 0.1, lwd = 0.3) +
     stat_summary(fun.y = mean,
-                 geom = 'line',
+                 geom = "line",
                  aes(group = algorithm, color = algorithm)) +
     facet_wrap( ~ gene_or_cancertype, ncol = 3) +
     theme_bw() +
-    guides(fill = guide_legend('none')) +
+    guides(fill = guide_legend("none")) +
     theme(axis.text.x = element_text(angle = 90, size = 6))
 
   return(g)
@@ -274,26 +298,26 @@ plot_performance_panels <- function(plot_a, plot_b, gene, shuffled = FALSE) {
 
   feature_plot <- (
     cowplot::plot_grid(
-      plot_a + theme(legend.position = 'none'),
-      plot_b + theme(legend.position = 'none'),
+      plot_a + theme(legend.position = "none"),
+      plot_b + theme(legend.position = "none"),
       labels = c("A", "B"),
       nrow = 2
     )
   )
 
   if (shuffled) {
-    title_label <- paste('Predicting', gene, 'Activation - Shuffled')
+    title_label <- paste("Predicting", gene, "Activation - Shuffled")
     figure_file <- file.path("figures",
                              paste0(gene, "_performance_metrics_shuffled.png"))
   } else {
-    title_label <- paste('Predicting', gene, 'Activation')
+    title_label <- paste("Predicting", gene, "Activation")
     figure_file <- file.path("figures",
                              paste0(gene, "_performance_metrics.png"))
   }
   title <- cowplot::ggdraw() +
     cowplot::draw_label(
       title_label,
-      fontface = 'bold'
+      fontface = "bold"
       )
 
   feature_plot <- cowplot::plot_grid(title,
@@ -308,4 +332,92 @@ plot_performance_panels <- function(plot_a, plot_b, gene, shuffled = FALSE) {
                      base_height = 8, base_width = 10)
 
   return(feature_plot)
+}
+
+plot_top_features <- function(top_df, full_df, raw_df, auroc_or_aupr = "AUROC") {
+  # Aggregate several different datatypes together to generate summary plot
+  #
+  # Arguments:
+  # top_df - dataframe storing classification performance using top algorithms
+  # full_df - dataframe storing classification performance for z = 200
+  # raw_df - dataframe storing classification performance with raw RNAseq features
+  # auroc_or_aupr - string indicating to plot AUROC or AUPR
+  #
+  # Output:
+  # The ggplot object
+  
+  if (auroc_or_aupr == "AUROC") {
+    g <- ggplot(top_df,
+                aes(x = algorithm,
+                    fill = algorithm,
+                    y = auroc))
+  } else {
+    g <- ggplot(top_df,
+                aes(x = algorithm,
+                    fill = algorithm,
+                    y = aupr))
+  }
+  
+   g <- g +
+    geom_bar(color = "black",
+             stat = "identity",
+             position = position_dodge()) +
+    facet_grid(~ gene_or_cancertype) +
+    coord_cartesian(ylim = c(0.3, 1)) +
+    geom_hline(data = raw_df,
+               aes(yintercept = auroc,
+                   linetype = signal),
+               color = "black",
+               lwd = 0.5) +
+    scale_shape_manual(name = "Signal",
+                       values = c(24, 21),
+                       labels = c("signal" = "Real",
+                                  "shuffled" = "Permuted")) +
+    scale_fill_manual(name = "Algorithm",
+                      values = c("#e41a1c",
+                                 "#377eb8",
+                                 "#4daf4a",
+                                 "#984ea3",
+                                 "#ff7f00",
+                                 "grey25"),
+                      labels = c("pca" = "PCA",
+                                 "ica" = "ICA",
+                                 "nmf" = "NMF",
+                                 "dae" = "DAE",
+                                 "vae" = "VAE",
+                                 "all" = "ALL")) +
+    scale_linetype_manual(name = "Signal",
+                          values = c("dashed", "solid"),
+                          labels = c("signal" = "Real",
+                                     "shuffled" = "Permuted")) +
+    xlab("Algorithm") +
+    ylab(paste("CV", auroc_or_aupr)) +
+    theme_bw() +
+    theme(axis.text.x = element_blank(),
+          legend.position = "right",
+          legend.title = element_text(size = 10),
+          legend.text = element_text(size = 9),
+          legend.key.size = unit(1, "lines"),
+          strip.background = element_rect(colour = "black",
+                                          fill = "#fdfff4")) +
+    guides(fill = guide_legend(order = 1))
+  
+  if (auroc_or_aupr == "AUROC") {
+    g <- g + geom_point(data = full_df,
+               fill = "grey20",
+               color = "white",
+               size = 1.5,
+               aes(x = algorithm,
+                   y = mean_auroc,
+                   shape = signal))
+  } else {
+    g <- g + geom_point(data = full_df,
+               fill = "grey20",
+               color = "white",
+               size = 1.5,
+               aes(x = algorithm,
+                   y = mean_aupr,
+                   shape = signal))
+  }
+  return(g)
 }

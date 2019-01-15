@@ -109,7 +109,8 @@ result_vae_3_feat0, neutrophil_missing_genes = (
                     align=True)
 )
 
-print('{}% of genes are missing'.format(len(neutrophil_missing_genes) / weight_z3_df.shape[0] * 100 ))
+use_genes = weight_z3_df.shape[0] - len(neutrophil_missing_genes)
+print('{} ({}%) of genes are used'.format(use_genes, use_genes / weight_z3_df.shape[0] * 100 ))
 
 
 # In[8]:
@@ -123,7 +124,8 @@ neutrophil_hpca_genes
 
 
 # But how many of the missing genes belong to the specific Neutrophil signature
-[x for x in neutrophil_hpca_genes if int(x) in neutrophil_missing_genes]
+neutrophil_hpca_genes_missing = [x for x in neutrophil_hpca_genes if int(x) in neutrophil_missing_genes]
+neutrophil_hpca_genes_missing
 
 
 # ## 1.2. Apply Signature from VAE z = 14 (feature 10)
@@ -420,13 +422,15 @@ result_heme_vae_3_feat2, monocyte_missing_genes = (
                     align=True)
 )
 
-print('{}% of genes are missing'.format(len(monocyte_missing_genes) / weight_heme_z3_df.shape[0] * 100 ))
+use_genes = weight_heme_z3_df.shape[0] - len(monocyte_missing_genes)
+print('{} ({:.2f}%) of genes are used'.format(use_genes, use_genes / weight_heme_z3_df.shape[0] * 100 ))
 
 
 # In[27]:
 
 
 monocyte_fantom_genes = xcell_genesets_gmt['Monocytes_FANTOM_2']
+print(len(monocyte_fantom_genes))
 monocyte_fantom_genes
 
 
@@ -434,14 +438,15 @@ monocyte_fantom_genes
 
 
 # But how many of the missing genes belong to the specific Monocyte signature
-monocyte_signature_genes_missing = [x for x in monocyte_fantom_genes if int(x) in monocyte_missing_genes]
-monocyte_signature_genes_missing
+monocyte_fantom_genes_missing = [x for x in monocyte_fantom_genes if int(x) in monocyte_missing_genes]
+print(len(monocyte_fantom_genes_missing))
+monocyte_fantom_genes_missing
 
 
 # In[29]:
 
 
-print('{:.2f}% of monocyte genes are missing'.format(len(monocyte_signature_genes_missing) / len(monocyte_fantom_genes) * 100 ))
+print('{:.2f}% of monocyte genes are missing'.format(len(monocyte_fantom_genes_missing) / len(monocyte_fantom_genes) * 100 ))
 
 
 # In[30]:
@@ -572,4 +577,60 @@ handles, labels = ax.get_legend_handles_labels()
 l = plt.legend(handles,
                labels,
                bbox_to_anchor=(1.02, 0.8), loc=2, borderaxespad=0.)
+
+
+# ## Generate Supplementary Table of Neutrophil and Monocyte Signatures
+
+# In[40]:
+
+
+# Load curated gene names from versioned resource 
+commit = '721204091a96e55de6dcad165d6d8265e67e2a48'
+url = 'https://raw.githubusercontent.com/cognoma/genes/{}/data/genes.tsv'.format(commit)
+gene_df = pd.read_table(url)
+
+# Only consider protein-coding genes
+gene_df = (
+    gene_df.query("gene_type == 'protein-coding'")
+)
+
+entrez_to_symbol = dict(zip(gene_df.entrez_gene_id,
+                            gene_df.symbol))
+
+
+# In[41]:
+
+
+neutrophil_df = pd.DataFrame(neutrophil_hpca_genes, columns=['entrez_gene_id'])
+neutrophil_df = (
+    neutrophil_df.assign(
+        gene_symbol=neutrophil_df.entrez_gene_id.astype(int).replace(entrez_to_symbol),
+        signature='Neutrophil_HPCA_2',
+        in_external_dataset='Yes')
+)
+neutrophil_df.head()
+
+
+# In[42]:
+
+
+monocyte_df = pd.DataFrame(monocyte_fantom_genes, columns=['entrez_gene_id'])
+monocyte_df = (
+    monocyte_df.assign(
+        gene_symbol=monocyte_df.entrez_gene_id.astype(int).replace(entrez_to_symbol),
+        signature='Monocyte_FANTOM_2',
+        in_external_dataset='Yes')
+)
+
+monocyte_df.loc[monocyte_df.entrez_gene_id.isin(monocyte_fantom_genes_missing), 'in_external_dataset'] = "No"
+monocyte_df.head()
+
+
+# In[43]:
+
+
+sup_table_df = pd.concat([neutrophil_df, monocyte_df], axis='rows').reset_index(drop=True)
+
+file = os.path.join("results", "neutrophil_and_monocyte_signature_genes.tsv")
+sup_table_df.to_csv(file, sep='\t', index=False)
 

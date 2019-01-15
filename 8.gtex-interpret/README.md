@@ -1,8 +1,8 @@
 # GTEx BioBombe Application
 
-## Exploring increased correlation in GTEx Blood with increased model capacity
-
 **Gregory Way 2019**
+
+## Exploring increased correlation in GTEx Blood with increased model capacity
 
 Previously, we recognized a sharp increase in the ability of variational autoencoders (VAEs) to capture the correlational structure of blood between z = 2 and z = 3.
 This increase in model capacity by one, increases the mean correlation of samples by nearly 0.3.

@@ -58,6 +58,18 @@ shuffled_df$algorithm_2 <- alg1_shuff
 
 svcca_switched_df <- dplyr::bind_rows(signal_df, shuffled_df)
 
+box_theme <- theme(panel.grid.minor = element_line(size = 0.1),
+                   panel.grid.major = element_line(size = 0.3),
+                   strip.text = element_text(size = 7),
+                   strip.background = element_rect(colour = "black",
+                                                   fill = "#fdfff4"),
+                   axis.text.x = element_text(angle = 90,
+                                              size = 3.2),
+                   axis.text.y = element_text(size = 6),
+                   axis.title = element_text(size = 7),
+                   plot.title = element_text(hjust = 0.5,
+                                             size = 9))
+
 # Visualize across algorithm similarity
 options(repr.plot.width = 15, repr.plot.height = 9)
 
@@ -74,23 +86,13 @@ for(dataset in c("TARGET", "TCGA", "GTEX")) {
     g <- ggplot(svcca_subset_df,
                 aes(x = z_dim,
                     y = svcca_mean_similarity,
-                    fill = algorithm_1,
                     linetype = shuffled)) +
-            geom_boxplot(outlier.size = 0.1, lwd = 0.2) +
+            geom_boxplot(outlier.size = 0.04,
+                         lwd = 0.2,
+                         fill = 'grey75') +
             facet_grid(algorithm_1 ~ algorithm_2) +
             xlab("Z Dimension") +
             ylab("SVCCA Mean Similarity") +
-            scale_fill_manual(name = "Algorithm:",
-                              values = c("#e41a1c",
-                                         "#377eb8",
-                                         "#4daf4a",
-                                         "#984ea3",
-                                         "#ff7f00"),
-                              labels = c("PCA",
-                                         "ICA",
-                                         "NMF",
-                                         "DAE",
-                                         "VAE")) +
             scale_linetype_manual(name = "Signal:",
                                   values = c("dotted", "solid"),
                                   labels = c("signal" = "Real",
@@ -98,18 +100,19 @@ for(dataset in c("TARGET", "TCGA", "GTEX")) {
             ylim(c(0, 1)) +
             ggtitle(plot_title) +
             theme_bw() +
-            theme(axis.text.x = element_text(angle = 90, size = 5),
-                  plot.title = element_text(hjust = 0.5, size = 18),
-                  legend.text = element_text(size = 12),
-                  legend.key.size = unit(1, "lines"),
-                  strip.text.x = element_text(size = 20),
-                  strip.text.y = element_text(size = 20),
-                  strip.background = element_rect(colour = "black", fill = "#fdfff4"))
+            box_theme +
+            guides(linetype = guide_legend("none"))
 
     across_algorithm_plots[[dataset]] <- g
 
-    ggsave(plot = g, filename = paste0(out_figure, ".png"), height = 8, width = 12)
-    ggsave(plot = g, filename = paste0(out_figure, ".pdf"), height = 8, width = 12)
+    for(extension in c('.png', '.pdf')) {
+        gg_file <- paste0(out_figure, extension)
+        ggsave(plot = g,
+               filename = gg_file,
+               height = 120,
+               width = 170,
+               units = "mm")
+    }
 
     print(g)
 
@@ -134,40 +137,62 @@ full_svcca_data <- full_svcca_data %>%
         svcca_diff = svcca_mean_similarity_signal - svcca_mean_similarity_shuffled
     )
 
-g <- ggplot(full_svcca_data, aes(x = z_dim, y = svcca_diff, color = dataset)) +
-    geom_point(alpha = 0.6) +
+g <- ggplot(full_svcca_data,
+            aes(x = z_dim,
+                y = svcca_diff,
+                color = dataset)) +
+    geom_point(alpha = 0.6,
+               size = 0.25) +
     facet_grid(algorithm_1 ~ algorithm_2) +
     xlab("Z Dimension") +
     ylab("SVCCA Mean Similarity") +
     scale_color_manual(name = "Dataset",
-                      values = c("#66c2a5",
-                                 "#fc8d62",
-                                 "#8da0cb"),
+                       values = c("#66c2a5",
+                                  "#fc8d62",
+                                  "#8da0cb"),
                       labels = c("GTEX" = "GTEX",
                                  "TCGA" = "TCGA",
                                  "TARGET" = "TARGET")) +
     ylim(c(0, 1)) +
     ggtitle(paste0('SVCCA Mean Similarity\nSignal Difference')) +
     theme_bw() +
-    theme(axis.text.x = element_text(angle = 90, size = 5),
-          plot.title = element_text(hjust = 0.5, size = 18),
-          legend.text = element_text(size = 12),
-          legend.key.size = unit(1, "lines"),
-          strip.text.x = element_text(size = 20),
-          strip.text.y = element_text(size = 20),
-          strip.background = element_rect(colour = "black", fill = "#fdfff4"))
+    box_theme +
+    theme(legend.title = element_text(size = 8),
+          legend.text = element_text(size = 7)) +
+    guides(color = guide_legend(override.aes = list("size" = 1,
+                                                    "alpha" = 1)))
 
 
 across_algorithm_plots[['signal_difference']] <- g
 
 out_figure = file.path("figures", "within_z_signal_difference")
 
-ggsave(plot = g,filename = paste0(out_figure, ".png"), height = 8, width = 11)
-ggsave(plot = g, filename = paste0(out_figure, ".pdf"), height = 8, width = 11)
+for(extension in c('.png', '.pdf')) {
+    gg_file <- paste0(out_figure, extension)
+    ggsave(plot = g,
+           filename = gg_file,
+           height = 120,
+           width = 170,
+           units = "mm")
+}
 
 print(g)
 
 myPalette <- colorRampPalette(rev(brewer.pal(9, "YlOrRd")))
+
+heat_theme <- theme(panel.grid.minor = element_line(size = 0.1),
+                    panel.grid.major = element_line(size = 0.3),
+                    axis.text.x = element_text(angle = 90,
+                                               size = 3.5),
+                    axis.text.y = element_text(size = 3.5),
+                    plot.title = element_text(hjust = 0.5,
+                                              size = 9),
+                    legend.title = element_text(size = 8),
+                    legend.text = element_text(size = 7),
+                    legend.key.size = unit(1, "lines"),
+                    strip.text = element_text(size = 7),
+                    strip.background = element_rect(colour = "black",
+                                                    fill = "#fdfff4"))
 
 across_dimension_plots = list()
 for (dataset in c("TARGET", "TCGA", "GTEX")) {
@@ -223,14 +248,7 @@ for (dataset in c("TARGET", "TCGA", "GTEX")) {
             facet_wrap(~ algorithm, scales = "free") +
             ggtitle(plot_title) +
             theme_bw(base_size = 9) +
-            theme(axis.text.x = element_text(angle = 90, size = 9),
-                  axis.text.y = element_text(size = 9),
-                  plot.title = element_text(hjust = 0.5, size = 18),
-                  legend.text = element_text(size = 9),
-                  legend.key.size = unit(1, "lines"),
-                  strip.text.x = element_text(size = 20),
-                  strip.text.y = element_text(size = 20),
-                  strip.background = element_rect(colour = "black", fill = "#fdfff4")) +
+            heat_theme +
             xlab("Z Dimension") +
             ylab("Z Dimension") +
             scale_x_discrete(expand = c(0, 0)) +
@@ -238,8 +256,14 @@ for (dataset in c("TARGET", "TCGA", "GTEX")) {
 
     across_dimension_plots[[dataset]] <- g
 
-    ggsave(plot = g, filename = paste0(out_figure, ".png"), height = 8, width = 13)
-    ggsave(plot = g, filename = paste0(out_figure, ".pdf"), height = 8, width = 13)
+    for(extension in c('.png', '.pdf')) {
+        gg_file <- paste0(out_figure, extension)
+        ggsave(plot = g,
+               filename = gg_file,
+               height = 100,
+               width = 170,
+               units = "mm")
+    }
 
     print(g)
 }
@@ -249,81 +273,110 @@ xmax <- 0.91
 ymin <- 0.1
 ymax <- 0.2
 
-across_z_legend <- cowplot::get_legend(across_dimension_plots[['GTEX']])
+# TCGA is the Main Figure
+across_z_legend <- cowplot::get_legend(across_dimension_plots[['TCGA']])
 
-dataset_main_plots <- list()
-for (dataset in c('TCGA', 'GTEX', 'TARGET')) {
-    
-    plot_a <- across_algorithm_plots[[dataset]] +
-        theme(legend.position = 'bottom',
-              axis.title = element_text(size = 12)) +
-        ggtitle(paste0("SVCCA Across Algorithm (", dataset, ")"))
+plot_a <- across_algorithm_plots[["TCGA"]] +
+            theme(legend.position = 'none') +
+            ggtitle(paste0("SVCCA Across Algorithm (TCGA)"))
 
-    plot_b <- across_dimension_plots[[dataset]] +
-        theme(legend.position = 'none',
-              axis.title = element_text(size = 12),
-              axis.text.x = element_text(angle = 90, size = 7),
-              axis.text.y = element_text(size = 7)) +
-        ggtitle(paste0("SVCCA Across Dimension (", dataset, ")"))
+plot_b <- across_dimension_plots[["TCGA"]] +
+            theme(legend.position = 'none') +
+            ggtitle(paste0("SVCCA Across Dimension (TCGA)"))
 
-
-    if (dataset == 'TARGET') {
-        labels = c("B", "D")
-    } else {
-        labels = c("A", "C")
-    }
-
-    main_plot <- (
-        cowplot::plot_grid(
-            plot_a,
-            plot_b,
-            labels = labels,
-            ncol = 1,
-            nrow = 2
-        )
+main_plot <- (
+    cowplot::plot_grid(
+        plot_a,
+        plot_b,
+        labels = c("A", "B"),
+        ncol = 1,
+        nrow = 2
     )
+)
 
-    main_plot <- main_plot + annotation_custom(grob = across_z_legend,
-                                               xmin = xmin,
-                                               xmax = xmax,
-                                               ymin = ymin,
-                                               ymax = ymax)
-    
-    dataset_main_plots[[dataset]] <- main_plot
-}
+main_plot <- main_plot + annotation_custom(grob = across_z_legend,
+                                           xmin = xmin,
+                                           xmax = xmax,
+                                           ymin = ymin,
+                                           ymax = ymax)
 
-# Main Figure - Stability in TCGA
-main_plot <- dataset_main_plots[['TCGA']]
+main_plot
 
 for(extension in c('.png', '.pdf')) {
     fig_file <- paste0("stability_summary_TCGA", extension)
     fig_file <- file.path("figures", fig_file)
     cowplot::save_plot(filename = fig_file,
                        plot = main_plot,
-                       base_height = 12.5,
-                       base_width = 9)
+                       base_height = 200,
+                       base_width = 170,
+                       units = "mm")
 }
 
-main_plot
+gtex_across_gg <- across_algorithm_plots[["GTEX"]] +
+                    theme(legend.position = 'none') +
+                    ggtitle(paste0("SVCCA Across Algorithm (GTEX)"))
 
-# Supplementary Figure - Stability in GTEX and TARGET
-sup_plot <- (
+target_across_gg <- across_algorithm_plots[["TARGET"]] +
+                        theme(legend.position = 'none') +
+                        ggtitle(paste0("SVCCA Across Algorithm (TARGET)"))
+
+main_plot <- (
     cowplot::plot_grid(
-        dataset_main_plots[['GTEX']],
-        dataset_main_plots[['TARGET']],
-        labels = c("", ""),
-        ncol = 2,
-        nrow = 1
+        gtex_across_gg,
+        target_across_gg,
+        labels = c("A", "B"),
+        ncol = 1,
+        nrow = 2
     )
 )
 
+main_plot
+
 for(extension in c('.png', '.pdf')) {
-    fig_file <- paste0("stability_summary_supplement", extension)
+    fig_file <- paste0("supplementary_stability_across_algorithm_GTEX_TARGET",
+                       extension)
     fig_file <- file.path("figures", fig_file)
     cowplot::save_plot(filename = fig_file,
-                       plot = sup_plot,
-                       base_height = 12.5,
-                       base_width = 18)
+                       plot = main_plot,
+                       base_height = 200,
+                       base_width = 170,
+                       units = "mm")
 }
 
-sup_plot
+gtex_z_gg <- across_dimension_plots[["GTEX"]] +
+                theme(legend.position = 'none') +
+                ggtitle(paste0("SVCCA Across Dimension (GTEX)"))
+
+target_z_gg <- across_dimension_plots[["TARGET"]] +
+                    theme(legend.position = 'none') +
+                    ggtitle(paste0("SVCCA Across Dimension (TARGET)"))
+
+main_plot <- (
+    cowplot::plot_grid(
+        gtex_z_gg,
+        target_z_gg,
+        labels = c("A", "B"),
+        ncol = 1,
+        nrow = 2
+    )
+)
+
+
+main_plot <- main_plot + annotation_custom(grob = across_z_legend,
+                                           xmin = xmin,
+                                           xmax = xmax,
+                                           ymin = ymin,
+                                           ymax = ymax)
+
+main_plot
+
+for(extension in c('.png', '.pdf')) {
+    fig_file <- paste0("supplementary_stability_across_dimension_GTEX_TARGET",
+                       extension)
+    fig_file <- file.path("figures", fig_file)
+    cowplot::save_plot(filename = fig_file,
+                       plot = main_plot,
+                       base_height = 200,
+                       base_width = 170,
+                       units = "mm")
+}

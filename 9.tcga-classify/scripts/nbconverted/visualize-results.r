@@ -15,53 +15,54 @@ full_mutation_df <- load_results(results_path = mut_path, process_output = TRUE)
 cancertype_path <- file.path("results", "cancer-type")
 full_cancertype_df <- load_results(results_path = cancertype_path, process_output = TRUE)
 
-# Setup plotting logic for supplmental plot
-genes <- unique(full_mutation_df$gene_or_cancertype)
-
-top_25 <- full_mutation_df %>%
-  dplyr::filter(gene_or_cancertype %in% genes[1:25])
-bottom_25 <- full_mutation_df %>%
-  dplyr::filter(gene_or_cancertype %in% genes[26:length(genes)])
+# Setup plotting logic for supplmental plots
+genes <- unique(levels(full_mutation_df$gene_or_cancertype))
+cancertypes <- as.character(unique(full_cancertype_df$gene_or_cancertype))
 
 # Create mutation plots
-top25_gg <- plot_mutation_figure(df = top_25)
-bottom25_gg <- plot_mutation_figure(df = bottom_25)
+gg_list <- list()
+for (plot_idx in seq(1, 50, 10)) {
+    end_idx <- plot_idx+9
+    use_genes <- genes[plot_idx:end_idx]
+    
+    subset_df <- full_mutation_df %>%
+        dplyr::filter(gene_or_cancertype %in% use_genes)
+    
+    gg_list[[use_genes[1]]] <- plot_mutation_figure(df = subset_df)
+}
 
 # Create cancertype plots
-cancertype_gg <- plot_mutation_figure(df = full_cancertype_df)
+for (plot_idx in seq(1, 33, 11)) {
+    end_idx <- plot_idx+10
+    use_cancertypes <- cancertypes[plot_idx:end_idx]
+    
+    subset_df <- full_cancertype_df %>%
+        dplyr::filter(gene_or_cancertype %in% use_cancertypes)
+    subset_df$gene_or_cancertype <- as.character(subset_df$gene_or_cancertype)
+    
+    gg_list[[use_cancertypes[1]]] <- plot_mutation_figure(df = subset_df)
+}
 
-sup_legend_gg <- cowplot::get_legend(cancertype_gg) 
+# Save a series of plots
+for (g_idx in 1:length(names(gg_list))) {
+    g_name <- names(gg_list)[g_idx]
+    g <- gg_list[[g_name]] + theme(legend.position = "bottom")
 
-# Plot on cowplot grid
-supplement_plot <- (
-  cowplot::plot_grid(
-    top25_gg + theme(legend.position = "none"),
-    bottom25_gg + theme(legend.position = "none"),
-    cancertype_gg + theme(legend.position = "none"),
-    labels = c("A", "", "B"),
-    ncol = 1,
-    nrow = 3
-  )
-)
+    # Save Figure
+    for (extension in c(".png", ".pdf")) {
+      fig_file <- paste0("supplementary_figure_tcga_classify_auroc_plotindex_",
+                         g_idx,
+                         "_name_",
+                         g_name,
+                         extension)
 
-supplement_plot <- cowplot::plot_grid(
-    sup_legend_gg,
-    supplement_plot,
-    rel_heights = c(0.04, 1),
-    ncol = 1,
-    nrow = 2
-)
-
-supplement_plot
-
-# Save Figure
-for (extension in c(".png", ".pdf")) {
-  fig_file <- paste0("supplementary_figure_tcga_classify_auroc", extension)
-  fig_file <- file.path("figures", fig_file)
-  cowplot::save_plot(filename = fig_file,
-                     plot = supplement_plot,
-                     base_height = 12.5,
-                     base_width = 18)
+      fig_file <- file.path("figures", fig_file)
+      ggplot2::ggsave(filename = fig_file,
+                      plot = g,
+                      height = 150,
+                      width = 170,
+                      units = "mm")
+    }
 }
 
 classifier_base_theme <-
@@ -141,7 +142,7 @@ sparsity_metric_df <-
   dplyr::mutate(signal = factor(signal, levels = c("signal", "shuffled")))
 
 sparsity_metric_df <- sparsity_metric_df %>%
-  dplyr::mutate(z_dim_shape = ifelse(as.numeric(paste(sparsity_metric_df$z_dim)) >= 20, 'z \u2265 20', 'z < 20'))
+  dplyr::mutate(z_dim_shape = ifelse(as.numeric(paste(sparsity_metric_df$z_dim)) >= 20, 'z >= 20', 'z < 20'))
 
 panel_c_gg <- ggplot(sparsity_metric_df,
                      aes(x = percent_zero,
@@ -214,8 +215,8 @@ top_tp53_features$ranked <- 1:nrow(top_tp53_features)
 
 panel_d_gg <- ggplot(top_tp53_features,
                      aes(x = ranked, y = weight)) +
-  geom_point(alpha = 0.8,
-             size = 0.1) +
+  geom_point(alpha = 0.3,
+             size = 0.02) +
   xlab("Weight Rank") +
   ylab("Weight") +
   geom_text_repel(data = subset(top_tp53_features,
@@ -223,9 +224,9 @@ panel_d_gg <- ggplot(top_tp53_features,
                   arrow = arrow(length = unit(0.02, 'npc')),
                   segment.size = 0.3,
                   segment.alpha = 0.6,
-                  box.padding = 0.6,
-                  point.padding = 0.24,
-                  size = 2.5,
+                  box.padding = 0.68,
+                  point.padding = 0.22,
+                  size = 2.2,
                   fontface = 'italic',
                   aes(x = ranked, y = weight, label = feature)) +
   theme_bw() +
@@ -402,7 +403,7 @@ e_and_f_gg <- cowplot::plot_grid(
 d_e_and_f_gg <- cowplot::plot_grid(
     panel_d_gg,
     e_and_f_gg,
-    rel_widths = c(0.35, 1),
+    rel_widths = c(0.4, 1),
     labels = c("D", ""),
     ncol = 2
 )
@@ -423,6 +424,8 @@ for(extension in c('.png', '.pdf')) {
     gg_file <- file.path("figures", gg_file)
     cowplot::save_plot(filename = gg_file,
                        plot = full_gg,
-                       base_height = 10,
-                       base_width = 8)
+                       dpi = 300,
+                       base_height = 190,
+                       base_width = 170,
+                       units = "mm")
 }

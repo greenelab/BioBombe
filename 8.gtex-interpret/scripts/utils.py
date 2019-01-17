@@ -49,7 +49,13 @@ def load_weight_matrix(dataset, z_dim, seed, shuffled=False):
 
 
 def load_enrichment_results(
-    dataset, z_dim, metaedge, algorithm=None, feature=None, seed=None, shuffled=False
+    dataset,
+    z_dim,
+    metaedge,
+    algorithm=None,
+    feature=None,
+    seed=None,
+    shuffled=False
 ):
     """
     Load enrichment results for the given dimension, algorithm, and seed

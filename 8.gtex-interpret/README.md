@@ -10,7 +10,7 @@ We do not observe this pattern for other algorithms at this change in dimension.
 
 ![sample-correlation_Blood_GTEX_signal_pearson.png](https://raw.githubusercontent.com/greenelab/BioBombe/master/4.analyze-components/figures/GTEX/sample-correlation/sample-type/sample-correlation_Blood_GTEX_signal_pearson.png)
 
-We do, however, notice large improvements at other dimensions in other algorithms as well.
+We do, however, also notice large improvements in other algorithms, but at other dimensions.
 For example, we observe a large increase in blood correlation for PCA and ICA between 3 and 4, for NMF between 6 and 7, and, surprisingly, a large decrease in performance for DAE between 8 and 9.
 We chose to explore the correlational change for VAE models because there are fewer features to interrogate.
 See panel D below:
@@ -81,6 +81,7 @@ The BioBombe derived compression signatures are applied to the external datasets
 ### Neutrophils
 
 The two VAE features (feature 0 in VAE z = 3 and feature 10 in VAE z = 14) were applied to GSE103706 (**Panel G Above**).
+Feature 0 from VAE z = 3 and feature 10 from VAE z = 14 had the highest scores for the specific neutrophil geneset.
 It does not appear that the z = 3 feature was able to robustly separate the the two treatments from the untreated cell line controls. However, the untreated controls were tending towards negative scores.
 The z = 14 feature perfectly separated the untreated cell lines from the treated cell lines and therefore validate the interpretation approach.
 

@@ -18,10 +18,15 @@ base_dir <- file.path("figures", "TARGET")
 
 target_recon_gg <- plot_reconstruction_loss(target_recon_cost_df)
 
-ggsave(file.path(base_dir, paste0("reconstruction_cost_", dataset, ".pdf")),
-       plot = target_recon_gg, dpi = 500, height = 3, width = 9)
-ggsave(file.path(base_dir, paste0("reconstruction_cost_", dataset, ".png")),
-       plot = target_recon_gg, height = 3, width = 9)
+for(extension in c('.png', '.pdf')) {
+    recon_file <- paste0("reconstruction_cost_", dataset, extension)
+    recon_file <- file.path("figures", recon_file)
+    cowplot::save_plot(filename = recon_file,
+                       plot = target_recon_gg,
+                       base_height = 70,
+                       base_width = 170,
+                       unit = "mm")
+}
 
 target_recon_gg
 
@@ -30,10 +35,15 @@ target_vae_recon_cost_df <- compile_reconstruction_data(dataset, data_focus = "v
 
 target_vae_loss_gg <- plot_vae_training(target_vae_recon_cost_df)
 
-ggsave(file.path(base_dir, paste0("vae_training_reconstruction_", dataset, ".pdf")),
-       plot = target_vae_loss_gg, dpi = 500, height = 6, width = 4)
-ggsave(file.path(base_dir, paste0("vae_training_reconstruction_", dataset, ".png")),
-       plot = target_vae_loss_gg, height = 6, width = 4)
+for(extension in c('.png', '.pdf')) {
+    vae_file <- paste0("vae_training_reconstruction_", dataset, extension)
+    vae_file <- file.path("figures", vae_file)
+    cowplot::save_plot(filename = vae_file,
+                       plot = target_vae_loss_gg,
+                       base_height = 130,
+                       base_width = 100,
+                       unit = "mm")
+}
 
 target_vae_loss_gg
 
@@ -49,10 +59,15 @@ base_dir <- file.path("figures", "TCGA")
 
 tcga_recon_gg <- plot_reconstruction_loss(tcga_recon_cost_df)
 
-ggsave(file.path(base_dir, paste0("reconstruction_cost_", dataset, ".pdf")),
-       plot = tcga_recon_gg, dpi = 500, height = 3, width = 9)
-ggsave(file.path(base_dir, paste0("reconstruction_cost_", dataset, ".png")),
-       plot = tcga_recon_gg, height = 3, width = 9)
+for(extension in c('.png', '.pdf')) {
+    recon_file <- paste0("reconstruction_cost_", dataset, extension)
+    recon_file <- file.path("figures", recon_file)
+    cowplot::save_plot(filename = recon_file,
+                       plot = tcga_recon_gg,
+                       base_height = 70,
+                       base_width = 170,
+                       unit = "mm")
+}
 
 tcga_recon_gg
 
@@ -61,10 +76,15 @@ tcga_vae_recon_cost_df <- compile_reconstruction_data(dataset, data_focus = "vae
 
 tcga_vae_loss_gg <- plot_vae_training(tcga_vae_recon_cost_df)
 
-ggsave(file.path(base_dir, paste0("vae_training_reconstruction_", dataset, ".pdf")),
-       plot = tcga_vae_loss_gg, dpi = 500, height = 6, width = 4)
-ggsave(file.path(base_dir, paste0("vae_training_reconstruction_", dataset, ".png")),
-       plot = tcga_vae_loss_gg, height = 6, width = 4)
+for(extension in c('.png', '.pdf')) {
+    vae_file <- paste0("vae_training_reconstruction_", dataset, extension)
+    vae_file <- file.path("figures", vae_file)
+    cowplot::save_plot(filename = vae_file,
+                       plot = tcga_vae_loss_gg,
+                       base_height = 130,
+                       base_width = 100,
+                       unit = "mm")
+}
 
 tcga_vae_loss_gg
 
@@ -73,10 +93,15 @@ tcga_recon_cost_df <- tcga_recon_cost_df %>% dplyr::filter(reconstruction_cost <
 
 tcga_recon_filter_gg <- plot_reconstruction_loss(tcga_recon_cost_df)
 
-ggsave(file.path(base_dir, paste0("reconstruction_cost_subset_converge_", dataset, ".pdf")),
-       plot = tcga_recon_filter_gg, dpi = 500, height = 3, width = 9)
-ggsave(file.path(base_dir, paste0("reconstruction_cost_subset_converge_", dataset, ".png")),
-       plot = tcga_recon_filter_gg, height = 3, width = 9)
+for(extension in c('.png', '.pdf')) {
+    recon_file <- paste0("reconstruction_cost_subset_converge_", dataset, extension)
+    recon_file <- file.path("figures", recon_file)
+    cowplot::save_plot(filename = recon_file,
+                       plot = tcga_recon_filter_gg,
+                       base_height = 70,
+                       base_width = 170,
+                       unit = "mm")
+}
 
 tcga_recon_filter_gg
 
@@ -86,10 +111,15 @@ tcga_recon_cost_df <- tcga_recon_cost_df %>%
 
 tcga_recon_filter_test_gg <- plot_reconstruction_loss(tcga_recon_cost_df)
 
-ggsave(file.path(base_dir, paste0("reconstruction_cost_subset_converge_testing_", dataset, ".pdf")),
-       plot = tcga_recon_filter_test_gg, dpi = 500, height = 3, width = 9)
-ggsave(file.path(base_dir, paste0("reconstruction_cost_subset_converge_testing_", dataset, ".png")),
-       plot = tcga_recon_filter_test_gg, height = 3, width = 9)
+for(extension in c('.png', '.pdf')) {
+    recon_file <- paste0("reconstruction_cost_subset_converge_testing_", dataset, extension)
+    recon_file <- file.path("figures", recon_file)
+    cowplot::save_plot(filename = recon_file,
+                       plot = tcga_recon_filter_test_gg,
+                       base_height = 70,
+                       base_width = 170,
+                       unit = "mm")
+}
 
 tcga_recon_filter_test_gg
 
@@ -98,10 +128,15 @@ tcga_vae_recon_cost_df <- tcga_vae_recon_cost_df %>% dplyr::filter(shuffle == "F
 
 tcga_vae_loss_filter_test_gg <- plot_vae_training(tcga_vae_recon_cost_df)
 
-ggsave(file.path(base_dir, paste0("vae_training_reconstruction_subset_converge_", dataset, ".pdf")),
-       plot = tcga_vae_loss_filter_test_gg, dpi = 500, height = 6, width = 4)
-ggsave(file.path(base_dir, paste0("vae_training_reconstruction_subset_converge_", dataset, ".png")),
-       plot = tcga_vae_loss_filter_test_gg, height = 6, width = 4)
+for(extension in c('.png', '.pdf')) {
+    vae_file <- paste0("vae_training_reconstruction_subset_converge_", dataset, extension)
+    vae_file <- file.path("figures", vae_file)
+    cowplot::save_plot(filename = vae_file,
+                       plot = tcga_vae_loss_filter_test_gg,
+                       base_height = 130,
+                       base_width = 100,
+                       unit = "mm")
+}
 
 tcga_vae_loss_filter_test_gg
 
@@ -117,10 +152,15 @@ base_dir <- file.path("figures", "GTEX")
 
 gtex_recon_gg <- plot_reconstruction_loss(gtex_recon_cost_df)
 
-ggsave(file.path(base_dir, paste0("reconstruction_cost_", dataset, ".pdf")),
-       plot = gtex_recon_gg, dpi = 500, height = 3, width = 9)
-ggsave(file.path(base_dir, paste0("reconstruction_cost_", dataset, ".png")),
-       plot = gtex_recon_gg, height = 3, width = 9)
+for(extension in c('.png', '.pdf')) {
+    recon_file <- paste0("reconstruction_cost_", dataset, extension)
+    recon_file <- file.path("figures", recon_file)
+    cowplot::save_plot(filename = recon_file,
+                       plot = gtex_recon_gg,
+                       base_height = 70,
+                       base_width = 170,
+                       unit = "mm")
+}
 
 gtex_recon_gg
 
@@ -129,10 +169,15 @@ gtex_vae_recon_cost_df <- compile_reconstruction_data(dataset, data_focus = "vae
 
 gtex_vae_loss_gg <- plot_vae_training(gtex_vae_recon_cost_df)
 
-ggsave(file.path(base_dir, paste0("vae_training_reconstruction_", dataset, ".pdf")),
-       plot = gtex_vae_loss_gg, dpi = 500, height = 6, width = 4)
-ggsave(file.path(base_dir, paste0("vae_training_reconstruction_", dataset, ".png")),
-       plot = gtex_vae_loss_gg, height = 6, width = 4)
+for(extension in c('.png', '.pdf')) {
+    vae_file <- paste0("vae_training_reconstruction_", dataset, extension)
+    vae_file <- file.path("figures", vae_file)
+    cowplot::save_plot(filename = vae_file,
+                       plot = gtex_vae_loss_gg,
+                       base_height = 130,
+                       base_width = 100,
+                       unit = "mm")
+}
 
 gtex_vae_loss_gg
 
@@ -141,10 +186,15 @@ gtex_recon_cost_df <- gtex_recon_cost_df %>% dplyr::filter(reconstruction_cost <
 
 gtex_recon_filter_gg <- plot_reconstruction_loss(gtex_recon_cost_df)
 
-ggsave(file.path(base_dir, paste0("reconstruction_cost_subset_converge_", dataset, ".pdf")),
-       plot = gtex_recon_filter_gg, dpi = 500, height = 3, width = 9)
-ggsave(file.path(base_dir, paste0("reconstruction_cost_subset_converge_", dataset, ".png")),
-       plot = gtex_recon_filter_gg, height = 3, width = 9)
+for(extension in c('.png', '.pdf')) {
+    recon_file <- paste0("reconstruction_cost_subset_converge_", dataset, extension)
+    recon_file <- file.path("figures", recon_file)
+    cowplot::save_plot(filename = recon_file,
+                       plot = gtex_recon_filter_gg,
+                       base_height = 70,
+                       base_width = 170,
+                       unit = "mm")
+}
 
 gtex_recon_filter_gg
 
@@ -154,10 +204,15 @@ gtex_recon_cost_df <- gtex_recon_cost_df %>%
 
 gtex_recon_filter_test_gg <- plot_reconstruction_loss(gtex_recon_cost_df)
 
-ggsave(file.path(base_dir, paste0("reconstruction_cost_subset_converge_testing_", dataset, ".pdf")),
-       plot = gtex_recon_filter_test_gg, dpi = 500, height = 3, width = 9)
-ggsave(file.path(base_dir, paste0("reconstruction_cost_subset_converge_testing_", dataset, ".png")),
-       plot = gtex_recon_filter_test_gg, height = 3, width = 9)
+for(extension in c('.png', '.pdf')) {
+    recon_file <- paste0("reconstruction_cost_subset_converge_testing_", dataset, extension)
+    recon_file <- file.path("figures", recon_file)
+    cowplot::save_plot(filename = recon_file,
+                       plot = gtex_recon_filter_test_gg,
+                       base_height = 70,
+                       base_width = 170,
+                       unit = "mm")
+}
 
 gtex_recon_filter_test_gg
 
@@ -166,10 +221,15 @@ gtex_vae_recon_cost_df <- gtex_vae_recon_cost_df %>% dplyr::filter(shuffle == "F
 
 gtex_vae_loss_filter_test_gg <- plot_vae_training(gtex_vae_recon_cost_df)
 
-ggsave(file.path(base_dir, paste0("vae_training_reconstruction_subset_converge_", dataset, ".pdf")),
-       plot = gtex_vae_loss_filter_test_gg, dpi = 500, height = 6, width = 4)
-ggsave(file.path(base_dir, paste0("vae_training_reconstruction_subset_converge_", dataset, ".png")),
-       plot = gtex_vae_loss_filter_test_gg, height = 6, width = 4)
+for(extension in c('.png', '.pdf')) {
+    vae_file <- paste0("vae_training_reconstruction_subset_converge_", dataset, extension)
+    vae_file <- file.path("figures", vae_file)
+    cowplot::save_plot(filename = vae_file,
+                       plot = gtex_vae_loss_filter_test_gg,
+                       base_height = 130,
+                       base_width = 100,
+                       unit = "mm")
+}
 
 gtex_vae_loss_filter_test_gg
 
@@ -179,13 +239,19 @@ main_plot <- (
     cowplot::plot_grid(
         gtex_recon_filter_test_gg + ggtitle('GTEX') + xlab('') +
             theme(plot.margin = margin(t = 0.5, r = 0.2, b = 0, l = 0.4),
-                  legend.position = "none"),
+                  legend.position = "none",
+                  panel.grid.major = element_line(size = 0.25),
+                  panel.grid.minor = element_line(size = 0.175)),
         tcga_recon_filter_test_gg + ggtitle('TCGA') + xlab('') +
             theme(plot.margin = margin(t = 0, r = 0.2, b = 0, l = 0.4),
-                  legend.position = "none"),
+                  legend.position = "none",
+                  panel.grid.major = element_line(size = 0.25),
+                  panel.grid.minor = element_line(size = 0.175)),
         target_recon_gg + ggtitle('TARGET') +
             theme(plot.margin = margin(t = 0, r = 0.2, b = 0.3, l = 0.4),
-                  legend.position = "none"),
+                  legend.position = "none",
+                  panel.grid.major = element_line(size = 0.25),
+                  panel.grid.minor = element_line(size = 0.175)),
         labels = c("A", "B", "C"),
         ncol = 1,
         nrow = 3
@@ -200,6 +266,7 @@ for(extension in c('.png', '.pdf')) {
     sup_file <- file.path("figures", sup_file)
     cowplot::save_plot(filename = sup_file,
                        plot = main_plot,
-                       base_height = 6.5,
-                       base_width = 8)
+                       base_height = 130,
+                       base_width = 170,
+                       unit = "mm")
 }

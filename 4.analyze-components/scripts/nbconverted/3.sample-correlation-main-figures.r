@@ -118,34 +118,10 @@ for(extension in c('.png', '.pdf')) {
     sup_file <- file.path("figures", sup_file)
     cowplot::save_plot(filename = sup_file,
                        plot = main_plot,
-                       base_height = 7.5,
-                       base_width = 9)
+                       base_height = 150,
+                       base_width = 170,
+                       unit = "mm")
 }
-
-tcga_shuffled_subset_df <- subset_correlations(
-    df = tcga_full_df,
-    cor_type = "pearson",
-    data_type = "testing",
-    signal_type = "shuffled"
-    )
-
-print(dim(tcga_shuffled_subset_df))
-
-head(tcga_shuffled_subset_df)
-
-tcga_full_corr_shuffled_gg <- plot_correlation_summary(df = tcga_shuffled_subset_df, ylimits = c(-0.03, 0.09))
-tcga_full_corr_shuffled_gg
-
-tcga_subset_shuffled_summary_df <- 
-    process_summary_df(summary_df = tcga_summary_df,
-                       select_sample_types = select_cancer_types,
-                       cor_type = 'pearson',
-                       data_type = 'testing',
-                       signal_type = 'shuffled')
-
-tcga_select_shuffled_cancertype_gg <-
-    plot_subset_summary(tcga_subset_shuffled_summary_df, palette = mean_cor_palette)
-tcga_select_shuffled_cancertype_gg
 
 file <- file.path("results", "GTEX_sample_correlation_phenotype.tsv.gz")
 gtex_full_df <- readr::read_tsv(file,
@@ -218,8 +194,14 @@ target_full_corr_shuffled_gg <- plot_correlation_summary(df = target_subset_shuf
                                                          ylimits =  c(-0.01, 0.15))
 
 target_full_cor_gg <- cowplot::plot_grid(
-    target_full_corr_gg + theme(legend.position = 'none') + ylab('') + xlab('') + ggtitle('TARGET'),
-    target_full_corr_shuffled_gg + theme(legend.position = "none") + ylab(''),
+    target_full_corr_gg +
+        theme(legend.position = 'none') +
+        ylab('') +
+        xlab('') +
+        ggtitle('TARGET'),
+    target_full_corr_shuffled_gg +
+        theme(legend.position = "none") +
+        ylab(''),
     labels = c("", ""),
     ncol = 1,
     nrow = 2
@@ -227,31 +209,66 @@ target_full_cor_gg <- cowplot::plot_grid(
 
 target_full_cor_gg
 
+tcga_shuffled_subset_df <- subset_correlations(
+    df = tcga_full_df,
+    cor_type = "pearson",
+    data_type = "testing",
+    signal_type = "shuffled"
+    )
+
+print(dim(tcga_shuffled_subset_df))
+
+head(tcga_shuffled_subset_df)
+
+tcga_full_corr_shuffled_gg <- plot_correlation_summary(df = tcga_shuffled_subset_df,
+                                                       ylimits = c(-0.03, 0.09))
+tcga_full_corr_shuffled_gg
+
+tcga_subset_shuffled_summary_df <- 
+    process_summary_df(summary_df = tcga_summary_df,
+                       select_sample_types = select_cancer_types,
+                       cor_type = 'pearson',
+                       data_type = 'testing',
+                       signal_type = 'shuffled')
+
+tcga_select_shuffled_cancertype_gg <-
+    plot_subset_summary(tcga_subset_shuffled_summary_df,
+                        palette = mean_cor_palette)
+tcga_select_shuffled_cancertype_gg
+
 alg_legend <- cowplot::get_legend(tcga_full_corr_shuffled_gg) 
 cor_legend <- cowplot::get_legend(tcga_select_shuffled_cancertype_gg) 
 
 legend <- (
     cowplot::plot_grid(
-        cor_legend,
         alg_legend,
+        cor_legend,
         nrow = 2
     )
 )
 
 main_plot <- (
     cowplot::plot_grid(
-        tcga_full_corr_shuffled_gg + theme(legend.position = 'none') + ggtitle('TCGA') + ylab('Shuffled Data\nSample Correlations'),
-        tcga_select_shuffled_cancertype_gg + theme(legend.position = "none") + ggtitle('TCGA'),
         gtex_full_cor_gg,
         target_full_cor_gg,
+        tcga_full_corr_shuffled_gg +
+            theme(legend.position = 'none') +
+            ggtitle('TCGA') +
+            ylab('Shuffled Data\nSample Correlations'),
+        tcga_select_shuffled_cancertype_gg +
+            theme(legend.position = "none") +
+            ggtitle('TCGA'),
         labels = c("A", "B", "C", "D"),
         ncol = 2,
         nrow = 2,
-        rel_heights = c(0.9, 1.1)
+        rel_heights = c(1.1, 0.9)
     )
 )
 
-main_plot = cowplot::plot_grid(main_plot, legend, rel_widths = c(1, 0.15), ncol = 2)
+main_plot = cowplot::plot_grid(main_plot,
+                               legend,
+                               rel_widths = c(1, 0.15),
+                               ncol = 2)
 main_plot
 
 for(extension in c('.png', '.pdf')) {
@@ -259,6 +276,7 @@ for(extension in c('.png', '.pdf')) {
     sup_file <- file.path("figures", sup_file)
     cowplot::save_plot(filename = sup_file,
                        plot = main_plot,
-                       base_height = 8.5,
-                       base_width = 8)
+                       base_height = 150,
+                       base_width = 170,
+                       unit = "mm")
 }

@@ -7,23 +7,15 @@
 #   source(file.path("scripts", "utils.R"))
 
 
-plot_gene_set <- function(gene_set, gene_set_dir, metaedge, dataset = "gtex",
-                          show_plot = TRUE, shuffled = FALSE, return_top = TRUE,
-                          return_plot = FALSE) {
-  # Logic to plot cell-type activation across z and across algorithm
+get_top_biobombe_results <- function(gene_set_dir) {
+  # Given a directory of BioBombe results, load all files and extract the top
+  # scoring features across for each algorithm, dimension, and geneset
   #
-  # Arguments:
-  # gene_set - a string indicating the cell type of interest
+  # Arguments
   # gene_set_dir - a string indicating where the results are stored
-  # metaedge - a string indicating the metaedge used to identify enrichment
-  # dataset - a string indicating the dataset to focus on
-  # show_plot - boolean to indicate if the plot should be printed
-  # shuffled - boolean if the data were shuffled prior to analysis
-  # return_top - boolean if the top results should be saved to a file
-  # return_plot - boolean if the plot should be returned
   #
   # Output:
-  # Saves plot to file
+  # A dataframe of all top results across all dimensions
 
   gene_set_results <- list.files(gene_set_dir, full.names = TRUE)
 
@@ -42,16 +34,28 @@ plot_gene_set <- function(gene_set, gene_set_dir, metaedge, dataset = "gtex",
         value = readr::col_double(),
         z_score = readr::col_double(),
         algorithm = readr::col_character())
-    )
-
-    gene_set_df <- gene_set_df %>%
-      dplyr::filter(grepl(gene_set, variable, fixed = TRUE))
+    ) %>%
+      dplyr::mutate(abs_z_score = abs(z_score)) %>%
+      dplyr::group_by(variable, algorithm, z) %>%
+      dplyr::filter(abs_z_score == max(abs_z_score)) %>%
+      dplyr::distinct(abs_z_score, algorithm, feature, z, .keep_all = TRUE)
 
     gene_set_list[[z_dim]] <- gene_set_df
   }
-
+  
   # Combine results
   full_results_df <- dplyr::bind_rows(gene_set_list)
+  
+  # Filter to only the top scoring results independent of z
+  full_results_df <- full_results_df %>%
+    dplyr::group_by(variable, algorithm) %>%
+    dplyr::filter(abs_z_score == max(abs_z_score)) %>%
+    dplyr::group_by(variable) %>%
+    dplyr::mutate(relative_geneset_rank = order(abs_z_score,
+                                                decreasing = TRUE)) %>%
+    dplyr::arrange(dplyr::desc(abs_z_score)) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(absolute_rank = order(abs_z_score, decreasing = TRUE))
 
   # Create factors for plotting
   full_results_df$z <-
@@ -64,16 +68,39 @@ plot_gene_set <- function(gene_set, gene_set_dir, metaedge, dataset = "gtex",
     factor(full_results_df$algorithm,
            levels = c("pca", "ica", "nmf", "dae", "vae"))
 
-  # Create absolute value z score for plotting
-  full_results_df <- full_results_df %>%
-    dplyr::mutate(abs_z_score = abs(z_score))
+  full_results_df <- full_results_df %>% dplyr::arrange(desc(abs_z_score))
 
-  # Subset to the top variables only
+  return(full_results_df)
+}
+
+
+plot_gene_set <- function(gene_set,
+                          full_results_df,
+                          metaedge,
+                          dataset = "gtex",
+                          show_plot = TRUE,
+                          shuffled = FALSE,
+                          return_top = FALSE,
+                          return_plot = FALSE) {
+  # Logic to plot cell-type activation across z and across algorithm
+  #
+  # Arguments:
+  # gene_set - a string indicating the cell type of interest
+  # full_results_df - a dataframe storing all top results of the specific
+  #                   dataset and metaedge combination
+  # metaedge - a string indicating the metaedge used to identify enrichment
+  # dataset - a string indicating the dataset to focus on
+  # show_plot - boolean to indicate if the plot should be printed
+  # shuffled - boolean if the data were shuffled prior to analysis
+  # return_top - boolean if the top results should be saved to a file
+  # return_plot - boolean if the plot should be returned
+  #
+  # Output:
+  # Saves plot to file
+
+  # Subset results to the specific geneset
   top_results_df <- full_results_df %>%
-    dplyr::group_by(variable, algorithm, z) %>%
-    dplyr::filter(abs_z_score == max(abs_z_score)) %>%
-    dplyr::arrange(dplyr::desc(abs_z_score)) %>%
-    dplyr::distinct(abs_z_score, algorithm, feature, z, .keep_all = TRUE)
+    dplyr::filter(grepl(gene_set, variable, fixed = TRUE))
 
   # Plot and save to file
   p <- ggplot(top_results_df,
@@ -83,7 +110,6 @@ plot_gene_set <- function(gene_set, gene_set_dir, metaedge, dataset = "gtex",
                   group = algorithm)) +
     geom_point(size = 0.5) +
     geom_line(lwd = 0.2) +
-    facet_grid(~variable) +
     scale_color_manual(name = "Algorithm",
                        values = c("#e41a1c",
                                   "#377eb8",
@@ -96,11 +122,16 @@ plot_gene_set <- function(gene_set, gene_set_dir, metaedge, dataset = "gtex",
                                   "dae" = "DAE",
                                   "vae" = "VAE")) +
     theme_bw() +
+    ggtitle(gene_set) +
     ylab("Absolute Value Z Score") +
     xlab("Z Dimensions") +
-    theme(axis.text.x = element_text(angle = 90, size = 5),
+    theme(axis.title.x = element_text(size = 8),
+          axis.title.y = element_text(size = 8),
+          axis.text.x = element_text(angle = 90, size = 5),
+          axis.text.y = element_text(size = 7),
           plot.title = element_text(hjust = 0.5),
-          legend.text = element_text(size = 8),
+          legend.text = element_text(size = 7),
+          legend.title = element_text(size = 8),
           legend.key.size = unit(0.7, "lines"))
 
   if (shuffled) {
@@ -114,7 +145,7 @@ plot_gene_set <- function(gene_set, gene_set_dir, metaedge, dataset = "gtex",
              recursive = TRUE)
 
   fig_file <- file.path(base_dir, paste0("gene_set_", gene_set, ".png"))
-  ggsave(plot = p, fig_file, dpi = 300, height = 3, width = 7)
+  ggsave(plot = p, fig_file, dpi = 300, height = 3, width = 4.5)
 
   if (show_plot) {
     print(p)

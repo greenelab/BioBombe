@@ -1,67 +1,90 @@
 
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(readr))
 suppressPackageStartupMessages(library(ggplot2))
 suppressPackageStartupMessages(library(cowplot))
-suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(RColorBrewer))
 suppressPackageStartupMessages(library(ggrepel))
 
 source(file.path("scripts", "viz_util.R"))
 
-# Load all mutation classification results
-mut_path <- file.path("results", "mutation")
-full_mutation_df <- load_results(results_path = mut_path, process_output = TRUE)
-
 # Load all cancertype classification results
 cancertype_path <- file.path("results", "cancer-type")
 full_cancertype_df <- load_results(results_path = cancertype_path, process_output = TRUE)
 
-# Setup plotting logic for supplmental plot
-genes <- unique(full_mutation_df$gene_or_cancertype)
+# Load all mutation classification results
+mut_path <- file.path("results", "mutation")
+full_mutation_df <- load_results(results_path = mut_path)
 
-top_25 <- full_mutation_df %>%
-  dplyr::filter(gene_or_cancertype %in% genes[1:25])
-bottom_25 <- full_mutation_df %>%
-  dplyr::filter(gene_or_cancertype %in% genes[26:length(genes)])
+full_raw_mutation_df <- full_mutation_df[['raw_metrics']]
+full_mutation_df <- load_results(results_path = mut_path, process_output = TRUE)
 
-# Create mutation plots
-top25_gg <- plot_mutation_figure(df = top_25)
-bottom25_gg <- plot_mutation_figure(df = bottom_25)
+# Setup plotting logic for supplmental plots
+cancertypes <- as.character(unique(full_cancertype_df$gene_or_cancertype))
+genes <- unique(levels(full_mutation_df$gene_or_cancertype))
 
 # Create cancertype plots
-cancertype_gg <- plot_mutation_figure(df = full_cancertype_df)
+gg_list <- list()
 
-sup_legend_gg <- cowplot::get_legend(cancertype_gg) 
+n_cancertype_plots <- 33
+n_cancertype_plots_per_page <- 11
 
-# Plot on cowplot grid
-supplement_plot <- (
-  cowplot::plot_grid(
-    top25_gg + theme(legend.position = "none"),
-    bottom25_gg + theme(legend.position = "none"),
-    cancertype_gg + theme(legend.position = "none"),
-    labels = c("A", "", "B"),
-    ncol = 1,
-    nrow = 3
-  )
-)
+for (plot_idx in seq(1, n_cancertype_plots, n_cancertype_plots_per_page)) {
+    end_idx <- plot_idx + n_cancertype_plots_per_page - 1
+    use_cancertypes <- cancertypes[plot_idx:end_idx]
+    
+    subset_df <- full_cancertype_df %>%
+        dplyr::filter(gene_or_cancertype %in% use_cancertypes)
+    subset_df$gene_or_cancertype <- as.character(subset_df$gene_or_cancertype)
+    
+    gg_list[[use_cancertypes[1]]] <- plot_mutation_figure(df = subset_df)
+}
 
-supplement_plot <- cowplot::plot_grid(
-    sup_legend_gg,
-    supplement_plot,
-    rel_heights = c(0.04, 1),
-    ncol = 1,
-    nrow = 2
-)
+# Create mutation plots (append to existing gglist)
+n_top_mutations <- 50
+n_plots_per_page <- 10
 
-supplement_plot
+for (plot_idx in seq(1, n_top_mutations, n_plots_per_page)) {
+    end_idx <- plot_idx + n_plots_per_page - 1
+    use_genes <- genes[plot_idx:end_idx]
+    
+    subset_df <- full_mutation_df %>%
+        dplyr::filter(gene_or_cancertype %in% use_genes)
+    
+    gg_list[[use_genes[1]]] <- plot_mutation_figure(df = subset_df)
+}
 
-# Save Figure
-for (extension in c(".png", ".pdf")) {
-  fig_file <- paste0("supplementary_figure_tcga_classify_auroc", extension)
-  fig_file <- file.path("figures", fig_file)
-  cowplot::save_plot(filename = fig_file,
-                     plot = supplement_plot,
-                     base_height = 12.5,
-                     base_width = 18)
+# Save a series of plots
+sup_fig_height = 150
+sup_fig_width = 170 
+
+for (plot_idx in 1:length(gg_list)) {
+    
+    # Extract index name of list
+    plot_name <- names(gg_list)[plot_idx]
+    
+    # Put legend on the bottom
+    g <- gg_list[[plot_name]] + theme(legend.position = "bottom")
+
+    # Save Figure
+    for (extension in c(".png", ".pdf")) {
+
+        # Save figure with the index and name of the plot - will present in this
+        # order in the supplementary figure
+        fig_file <- paste0("supplementary_figure_tcga_classify_auroc_plotindex_",
+                           plot_idx,
+                           "_name_",
+                           plot_name,
+                           extension)
+        
+        fig_file <- file.path("figures", fig_file)
+        
+        ggplot2::ggsave(filename = fig_file,
+                        plot = g,
+                        height = sup_fig_height,
+                        width = sup_fig_width,
+                        units = "mm")
+    }
 }
 
 classifier_base_theme <-
@@ -77,6 +100,7 @@ classifier_base_theme <-
           legend.box.margin = margin(t = -3, r = 0, b = -3, l = -3))
 
 focus_cancertypes <- c("KIRP", "OV", "UCEC", "LUAD", "BRCA")
+
 focus_cancertype_df <- full_cancertype_df %>%
   dplyr::filter(gene_or_cancertype %in% focus_cancertypes) %>%
   dplyr::mutate(gene_or_cancertype =
@@ -93,6 +117,7 @@ panel_a_gg <- panel_a_gg +
 panel_a_gg
 
 focus_genes <- c("TP53", "PTEN", "PIK3CA", "KRAS", "TTN")
+
 focus_mut_df <- full_mutation_df %>%
   dplyr::filter(gene_or_cancertype %in% focus_genes) %>%
   dplyr::mutate(gene_or_cancertype =
@@ -113,35 +138,16 @@ panel_b_gg
 full_coef_results <- load_results(results_path = mut_path,
                                   file_string = "coefficients")
 
-# Process Results data for plotting
-coef_df <- full_coef_results[["metrics"]] %>%
-  dplyr::filter(gene %in% focus_genes)
+coef_df <- full_coef_results[["metrics"]]
+raw_coef_df <- full_coef_results[["raw_metrics"]]
 
-num_zero_df <- coef_df %>%
-  dplyr::group_by(gene, signal, z_dim, seed, algorithm) %>%
-  dplyr::summarize_at("weight", funs(sum(. == 0)))
+sparsity_metric_df <- process_sparsity(coef_df = coef_df,
+                                       mut_df = full_mutation_df,
+                                       focus_genes = focus_genes)
 
-denom_df <- coef_df %>%
-  dplyr::group_by(gene, signal, z_dim, seed, algorithm) %>%
-  dplyr::summarise(num_features = n())
-
-num_zero_df <- num_zero_df %>%
-  dplyr::full_join(denom_df, by = c('gene', 'signal', 'z_dim', 'seed',
-                                    'algorithm')) %>%
-  dplyr::mutate(percent_zero = weight / num_features)
-
-cv_metrics_df <- full_mutation_df %>% dplyr::filter(data_type == "cv")
-
-sparsity_metric_df <-
-  dplyr::left_join(num_zero_df, cv_metrics_df,
-                   by = c("gene" = "gene_or_cancertype", "signal", "seed",
-                          "algorithm", "z_dim")) %>%
-  dplyr::ungroup() %>%
-  dplyr::mutate(gene = factor(gene, levels = focus_genes)) %>%
-  dplyr::mutate(signal = factor(signal, levels = c("signal", "shuffled")))
-
-sparsity_metric_df <- sparsity_metric_df %>%
-  dplyr::mutate(z_dim_shape = ifelse(as.numeric(paste(sparsity_metric_df$z_dim)) >= 20, 'z \u2265 20', 'z < 20'))
+raw_sparsity_metric_df <- process_sparsity(coef_df = raw_coef_df,
+                                           mut_df = full_raw_mutation_df,
+                                           focus_genes = focus_genes)
 
 panel_c_gg <- ggplot(sparsity_metric_df,
                      aes(x = percent_zero,
@@ -149,6 +155,12 @@ panel_c_gg <- ggplot(sparsity_metric_df,
   geom_point(aes(color = algorithm,
                  shape = z_dim_shape),
              alpha = 0.4) +
+  geom_point(data = raw_sparsity_metric_df,
+             aes(x = percent_zero,
+                 y = auroc),
+             color = "black",
+             fill = "grey",
+             pch = 22) +
   scale_color_manual(name = "Algorithm",
                      values = c("#e41a1c",
                                 "#377eb8",
@@ -201,6 +213,11 @@ top_feature_search_df <- sparsity_metric_df %>%
                 percent_zero > 0.8) %>% 
   dplyr::top_n(1, auroc)
 
+outfile <- file.path("results", "top_dae_tp53_feature_for_followup.tsv")
+readr::write_tsv(top_feature_search_df, outfile)
+
+top_feature_search_df
+
 # What feature is most explanatory in this model?
 top_tp53_features <- coef_df %>%
     dplyr::filter(z_dim == top_feature_search_df$z_dim,
@@ -214,8 +231,8 @@ top_tp53_features$ranked <- 1:nrow(top_tp53_features)
 
 panel_d_gg <- ggplot(top_tp53_features,
                      aes(x = ranked, y = weight)) +
-  geom_point(alpha = 0.8,
-             size = 0.1) +
+  geom_point(alpha = 0.3,
+             size = 0.02) +
   xlab("Weight Rank") +
   ylab("Weight") +
   geom_text_repel(data = subset(top_tp53_features,
@@ -223,9 +240,9 @@ panel_d_gg <- ggplot(top_tp53_features,
                   arrow = arrow(length = unit(0.02, 'npc')),
                   segment.size = 0.3,
                   segment.alpha = 0.6,
-                  box.padding = 0.6,
-                  point.padding = 0.24,
-                  size = 2.5,
+                  box.padding = 0.68,
+                  point.padding = 0.22,
+                  size = 2.2,
                   fontface = 'italic',
                   aes(x = ranked, y = weight, label = feature)) +
   theme_bw() +
@@ -247,6 +264,7 @@ metric_col_type <- readr::cols(
 
 # Find metrics for the specific model
 top_model_path <- file.path("results", "mutation", top_gene)
+
 auc_file <- file.path(top_model_path, paste0(top_gene, "_auc_threshold_metrics.tsv.gz"))
 
 roc_df <- readr::read_tsv(auc_file,
@@ -256,6 +274,7 @@ roc_df <- readr::read_tsv(auc_file,
                 algorithm == 'dae')
 
 aupr_file <- file.path(top_model_path, paste0(top_gene, "_aupr_threshold_metrics.tsv.gz"))
+
 pr_df <- readr::read_tsv(aupr_file,
                          col_types = metric_col_type) %>%
   dplyr::filter(z_dim == top_feature_search_df$z_dim,
@@ -402,7 +421,7 @@ e_and_f_gg <- cowplot::plot_grid(
 d_e_and_f_gg <- cowplot::plot_grid(
     panel_d_gg,
     e_and_f_gg,
-    rel_widths = c(0.35, 1),
+    rel_widths = c(0.4, 1),
     labels = c("D", ""),
     ncol = 2
 )
@@ -423,6 +442,8 @@ for(extension in c('.png', '.pdf')) {
     gg_file <- file.path("figures", gg_file)
     cowplot::save_plot(filename = gg_file,
                        plot = full_gg,
-                       base_height = 10,
-                       base_width = 8)
+                       dpi = 300,
+                       base_height = 190,
+                       base_width = 170,
+                       units = "mm")
 }

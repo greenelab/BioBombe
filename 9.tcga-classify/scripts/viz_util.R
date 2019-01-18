@@ -157,6 +157,65 @@ process_results <- function(df, raw_df, data_type = "cv") {
   return(data_df)
 }
 
+process_sparsity <- function(coef_df, mut_df, focus_genes, data_type = "cv",
+                             label_dim_cutoff = 20) {
+  # Given a dataframe of gene coefficients, process a column of percent zero
+  #
+  # Arguments:
+  # coef_df - the coefficient dataframe of interest
+  # mut_df - dataframe storing performance metrics of the specific models
+  # focus_genes - a character vector of which genes to focus on
+  # data_type - which datatype to subset (default = "cv")
+  # label_dim_cutoff - int of dimension to label cutoff shape (default = 20)
+  #
+  # Output:
+  # A processed dataframe with a percent zero calculation
+
+  coef_df <- coef_df %>%
+    dplyr::filter(gene %in% focus_genes)
+
+  num_zero_df <- coef_df %>%
+    dplyr::group_by(gene, signal, z_dim, seed, algorithm) %>%
+    dplyr::summarize_at("weight", funs(sum(. == 0)))
+  
+  denom_df <- coef_df %>%
+    dplyr::group_by(gene, signal, z_dim, seed, algorithm) %>%
+    dplyr::summarise(num_features = n())
+  
+  num_zero_df <- num_zero_df %>%
+    dplyr::full_join(denom_df, by = c("gene",
+                                      "signal",
+                                      "z_dim",
+                                      "seed",
+                                      "algorithm")) %>%
+    dplyr::mutate(percent_zero = weight / num_features)
+  
+  cv_metrics_df <- mut_df %>%
+      dplyr::filter(data_type == !!data_type)
+  
+  sparsity_metric_df <-
+    dplyr::left_join(num_zero_df,
+                     cv_metrics_df,
+                     by = c("gene" = "gene_or_cancertype",
+                            "signal",
+                            "seed",
+                            "algorithm",
+                            "z_dim")) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(gene = factor(gene, levels = focus_genes)) %>%
+    dplyr::mutate(signal = factor(signal, levels = c("signal", "shuffled")))
+  
+  sparsity_metric_df <- sparsity_metric_df %>%
+    dplyr::mutate(z_dim_shape = 
+                    ifelse(as.numeric(paste(
+                      sparsity_metric_df$z_dim
+                      )) >= label_dim_cutoff,
+                           paste0("z >= ", label_dim_cutoff),
+                           paste0("z < ", label_dim_cutoff)))
+  
+  return(sparsity_metric_df)
+}
+
 plot_mutation_figure <- function(df) {
   # Plot mutation figure across compression algorithms, mutations, and real and
   # permuted data
@@ -188,7 +247,7 @@ plot_mutation_figure <- function(df) {
     theme_bw() +
     ylim(c(0.4, 1)) +
     theme(axis.text.x = element_blank(),
-          legend.position = 'top',
+          legend.position = "top",
           legend.text = element_text(size = 12),
           legend.key.size = unit(1, "lines"),
           strip.background = element_rect(colour = "black",
@@ -206,17 +265,17 @@ plot_final_performance <- function(metrics_df, metric, genes, signal,
   #
   # Arguments:
   # metrics_df - dataframe storing the final metrics across all models
-  # metric - the specific metric to plot (either 'auroc' or 'aupr')
+  # metric - the specific metric to plot (either "auroc" or "aupr")
   # genes - a character vector of the specific genes to plot
-  # signal - the specific signal to plot (either 'signal' or 'shuffled')
-  # data_type - the specific data_type to plot (either 'cv', 'train', or 'test)
+  # signal - the specific signal to plot (either "signal" or "shuffled")
+  # data_type - the specific data_type to plot (either "cv", "train", or "test)
 
   metrics_sub_df <- metrics_df %>%
     dplyr::filter(gene_or_cancertype %in% !!genes,
                   signal == !!signal,
                   data_type == !!data_type)
 
-  if (metric == 'auroc') {
+  if (metric == "auroc") {
     g <- ggplot(metrics_sub_df, aes(x = z_dim, y = auroc, fill = algorithm))
   } else {
     g <- ggplot(metrics_sub_df, aes(x = z_dim, y = aupr, fill = algorithm))
@@ -248,11 +307,11 @@ plot_final_performance <- function(metrics_df, metric, genes, signal,
     xlab("Z Dimensions") +
     geom_boxplot(outlier.size = 0.1, lwd = 0.3) +
     stat_summary(fun.y = mean,
-                 geom = 'line',
+                 geom = "line",
                  aes(group = algorithm, color = algorithm)) +
     facet_wrap( ~ gene_or_cancertype, ncol = 3) +
     theme_bw() +
-    guides(fill = guide_legend('none')) +
+    guides(fill = guide_legend("none")) +
     theme(axis.text.x = element_text(angle = 90, size = 6))
 
   return(g)
@@ -274,26 +333,26 @@ plot_performance_panels <- function(plot_a, plot_b, gene, shuffled = FALSE) {
 
   feature_plot <- (
     cowplot::plot_grid(
-      plot_a + theme(legend.position = 'none'),
-      plot_b + theme(legend.position = 'none'),
+      plot_a + theme(legend.position = "none"),
+      plot_b + theme(legend.position = "none"),
       labels = c("A", "B"),
       nrow = 2
     )
   )
 
   if (shuffled) {
-    title_label <- paste('Predicting', gene, 'Activation - Shuffled')
+    title_label <- paste("Predicting", gene, "Activation - Shuffled")
     figure_file <- file.path("figures",
                              paste0(gene, "_performance_metrics_shuffled.png"))
   } else {
-    title_label <- paste('Predicting', gene, 'Activation')
+    title_label <- paste("Predicting", gene, "Activation")
     figure_file <- file.path("figures",
                              paste0(gene, "_performance_metrics.png"))
   }
   title <- cowplot::ggdraw() +
     cowplot::draw_label(
       title_label,
-      fontface = 'bold'
+      fontface = "bold"
       )
 
   feature_plot <- cowplot::plot_grid(title,

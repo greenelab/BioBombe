@@ -1,0 +1,2 @@
+gene	signal	z_dim	seed	algorithm	weight	num_features	percent_zero	auroc	aupr	data_type	grouping_	auroc_raw	aupr_raw	z_dim_shape
+TP53	signal	200	908341	DAE	179	222	0.8063063063063063	0.86364	0.82745	cv	TP53signal	0.91836	0.88467	z >= 20

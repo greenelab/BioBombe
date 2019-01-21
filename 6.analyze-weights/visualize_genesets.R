@@ -67,7 +67,7 @@ gmt_name <- opt$gmt_name
 metaedge <- opt$metaedge
 gene_set_dir <- opt$gene_set_dir
 shuffled <- opt$shuffled
-save_top_results <- opt$save_results
+save_top_results <- opt$save_top_results
 plot_results <- opt$plot_results
 
 # Find the name of all of the gene sets of interest

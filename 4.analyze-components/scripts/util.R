@@ -2,7 +2,8 @@
 #
 # Gregory Way 2018
 #
-# This script stores several helper functions for plotting the ensemble z sweep
+# This script stores several helper functions for plotting results of the
+# ensemble z sweep
 #
 # Usage:
 # source("scripts/util.R")
@@ -149,8 +150,12 @@ plot_reconstruction_loss <- function(data_df) {
   # A ggplot object to be saved and viewed
   
   options(repr.plot.width = 9, repr.plot.height = 4)
-  p <- ggplot(data = data_df, aes(x = num_comp, y = reconstruction_cost)) +
-    geom_point(aes(color = algorithm, shape = data_type, alpha = shuffled),
+  p <- ggplot(data = data_df,
+              aes(x = num_comp,
+                  y = reconstruction_cost)) +
+    geom_point(aes(color = algorithm,
+                   shape = data_type,
+                   alpha = shuffled),
                size = 0.5) +
     scale_alpha_manual(values = c(0.75, 0.15),
                        labels = c("Real", "Shuffled"),
@@ -171,9 +176,12 @@ plot_reconstruction_loss <- function(data_df) {
     ylab("Reconstruction Cost") +
     ggtitle(paste(dataset, "Reconstruction Cost")) +
     theme_bw() +
-    theme(axis.text.x = element_text(angle = 90, size = 4),
-          plot.title = element_text(hjust = 0.5),
-          legend.text = element_text(size = 8),
+    theme(axis.title = element_text(size = 7.5),
+          axis.text.y = element_text(size = 6.5),
+          axis.text.x = element_text(angle = 90, size = 3.2),
+          plot.title = element_text(size = 8.5, hjust = 0.5),
+          legend.title = element_text(size = 7.5),
+          legend.text = element_text(size = 6.5),
           strip.background = element_rect(colour = "black", fill = "#fdfff4"),
           legend.key.size = unit(0.7, "lines"))
   
@@ -181,8 +189,7 @@ plot_reconstruction_loss <- function(data_df) {
 }
 
 plot_vae_training <- function(data_df) {
-  # Crawl through given folder structure to obtain dataset specific
-  # VAE reconstruction results
+  # Plot VAE reconstruction and KL divergence losses
   #
   # Arguments:
   # data_df - the dataframe to be plotted
@@ -193,24 +200,25 @@ plot_vae_training <- function(data_df) {
   options(repr.plot.width = 4, repr.plot.height = 6)
   p <- ggplot(data = data_df,
               aes(x = num_comp, y = partial_loss)) +
-    geom_boxplot(aes(color = loss_type, fill = shuffle),
+    geom_boxplot(aes(color = shuffle),
                  outlier.size = 0.1,
                  lwd = 0.3) +
-    scale_fill_manual(values = c("black", "grey"),
+    scale_color_manual(values = c("#e41a1c", "#377eb8"),
                       labels = c("Real", "Shuffled"),
                       name = "Data") +
-    scale_color_manual(name = "Loss Type",
-                       values = c("#e41a1c", "#377eb8"),
-                       labels = c("Reconstruction", "KL Divergence")) +
-    facet_wrap(~loss_type, scales = "free", nrow = 2) +
+    facet_wrap(~ loss_type, scales = "free", nrow = 2) +
     xlab("Latent Space Dimensions (z)") +
-    ylab("Reconstruction Cost") +
+    ylab("Penalty") +
     ggtitle(paste(dataset, "VAE Loss")) +
     theme_bw() +
-    theme(axis.text.x = element_text(angle = 90, size = 4),
-          plot.title = element_text(hjust = 0.5),
-          legend.text = element_text(size = 8),
+    theme(axis.text.y = element_text(size = 6),
+          axis.text.x = element_text(angle = 90, size = 4.3),
+          axis.title = element_text(size = 8),
+          plot.title = element_text(hjust = 0.5, size = 8),
+          legend.text = element_text(size = 7),
+          legend.title = element_text(size = 8),
           strip.background = element_rect(colour = "black", fill = "#fdfff4"),
+          strip.text = element_text(size = 6),
           legend.key.size = unit(0.7, "lines"))
   
   return(p)
@@ -491,9 +499,9 @@ subset_correlations <- function(df, cor_type, data_type, signal_type) {
   # 
   # Arguments:
   # df - the dataframe of interest to subset
-  # cor_type - a string of correlation to subset ('pearson' or 'spearman')
-  # data_type - a string of type of data used ('training' or 'testing')
-  # signal_type - a string of the signal type ('signal' or 'shuffled')
+  # cor_type - a string of correlation to subset ("pearson" or "spearman")
+  # data_type - a string of type of data used ("training" or "testing")
+  # signal_type - a string of the signal type ("signal" or "shuffled")
   #
   # Output:
   # a subset dataframe with correlations summarized across all 5 seeds (median)
@@ -519,7 +527,9 @@ subset_correlations <- function(df, cor_type, data_type, signal_type) {
   return(subset_df)
 }
 
-plot_correlation_summary <- function(df, cor_type = "Pearson", ylimits = c(0, 1)) {
+plot_correlation_summary <- function(df,
+                                     cor_type = "Pearson",
+                                     ylimits = c(0, 1)) {
   # Plot a full distribution of correlation summary across dimensions
   #
   # Arguments:
@@ -531,11 +541,12 @@ plot_correlation_summary <- function(df, cor_type = "Pearson", ylimits = c(0, 1)
   # a ggplot2 object plot describing sample correlations across models
   
   full_corr_gg <- 
-    ggplot(data = df, aes(x = num_comp, y = median_corr)) +
+    ggplot(data = df, aes(x = num_comp,
+                          y = median_corr)) +
     geom_boxplot(aes(fill = algorithm),
                  size = 0.1,
-                 outlier.size = 0.05,
-                 outlier.color = 'lightgrey') +
+                 outlier.size = 0.03,
+                 outlier.color = "lightgrey") +
     scale_fill_manual(name = "Algorithm",
                       values = c("#e41a1c",
                                  "#377eb8",
@@ -551,13 +562,13 @@ plot_correlation_summary <- function(df, cor_type = "Pearson", ylimits = c(0, 1)
     ylab(paste0("Sample Correlation (", cor_type, ")")) +
     ylim(ylimits) +
     theme_bw() +
-    theme(axis.text.x = element_text(angle = 90, size = 8),
-          axis.text.y = element_text(size = 8),
-          axis.title = element_text(size = 10),
-          plot.title = element_text(hjust = 0.5, size = 18),
-          legend.text = element_text(size = 9),
+    theme(axis.text.x = element_text(angle = 90, size = 6),
+          axis.text.y = element_text(size = 7),
+          axis.title = element_text(size = 8),
+          plot.title = element_text(hjust = 0.5, size = 11),
+          legend.text = element_text(size = 7),
           legend.key.size = unit(1, "lines"),
-          strip.text.y = element_text(size = 12))
+          strip.text.y = element_text(size = 10))
 
   return(full_corr_gg)
 }
@@ -581,7 +592,7 @@ process_capacity <- function(summary_df, select_sample_types) {
                                           default = dplyr::first(mean_cor)))
   
   capacity_gain_df <- capacity_gain_df %>%
-    dplyr::filter(cor_type == 'pearson', shuffled == 'signal') %>%
+    dplyr::filter(cor_type == "pearson", shuffled == "signal") %>%
     dplyr::filter(sample_type %in% select_sample_types)
   
   capacity_gain_df$sample_type <- (
@@ -607,7 +618,7 @@ process_capacity <- function(summary_df, select_sample_types) {
            levels = c("PCA", "ICA", "NMF", "DAE", "VAE"))
   
   capacity_gain_df <- capacity_gain_df %>%
-    dplyr::mutate(group_var = paste0(algorithm, '_', data))
+    dplyr::mutate(group_var = paste0(algorithm, "_", data))
 
     factor(capacity_gain_df$algorithm,
            levels = c("PCA", "ICA", "NMF", "DAE", "VAE"))
@@ -631,7 +642,7 @@ plot_capacity_difference <- function(capacity_df) {
              linetype = data,
              group = group_var)) +
     stat_summary(fun.y = mean,
-                 geom = 'line',
+                 geom = "line",
                  size = 0.25,
                  aes(group = group_var,
                      color = algorithm,
@@ -653,14 +664,18 @@ plot_capacity_difference <- function(capacity_df) {
                           labels = c("training" = "Training",
                                      "testing" = "Testing")) +
     theme_bw(base_size = 9) +
-    theme(axis.text.x = element_text(angle = 90, size = 8),
-          axis.text.y = element_text(size = 8),
-          axis.title = element_text(size = 10),
-          plot.title = element_text(hjust = 0.5, size = 18),
-          legend.text = element_text(size = 9),
+    theme(axis.text.x = element_text(angle = 90,
+                                     size = 6),
+          axis.text.y = element_text(size = 6),
+          axis.title = element_text(size = 9),
+          plot.title = element_text(hjust = 0.5,
+                                    size = 11),
+          legend.title = element_text(size = 7),
+          legend.text = element_text(size = 6),
           legend.key.size = unit(1, "lines"),
-          strip.text.y = element_text(size = 12),
-          strip.background = element_rect(colour = "black", fill = "#fdfff4")) +
+          strip.text.y = element_text(size = 8),
+          strip.background = element_rect(colour = "black",
+                                          fill = "#fdfff4")) +
     labs(x = "Latent Space Dimensions (z)",
          y = expression(paste("Correlation Gain ",
                               '(z'['i'], ' - ', 'z'['i - 1'], ')'))) +
@@ -677,9 +692,9 @@ process_summary_df <- function(summary_df, select_sample_types, cor_type,
   # Arguments:
   # summary_df - dataset specific dataframe of sample correlations
   # select_samples - a character vector of samples of choice to subset
-  # cor_type - a string of correlation to subset ('pearson' or 'spearman')
-  # data_type - a string of type of data used ('training' or 'testing')
-  # signal_type - a string of the signal type ('signal' or 'shuffled')
+  # cor_type - a string of correlation to subset ("pearson" or "spearman")
+  # data_type - a string of type of data used ("training" or "testing")
+  # signal_type - a string of the signal type ("signal" or "shuffled")
   #
   # Output:
   # Subset data ready for plotting
@@ -725,25 +740,53 @@ plot_subset_summary <- function(subset_summary_df, palette) {
   # a ggplot object of median correlations across algorithms and dimensionality
   
   select_sampletype_gg <-
-    ggplot(subset_summary_df, aes(x = num_comp, y = algorithm)) +
-    geom_tile(aes(fill = mean_cor), colour = "white") +
+    ggplot(subset_summary_df, aes(x = num_comp,
+                                  y = algorithm)) +
+    geom_tile(aes(fill = mean_cor),
+              colour = "white") +
     scale_fill_gradientn(name = "Mean Pearson\nCorrelation",
                          colours = palette(100),
                          values = scales::rescale(c(1, 0.85, 0.6))) +
     facet_grid(sample_type ~ .) +
     theme_bw(base_size = 9) +
-    theme(axis.text.x = element_text(angle = 90, size = 8),
-          axis.text.y = element_text(size = 8),
-          axis.title = element_text(size = 10),
-          plot.title = element_text(hjust = 0.5, size = 18),
-          legend.text = element_text(size = 9),
+    theme(axis.text.x = element_text(angle = 90,
+                                     size = 6),
+          axis.text.y = element_text(size = 6),
+          axis.title = element_text(size = 9),
+          plot.title = element_text(hjust = 0.5,
+                                    size = 11),
+          legend.title = element_text(size = 7),
+          legend.text = element_text(size = 6),
           legend.key.size = unit(1, "lines"),
-          strip.text.y = element_text(size = 12),
-          strip.background = element_rect(colour = "black", fill = "#fdfff4")) +
+          strip.text.y = element_text(size = 8),
+          strip.background = element_rect(colour = "black",
+                                          fill = "#fdfff4")) +
     xlab("Latent Space Dimensions (z)") +
     ylab("Algorithm") +
     scale_x_discrete(expand = c(0, 0)) +
     scale_y_discrete(expand = c(0, 0))
   
   return(select_sampletype_gg)
+}
+
+save_png_pdf <- function(p, path_prefix, height, width) {
+  # Save a pdf and png of a given plot and filename
+  #
+  # Arguments:
+  # p - a ggplot object to save
+  # path_prefix - directory and file name of where to save figures
+  # height - integer indicating the height of the plot (in "mm")
+  # width - integer indicating the width of the plot (in "mm")
+  #
+  # Output:
+  # Will save a pdf and png of the plot of interest
+  
+  for (extension in c(".png", ".pdf")) {
+    full_path <- paste0(path_prefix, extension)
+    cowplot::save_plot(filename = full_path,
+                       plot = p,
+                       base_height = height,
+                       base_width = width,
+                       unit = "mm")
+  }
 }

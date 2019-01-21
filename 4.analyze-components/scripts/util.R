@@ -2,7 +2,8 @@
 #
 # Gregory Way 2018
 #
-# This script stores several helper functions for plotting the ensemble z sweep
+# This script stores several helper functions for plotting results of the
+# ensemble z sweep
 #
 # Usage:
 # source("scripts/util.R")
@@ -498,9 +499,9 @@ subset_correlations <- function(df, cor_type, data_type, signal_type) {
   # 
   # Arguments:
   # df - the dataframe of interest to subset
-  # cor_type - a string of correlation to subset ('pearson' or 'spearman')
-  # data_type - a string of type of data used ('training' or 'testing')
-  # signal_type - a string of the signal type ('signal' or 'shuffled')
+  # cor_type - a string of correlation to subset ("pearson" or "spearman")
+  # data_type - a string of type of data used ("training" or "testing")
+  # signal_type - a string of the signal type ("signal" or "shuffled")
   #
   # Output:
   # a subset dataframe with correlations summarized across all 5 seeds (median)
@@ -545,7 +546,7 @@ plot_correlation_summary <- function(df,
     geom_boxplot(aes(fill = algorithm),
                  size = 0.1,
                  outlier.size = 0.03,
-                 outlier.color = 'lightgrey') +
+                 outlier.color = "lightgrey") +
     scale_fill_manual(name = "Algorithm",
                       values = c("#e41a1c",
                                  "#377eb8",
@@ -591,7 +592,7 @@ process_capacity <- function(summary_df, select_sample_types) {
                                           default = dplyr::first(mean_cor)))
   
   capacity_gain_df <- capacity_gain_df %>%
-    dplyr::filter(cor_type == 'pearson', shuffled == 'signal') %>%
+    dplyr::filter(cor_type == "pearson", shuffled == "signal") %>%
     dplyr::filter(sample_type %in% select_sample_types)
   
   capacity_gain_df$sample_type <- (
@@ -617,7 +618,7 @@ process_capacity <- function(summary_df, select_sample_types) {
            levels = c("PCA", "ICA", "NMF", "DAE", "VAE"))
   
   capacity_gain_df <- capacity_gain_df %>%
-    dplyr::mutate(group_var = paste0(algorithm, '_', data))
+    dplyr::mutate(group_var = paste0(algorithm, "_", data))
 
     factor(capacity_gain_df$algorithm,
            levels = c("PCA", "ICA", "NMF", "DAE", "VAE"))
@@ -641,7 +642,7 @@ plot_capacity_difference <- function(capacity_df) {
              linetype = data,
              group = group_var)) +
     stat_summary(fun.y = mean,
-                 geom = 'line',
+                 geom = "line",
                  size = 0.25,
                  aes(group = group_var,
                      color = algorithm,
@@ -691,9 +692,9 @@ process_summary_df <- function(summary_df, select_sample_types, cor_type,
   # Arguments:
   # summary_df - dataset specific dataframe of sample correlations
   # select_samples - a character vector of samples of choice to subset
-  # cor_type - a string of correlation to subset ('pearson' or 'spearman')
-  # data_type - a string of type of data used ('training' or 'testing')
-  # signal_type - a string of the signal type ('signal' or 'shuffled')
+  # cor_type - a string of correlation to subset ("pearson" or "spearman")
+  # data_type - a string of type of data used ("training" or "testing")
+  # signal_type - a string of the signal type ("signal" or "shuffled")
   #
   # Output:
   # Subset data ready for plotting
@@ -766,4 +767,26 @@ plot_subset_summary <- function(subset_summary_df, palette) {
     scale_y_discrete(expand = c(0, 0))
   
   return(select_sampletype_gg)
+}
+
+save_png_pdf <- function(p, path_prefix, height, width) {
+  # Save a pdf and png of a given plot and filename
+  #
+  # Arguments:
+  # p - a ggplot object to save
+  # path_prefix - directory and file name of where to save figures
+  # height - integer indicating the height of the plot (in "mm")
+  # width - integer indicating the width of the plot (in "mm")
+  #
+  # Output:
+  # Will save a pdf and png of the plot of interest
+  
+  for (extension in c(".png", ".pdf")) {
+    full_path <- paste0(path_prefix, extension)
+    cowplot::save_plot(filename = full_path,
+                       plot = p,
+                       base_height = height,
+                       base_width = width,
+                       unit = "mm")
+  }
 }

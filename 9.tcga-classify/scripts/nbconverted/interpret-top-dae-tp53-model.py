@@ -65,7 +65,7 @@ scores_df.head()
 
 file = os.path.join("results", "mutation", "TP53", "TP53_coefficients.tsv.gz")
 
-top_n_features = 8
+top_n_features = 10
 
 coef_df = (
     pd.read_table(file)

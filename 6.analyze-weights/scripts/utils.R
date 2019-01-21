@@ -7,7 +7,7 @@
 #   source(file.path("scripts", "utils.R"))
 
 
-get_top_biobombe_results <- function(gene_set_dir) {
+get_biobombe_results <- function(gene_set_dir) {
   # Given a directory of BioBombe results, load all files and extract the top
   # scoring features across for each algorithm, dimension, and geneset
   #
@@ -45,17 +45,6 @@ get_top_biobombe_results <- function(gene_set_dir) {
   
   # Combine results
   full_results_df <- dplyr::bind_rows(gene_set_list)
-  
-  # Filter to only the top scoring results independent of z
-  full_results_df <- full_results_df %>%
-    dplyr::group_by(variable, algorithm) %>%
-    dplyr::filter(abs_z_score == max(abs_z_score)) %>%
-    dplyr::group_by(variable) %>%
-    dplyr::mutate(relative_geneset_rank = order(abs_z_score,
-                                                decreasing = TRUE)) %>%
-    dplyr::arrange(dplyr::desc(abs_z_score)) %>%
-    dplyr::ungroup() %>%
-    dplyr::mutate(absolute_rank = order(abs_z_score, decreasing = TRUE))
 
   # Create factors for plotting
   full_results_df$z <-
@@ -68,9 +57,37 @@ get_top_biobombe_results <- function(gene_set_dir) {
     factor(full_results_df$algorithm,
            levels = c("pca", "ica", "nmf", "dae", "vae"))
 
-  full_results_df <- full_results_df %>% dplyr::arrange(desc(abs_z_score))
+  full_results_df <- full_results_df %>%
+    dplyr::arrange(desc(abs_z_score)) %>%
+    dplyr::ungroup()
 
   return(full_results_df)
+}
+
+extract_top_biobombe_results <- function(biobombe_df) {
+  # Extract out the top BioBombe results for each algorithm independent of z
+  #
+  # Arguments:
+  # biobombe_df - the data frame output of `get_biobombe_results()`
+  #
+  # Output:
+  # Returns a processed data frame of top results
+
+  top_results_df <- biobombe_df %>%
+    dplyr::group_by(variable, algorithm) %>%
+    dplyr::filter(abs_z_score == max(abs_z_score)) %>%
+    dplyr::ungroup() %>%
+    dplyr::group_by(variable) %>%
+    dplyr::mutate(relative_geneset_rank = order(abs_z_score,
+                                                decreasing = TRUE)) %>%
+    dplyr::arrange(z) %>%
+    dplyr::distinct(model_type, variable, abs_z_score, algorithm,
+                    .keep_all = TRUE) %>%
+    dplyr::arrange(dplyr::desc(abs_z_score)) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(absolute_rank = order(abs_z_score, decreasing = TRUE))
+  
+  return(top_results_df)
 }
 
 

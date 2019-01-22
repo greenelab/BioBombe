@@ -241,7 +241,7 @@ plot_mutation_figure <- function(df) {
                        values = c("#d53e4f", "#3288bd"),
                        labels = c("signal" = "Real",
                                   "shuffled" = "Permuted")) +
-    xlab("Z Dimension") +
+    xlab("k Dimension") +
     ylab("AUROC") +
     facet_grid(algorithm ~ gene_or_cancertype) +
     theme_bw() +
@@ -304,7 +304,7 @@ plot_final_performance <- function(metrics_df, metric, genes, signal,
                                   "dae" = "DAE",
                                   "vae" = "VAE")) +
     ylab(toupper(metric)) +
-    xlab("Z Dimensions") +
+    xlab("K Dimensions") +
     geom_boxplot(outlier.size = 0.1, lwd = 0.3) +
     stat_summary(fun.y = mean,
                  geom = "line",

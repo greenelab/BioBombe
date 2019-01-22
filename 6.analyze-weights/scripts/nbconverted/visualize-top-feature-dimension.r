@@ -68,13 +68,13 @@ tcga_gg <- ggplot(data = tcga_top_df,
                                "GpC3TFT" = "TF Targets (C3TFT)",
                                "GpH" = "Hallmark Gene Sets",
                                "GpXCELL" = "Cell Types (xCell)")) +
-  facet_wrap( ~ algorithm, ncol = 5) +
+  facet_wrap(dataset ~ algorithm, ncol = 5) +
   xlab("Latent Dimensions") +
   ylab("Relative Density") +
   theme_bw() +
   theme(strip.background = element_rect(colour = "black",
                                         fill = "#fdfff4"),
-        strip.text = element_text(size = 7),
+        strip.text = element_text(size = 6),
         axis.title = element_text(size = 9),
         axis.text.x = element_text(size = 6),
         axis.text.y = element_text(size = 7),
@@ -86,7 +86,10 @@ tcga_gg <- ggplot(data = tcga_top_df,
 
 tcga_gg
 
-theme_gtex <- theme(axis.title = element_text(size = 9),
+theme_gtex <- theme(strip.background = element_rect(colour = "black",
+                                                    fill = "#fdfff4"),
+                    strip.text = element_text(size = 6),
+                    axis.title = element_text(size = 9),
                     axis.text.x = element_text(size = 8),
                     axis.text.y = element_text(size = 7),
                     legend.position = 'bottom',
@@ -99,6 +102,7 @@ gtex_stack_gg <- ggplot(data = gtex_top_df,
                         aes(x = z, fill = algorithm, group = algorithm)) +
     geom_density(alpha = 0.5, position = "stack") +
     coord_flip() +
+    facet_wrap(dataset ~ collection, ncol = 5) +
     xlab("Latent Dimensions") +
     ylab("Density (Stacked)") +
     scale_fill_manual(name = "Algorithm",
@@ -117,6 +121,7 @@ gtex_fill_gg <- ggplot(data = gtex_top_df,
                        aes(x = z, fill = algorithm, group = algorithm)) +
     geom_density(alpha = 0.5, position = "fill") +
     coord_flip() +
+    facet_wrap(dataset ~ collection, ncol = 5) +
     xlab("Latent Dimensions") +
     ylab("Relative Density") +
     scale_fill_manual(name = "Algorithm",

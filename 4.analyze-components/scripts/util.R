@@ -172,7 +172,7 @@ plot_reconstruction_loss <- function(data_df) {
                                   "dae" = "DAE",
                                   "vae" = "VAE")) +
     facet_grid(~ algorithm) +
-    xlab("Latent Space Dimensions (z)") +
+    xlab("Latent Space Dimensions (k)") +
     ylab("Reconstruction Cost") +
     ggtitle(paste(dataset, "Reconstruction Cost")) +
     theme_bw() +
@@ -207,7 +207,7 @@ plot_vae_training <- function(data_df) {
                       labels = c("Real", "Shuffled"),
                       name = "Data") +
     facet_wrap(~ loss_type, scales = "free", nrow = 2) +
-    xlab("Latent Space Dimensions (z)") +
+    xlab("Latent Space Dimensions (k)") +
     ylab("Penalty") +
     ggtitle(paste(dataset, "VAE Loss")) +
     theme_bw() +
@@ -365,7 +365,7 @@ plot_sample_correlation <- function(data_df,
                                   "dae" = "DAE",
                                   "vae" = "VAE")) +
     facet_grid(data ~ algorithm) +
-    xlab("Latent Space Dimensions (z)") +
+    xlab("Latent Space Dimensions (k)") +
     ylab("Sample Correlation") +
     ggtitle(paste0(dataset_name, " Sample Correlation (", data_type, " ",
                    correlation_type, ")")) +
@@ -408,7 +408,7 @@ plot_sample_correlation <- function(data_df,
                           labels = c("training" = "Training",
                                      "testing" = "Testing")) +
     facet_grid(sample_type ~ algorithm) +
-    xlab("Latent Space Dimensions (z)") +
+    xlab("Latent Space Dimensions (k)") +
     ylab("Sample Correlation") +
     ggtitle(paste0(dataset_name, " Sample Correlation (", data_type, " ",
                    correlation_type, ")")) +
@@ -466,7 +466,7 @@ plot_sample_correlation <- function(data_df,
                                     "nmf" = "NMF",
                                     "dae" = "DAE",
                                     "vae" = "VAE")) +
-      xlab("Latent Space Dimensions (z)") +
+      xlab("Latent Space Dimensions (k)") +
       ylab("Sample Correlation") +
       ggtitle(paste0(dataset_name, " Sample Correlation (", sample_type, ")\n(",
                      data_type, " ", correlation_type, ")")) +
@@ -558,7 +558,7 @@ plot_correlation_summary <- function(df,
                                  "nmf" = "NMF",
                                  "dae" = "DAE",
                                  "vae" = "VAE")) +
-    xlab("Latent Space Dimensions (z)") +
+    xlab("Latent Space Dimensions (k)") +
     ylab(paste0("Sample Correlation (", cor_type, ")")) +
     ylim(ylimits) +
     theme_bw() +
@@ -667,7 +667,7 @@ plot_capacity_difference <- function(capacity_df) {
     theme(axis.text.x = element_text(angle = 90,
                                      size = 6),
           axis.text.y = element_text(size = 6),
-          axis.title = element_text(size = 9),
+          axis.title = element_text(size = 8),
           plot.title = element_text(hjust = 0.5,
                                     size = 11),
           legend.title = element_text(size = 7),
@@ -676,7 +676,7 @@ plot_capacity_difference <- function(capacity_df) {
           strip.text.y = element_text(size = 8),
           strip.background = element_rect(colour = "black",
                                           fill = "#fdfff4")) +
-    labs(x = "Latent Space Dimensions (z)",
+    labs(x = "Latent Space Dimensions (k)",
          y = expression(paste("Correlation Gain ",
                               '(z'['i'], ' - ', 'z'['i - 1'], ')'))) +
     scale_x_discrete(expand = c(0, 0))
@@ -752,7 +752,7 @@ plot_subset_summary <- function(subset_summary_df, palette) {
     theme(axis.text.x = element_text(angle = 90,
                                      size = 6),
           axis.text.y = element_text(size = 6),
-          axis.title = element_text(size = 9),
+          axis.title = element_text(size = 8),
           plot.title = element_text(hjust = 0.5,
                                     size = 11),
           legend.title = element_text(size = 7),
@@ -761,7 +761,7 @@ plot_subset_summary <- function(subset_summary_df, palette) {
           strip.text.y = element_text(size = 8),
           strip.background = element_rect(colour = "black",
                                           fill = "#fdfff4")) +
-    xlab("Latent Space Dimensions (z)") +
+    xlab("Latent Space Dimensions (k)") +
     ylab("Algorithm") +
     scale_x_discrete(expand = c(0, 0)) +
     scale_y_discrete(expand = c(0, 0))

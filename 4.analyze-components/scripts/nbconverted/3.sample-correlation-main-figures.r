@@ -104,7 +104,7 @@ main_plot <- (
         tcga_select_cancertype_gg + theme(legend.position = "none"),
         tcga_select_cancertype_capactity_gain_gg + theme(legend.position = 'none'),
         gtex_select_tissuetype_capactity_gain_gg + theme(legend.position = 'none'),
-        labels = c("A", "B", "C", "D"),
+        labels = c("a", "b", "c", "d"),
         ncol = 2,
         nrow = 2
     )
@@ -154,8 +154,14 @@ gtex_full_corr_shuffled_gg <- plot_correlation_summary(df = gtex_subset_shuffled
                                                        ylimits = c(-0.01, 0.15))
 
 gtex_full_cor_gg <- cowplot::plot_grid(
-    gtex_full_corr_gg + theme(legend.position = 'none') + ylab('Real Data\nSample Correlations') + ggtitle('GTEX') + xlab(''),
-    gtex_full_corr_shuffled_gg + theme(legend.position = "none") + ylab('Shuffled Data\nSample Correlations'),
+    gtex_full_corr_gg +
+        theme(legend.position = 'none') +
+        ylab('Real Data\nSample Correlations') +
+        ggtitle('GTEX') +
+        xlab(''),
+    gtex_full_corr_shuffled_gg +
+        theme(legend.position = "none") +
+        ylab('Shuffled Data\nSample Correlations'),
     labels = c("", ""),
     ncol = 1,
     nrow = 2
@@ -258,7 +264,7 @@ main_plot <- (
         tcga_select_shuffled_cancertype_gg +
             theme(legend.position = "none") +
             ggtitle('TCGA'),
-        labels = c("A", "B", "C", "D"),
+        labels = c("a", "b", "c", "d"),
         ncol = 2,
         nrow = 2,
         rel_heights = c(1.1, 0.9)

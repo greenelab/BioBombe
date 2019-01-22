@@ -91,7 +91,7 @@ for(dataset in c("TARGET", "TCGA", "GTEX")) {
                          lwd = 0.2,
                          fill = 'grey75') +
             facet_grid(algorithm_1 ~ algorithm_2) +
-            xlab("Z Dimension") +
+            xlab("k Dimension") +
             ylab("SVCCA Mean Similarity") +
             scale_linetype_manual(name = "Signal:",
                                   values = c("dotted", "solid"),
@@ -144,7 +144,7 @@ g <- ggplot(full_svcca_data,
     geom_point(alpha = 0.6,
                size = 0.25) +
     facet_grid(algorithm_1 ~ algorithm_2) +
-    xlab("Z Dimension") +
+    xlab("k Dimension") +
     ylab("SVCCA Mean Similarity") +
     scale_color_manual(name = "Dataset",
                        values = c("#66c2a5",
@@ -249,8 +249,8 @@ for (dataset in c("TARGET", "TCGA", "GTEX")) {
             ggtitle(plot_title) +
             theme_bw(base_size = 9) +
             heat_theme +
-            xlab("Z Dimension") +
-            ylab("Z Dimension") +
+            xlab("k Dimension") +
+            ylab("k Dimension") +
             scale_x_discrete(expand = c(0, 0)) +
             scale_y_discrete(expand = c(0, 0))
 
@@ -288,7 +288,7 @@ main_plot <- (
     cowplot::plot_grid(
         plot_a,
         plot_b,
-        labels = c("A", "B"),
+        labels = c("a", "b"),
         ncol = 1,
         nrow = 2
     )
@@ -324,7 +324,7 @@ main_plot <- (
     cowplot::plot_grid(
         gtex_across_gg,
         target_across_gg,
-        labels = c("A", "B"),
+        labels = c("a", "b"),
         ncol = 1,
         nrow = 2
     )
@@ -355,7 +355,7 @@ main_plot <- (
     cowplot::plot_grid(
         gtex_z_gg,
         target_z_gg,
-        labels = c("A", "B"),
+        labels = c("a", "b"),
         ncol = 1,
         nrow = 2
     )

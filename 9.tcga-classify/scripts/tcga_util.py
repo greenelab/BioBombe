@@ -53,13 +53,15 @@ def build_feature_dictionary(dataset="TCGA"):
     return z_matrix_dict
 
 
-def build_top_feature_dictionary(algorithms, genes):
+def build_top_feature_dictionary(algorithms, genes, num_features, load_random=True):
     """
     Generate a nested dictionary of the specific x matrices to train using
 
     Arguments:
     algorithms - list of algorithms to match ['pca', 'ica', 'nmf', 'dae', 'vae', 'all']
     genes - list of genes to match ['TP53', 'PTEN', 'KRAS', 'PIK3CA', 'TTN']
+    num_features - list of the number of features used in prediction
+    load_random - boolean if the random features should be loaded as well
 
     Output: a nested dictionary storing the x matrices for training and testing
     """
@@ -67,24 +69,45 @@ def build_top_feature_dictionary(algorithms, genes):
     import os
     import pandas as pd
 
-    base_path = os.path.join("results", "top_features")
+    base_path = os.path.join("results", "top_feature_matrices")
     x_matrix_dict = {}
     for algorithm in algorithms:
         x_matrix_dict[algorithm] = {}
+
         for gene in genes:
             x_matrix_dict[algorithm][gene] = {}
-            base_file = os.path.join(
-                base_path, "top_model_algorithm_{}_gene_{}".format(algorithm, gene)
-            )
 
-            train_file = "{}_train.tsv.gz".format(base_file)
-            test_file = "{}_test.tsv.gz".format(base_file)
+            for n in num_features:
+                x_matrix_dict[algorithm][gene][n] = {}
 
-            train_df = pd.read_table(train_file, sep="\t", index_col=0)
-            test_df = pd.read_table(test_file, sep="\t", index_col=0)
+                base_file = os.path.join(
+                    base_path,
+                    "top_model_algorithm_{}_gene_{}_numtopfeatures_{}".format(
+                        algorithm, gene, n
+                    ),
+                )
 
-            x_matrix_dict[algorithm][gene]["train"] = train_df
-            x_matrix_dict[algorithm][gene]["test"] = test_df
+                train_file = "{}_train.tsv.gz".format(base_file)
+                test_file = "{}_test.tsv.gz".format(base_file)
+
+                train_df = pd.read_table(train_file, sep="\t", index_col=0)
+                test_df = pd.read_table(test_file, sep="\t", index_col=0)
+
+                x_matrix_dict[algorithm][gene][n]["train"] = train_df
+                x_matrix_dict[algorithm][gene][n]["test"] = test_df
+
+                if load_random and n == 200:
+                    x_matrix_dict[algorithm][gene][n]["randomized"] = {}
+                    base_file = "{}_randomized".format(base_file)
+
+                    train_file = "{}_train.tsv.gz".format(base_file)
+                    test_file = "{}_test.tsv.gz".format(base_file)
+
+                    train_df = pd.read_table(train_file, sep="\t", index_col=0)
+                    test_df = pd.read_table(test_file, sep="\t", index_col=0)
+
+                    x_matrix_dict[algorithm][gene][n]["randomized"]["train"] = train_df
+                    x_matrix_dict[algorithm][gene][n]["randomized"]["test"] = test_df
 
     return x_matrix_dict
 

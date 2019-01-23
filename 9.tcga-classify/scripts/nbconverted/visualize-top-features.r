@@ -140,6 +140,7 @@ for(extension in c('.png', '.pdf')) {
     sup_file <- file.path("figures", sup_file)
     cowplot::save_plot(filename = sup_file,
                        plot = main_plot,
-                       base_height = 6,
-                       base_width = 7)
+                       base_height = 170,
+                       base_width = 170,
+                       units = "mm")
 }

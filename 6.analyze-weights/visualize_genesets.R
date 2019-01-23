@@ -10,7 +10,7 @@
 #
 #     Rscript --vanilla visualize_genesets.R
 #
-# and takes five positional arguments as input:
+# and takes seven arguments as input:
 #
 #         --dataset             Name of the Dataset
 #         --gmt_name            The name of the GMT data
@@ -19,12 +19,13 @@
 #         --gene_set_dir        The input directory of results
 #         --shuffled            If the input data is shuffled
 #         --save_results        If included, save intermediate results
+#         --no_plot             If included, do not create plots
 #
 # Output:
 # Significantly overrepresented pathways from a WebGestalt Analysis
 
-library(ggplot2)
 library(dplyr)
+library(ggplot2)
 
 source(file.path("scripts", "utils.R"))
 
@@ -46,11 +47,16 @@ option_list <- list(optparse::make_option(c("-d", "--dataset"),
                                           action = "store_true",
                                           default = FALSE,
                                           help = "if input data is shuffled"),
-                    optparse::make_option(c("-r", "--save_results"),
+                    optparse::make_option(c("-r", "--save_top_results"),
                                           type = "character",
                                           action = "store_true",
                                           default = FALSE,
-                                          help = "if top results are saved"))
+                                          help = "if top results are saved"),
+                    optparse::make_option(c("-p", "--plot_results"),
+                                          type = "character",
+                                          action = "store_true",
+                                          default = TRUE,
+                                          help = "if plots are saved"))
 
 opt_parser <- optparse::OptionParser(option_list = option_list)
 opt <- optparse::parse_args(opt_parser)
@@ -61,7 +67,8 @@ gmt_name <- opt$gmt_name
 metaedge <- opt$metaedge
 gene_set_dir <- opt$gene_set_dir
 shuffled <- opt$shuffled
-save_results <- opt$save_results
+save_top_results <- opt$save_top_results
+plot_results <- opt$plot_results
 
 # Find the name of all of the gene sets of interest
 xcell_file <- file.path("..", "3.build-hetnets", "data", gmt_name)
@@ -76,18 +83,26 @@ while (length(geneset <- readLines(con, n = 1, warn = FALSE)) > 0) {
 
 close(con)
 
-for (gene_set in genesets) {
-  print(paste("curating results for:", gene_set))
-  top_results_df <- plot_gene_set(gene_set = gene_set,
-                                  gene_set_dir = gene_set_dir,
-                                  metaedge = metaedge,
-                                  dataset = dataset,
-                                  show_plot = FALSE,
-                                  shuffled = shuffled)
+# Compile all results
+biobombe_results_df <- get_biobombe_results(gene_set_dir = gene_set_dir)
 
-  if (save_results) {
-    out_file <- paste(dataset, metaedge, paste0(gene_set, ".tsv"), sep = "_")
-    out_file <- file.path("results", "top_features", out_file)
-    readr::write_tsv(x = top_results_df, path = out_file)
+# Process the top results and save to file
+if (save_top_results) {
+  top_biobombe_results_df <- extract_top_biobombe_results(biobombe_results_df)
+  
+  out_file <- paste(dataset, metaedge, "top_biobombe_scores.tsv.gz", sep = "_")
+  out_file <- file.path("results", "top_features", out_file)
+  readr::write_tsv(x = top_biobombe_results_df, path = out_file)
+}
+
+# Visualize all genesets and their top scoring feature per algorithm and z
+if (plot_results) {
+  for (gene_set in genesets) {
+    print(paste("curating results for:", gene_set))
+    top_results_df <- plot_gene_set(gene_set = gene_set,
+                                    full_results_df = biobombe_results_df,
+                                    metaedge = metaedge,
+                                    dataset = dataset,
+                                    shuffled = shuffled)
   }
 }

@@ -38,7 +38,8 @@ get_biobombe_results <- function(gene_set_dir) {
       dplyr::mutate(abs_z_score = abs(z_score)) %>%
       dplyr::group_by(variable, algorithm, z) %>%
       dplyr::filter(abs_z_score == max(abs_z_score)) %>%
-      dplyr::distinct(abs_z_score, algorithm, feature, z, .keep_all = TRUE)
+      dplyr::distinct(abs_z_score, algorithm, feature, z, .keep_all = TRUE) %>%
+      dplyr::ungroup()
 
     gene_set_list[[z_dim]] <- gene_set_df
   }
@@ -117,7 +118,7 @@ plot_gene_set <- function(gene_set,
 
   # Subset results to the specific geneset
   top_results_df <- full_results_df %>%
-    dplyr::filter(grepl(gene_set, variable, fixed = TRUE))
+    dplyr::filter(variable == gene_set)
 
   # Plot and save to file
   p <- ggplot(top_results_df,

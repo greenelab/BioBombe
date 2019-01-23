@@ -1,6 +1,6 @@
 """
 2018 Gregory Way
-9.tcga-classify/scripts/compile_top_feature_matrics.py
+9.tcga-classify/scripts/compile-top-matrices.py
 
 Scan through all prediction models and select the features with the top coefficients.
 Then, find those features and construct representative matrices to use in prediction
@@ -8,7 +8,7 @@ tasks for the same mutations.
 
 Usage:
 
-    python scripts/compile_top_feature_matrices.py
+    python scripts/compile-top-matrices.py
 
     with the following optional arguments:
 

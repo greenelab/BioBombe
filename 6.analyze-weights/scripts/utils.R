@@ -141,7 +141,7 @@ plot_gene_set <- function(gene_set,
     theme_bw() +
     ggtitle(gene_set) +
     ylab("Absolute Value Z Score") +
-    xlab("Z Dimensions") +
+    xlab("k Dimensions") +
     theme(axis.title.x = element_text(size = 8),
           axis.title.y = element_text(size = 8),
           axis.text.x = element_text(angle = 90, size = 5),
@@ -175,5 +175,4 @@ plot_gene_set <- function(gene_set,
   if (return_plot) {
     return(p)
   }
-
 }

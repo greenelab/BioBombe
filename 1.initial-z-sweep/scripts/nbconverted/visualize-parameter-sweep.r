@@ -275,7 +275,7 @@ main_plot <- (
             theme(plot.margin = margin(t = 0, r = 0, b = 0, l = 0)),
         gtex_tybalt$final_val_plot + ggtitle('') + ylab('') + xlab('') +
             theme(plot.margin = margin(t = 0, r = 0, b = 0, l = 0)),
-        tcga_adage$final_val_plot + ggtitle('') + xlab('') +
+        tcga_adage$final_val_plot + ggtitle('') +
             theme(plot.margin = margin(t = 0, r = 0, b = 0, l = 0)),
         tcga_adage_converge + ggtitle('') + xlab('') + ylab('') +
             theme(plot.margin = margin(t = 0, r = 0, b = 0, l = 0)),
@@ -286,7 +286,7 @@ main_plot <- (
             theme(plot.margin = margin(t = 0, r = 0, b = 0, l = 0)),
         target_tybalt$final_val_plot + ggtitle('') + ylab('') +
             theme(plot.margin = margin(t = 0, r = 0, b = 0, l = 0)),
-        labels = c("A", "B", "C", "D", "E", "F", "", "G", "H"),
+        labels = c("a", "b", "c", "d", "e", "f", "", "g", "h"),
         ncol = 3,
         nrow = 3
     )

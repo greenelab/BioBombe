@@ -126,7 +126,7 @@ for (plot_info in plot_info_list) {
             scale_color_manual(name = "Algorithm",
                                values = algorithm_colors,
                                labels = algorithm_plot_labels) +
-            xlab("Z Dimension") +
+            xlab("k Dimension") +
             ylab("Coverage (%)") +
             ggtitle("Individual Models")
 
@@ -142,7 +142,7 @@ for (plot_info in plot_info_list) {
             scale_color_manual(name = "Algorithm",
                                values = algorithm_colors,
                                labels = algorithm_plot_labels) +
-            xlab("Z Dimension") +
+            xlab("k Dimension") +
             ylab("Coverage (%)") +
             ggtitle("Ensemble Models")
     
@@ -155,7 +155,7 @@ for (plot_info in plot_info_list) {
                      position = 'stack',
                      stat = 'identity') +
             coverage_theme +
-            xlab("Z Dimension") +
+            xlab("k Dimension") +
             ggtitle("All Models")+
             scale_fill_manual(name = "Algorithm",
                                values = algorithm_colors,

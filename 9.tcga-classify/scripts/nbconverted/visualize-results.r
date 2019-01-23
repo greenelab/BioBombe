@@ -389,7 +389,7 @@ a_and_b_gg <- cowplot::plot_grid(
     panel_a_gg + theme(legend.position = "none"),
     panel_b_gg + theme(legend.position = "none"),
     rel_widths = c(1, 1),
-    labels = c("A", "B"),
+    labels = c("a", "b"),
     ncol = 2
 )
 
@@ -406,7 +406,7 @@ e_and_f_gg <- cowplot::plot_grid(
     panel_e_gg + theme(legend.position = "none"),
     panel_f_gg + theme(legend.position = "none"),
     rel_widths = c(1, 1),
-    labels = c("E", "F"),
+    labels = c("e", "f"),
     ncol = 2,
     nrow = 1
 )
@@ -422,7 +422,7 @@ d_e_and_f_gg <- cowplot::plot_grid(
     panel_d_gg,
     e_and_f_gg,
     rel_widths = c(0.4, 1),
-    labels = c("D", ""),
+    labels = c("d", ""),
     ncol = 2
 )
 
@@ -431,7 +431,7 @@ full_gg <- cowplot::plot_grid(
     panel_c_gg,
     d_e_and_f_gg,
     nrow = 3,
-    labels = c("", "C", ""),
+    labels = c("", "c", ""),
     rel_heights = c(1.2, 1, 0.7)
 )
 

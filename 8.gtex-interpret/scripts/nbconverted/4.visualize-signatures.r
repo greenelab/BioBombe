@@ -25,17 +25,18 @@ interpret_data_df$full_feature <- factor(interpret_data_df$full_feature,
                                   levels = c("vae_0_two", "vae_1_two", "vae_0_three",
                                              "vae_1_three", "vae_2_three"))
 
-
 # Setup plotting logic
-vae_labels <- c("vae_0_two" = "z = 2 (0)",
-                "vae_1_two" = "z = 2 (1)",
-                "vae_0_three" = "z = 3 (0)",
-                "vae_1_three" = "z = 3 (1)",
-                "vae_2_three" = "z = 3 (2)")
+vae_labels <- c("vae_0_two" = "k = 2 (0)",
+                "vae_1_two" = "k = 2 (1)",
+                "vae_0_three" = "k = 3 (0)",
+                "vae_1_three" = "k = 3 (1)",
+                "vae_2_three" = "k = 3 (2)")
 
 vae_colors <- c("#c994c7", "#dd1c77", "#78c679", "#31a354", "#006837")
 
-color_logic <- (interpret_data_df$z_score > 13 | interpret_data_df$z_score < -18)
+color_logic <- (interpret_data_df$z_score > 13 |
+                interpret_data_df$z_score < -18 |
+                interpret_data_df$raw_score < -22)
 
 # Plot
 panel_a_gg <- ggplot(interpret_data_df,
@@ -53,8 +54,8 @@ panel_a_gg <- ggplot(interpret_data_df,
                     segment.alpha = 0.6,
                     size = 1.5,
                     fontface = "italic",
-                    box.padding = 0.25,
-                    point.padding = 0.15,
+                    box.padding = 0.47,
+                    point.padding = 0.23,
                     aes(x = raw_score,
                         y = z_score,
                         label = variable)) +
@@ -105,8 +106,8 @@ panel_b_gg <- ggplot(feature_info_df, aes(x = three, y = two)) +
                     aes(x = three,
                         y = two,
                         label = variable)) +
-    xlab("Mean Z Score for VAE (z = 3)") +
-    ylab("Mean Z Score for VAE (z = 2)") +
+    xlab("Mean Z Score for VAE (k = 3)") +
+    ylab("Mean Z Score for VAE (k = 2)") +
     theme_bw() +
     theme(axis.title = element_text(size = 7),
           axis.text.x = element_text(size = 6),
@@ -114,24 +115,40 @@ panel_b_gg <- ggplot(feature_info_df, aes(x = three, y = two)) +
     
 panel_b_gg
 
-gene_set_dir <- file.path("..", "6.analyze-weights", "results", "gtex", "gpxcell", "signal")
+gene_set_dir <- file.path("..", "6.analyze-weights",
+                          "results", "gtex",
+                          "gpxcell", "signal")
 metaedge <- "GpXCELL"
 dataset <- "GTEX"
 
+# Compile all results (use this for plotting later)
+biobombe_results_df <- get_biobombe_results(gene_set_dir = gene_set_dir)
+
 line_plot_theme <-
-    theme(strip.background = element_rect(colour = "black", fill = "#fdfff4"),
+    theme(strip.background = element_rect(colour = "black",
+                                          fill = "#fdfff4"),
           strip.text = element_text(size = 6),
           axis.title = element_text(size = 7),
-          axis.title.x = element_text(margin = margin(t = 0.1, r = 0, b = 0, l = 0, unit = 'cm')),
+          axis.title.x = element_text(margin = margin(t = 0.1,
+                                                      r = 0,
+                                                      b = 0,
+                                                      l = 0,
+                                                      unit = 'cm')),
           axis.text.x = element_text(size = 5),
           axis.text.y = element_text(size = 6),
           legend.text = element_text(size = 4.7),
           legend.title = element_text(size = 6),
-          legend.margin = margin(t = 0, r = 0, b = 0, l = 0),
-          legend.box.margin = margin(t = -3, r = 0, b = -3, l = -3))
+          legend.margin = margin(t = 0,
+                                 r = 0,
+                                 b = 0,
+                                 l = 0),
+          legend.box.margin = margin(t = -3,
+                                     r = 0,
+                                     b = -3,
+                                     l = -3))
 
 panel_c_gg <- plot_gene_set(gene_set = "Neutrophils_HPCA_2",
-                            gene_set_dir = gene_set_dir,
+                            full_results_df = biobombe_results_df,
                             metaedge = metaedge,
                             dataset = dataset,
                             show_plot = FALSE,
@@ -139,12 +156,12 @@ panel_c_gg <- plot_gene_set(gene_set = "Neutrophils_HPCA_2",
                             return_top = FALSE,
                             return_plot = TRUE)
 
-panel_c_gg <- panel_c_gg + line_plot_theme
+panel_c_gg <- panel_c_gg + line_plot_theme + theme(title = element_text(size = 7))
 
 panel_c_gg
 
 panel_d_gg <- plot_gene_set(gene_set = "Monocytes_FANTOM_2",
-                            gene_set_dir = gene_set_dir,
+                            full_results_df = biobombe_results_df,
                             metaedge = metaedge,
                             dataset = dataset,
                             show_plot = FALSE,
@@ -152,7 +169,7 @@ panel_d_gg <- plot_gene_set(gene_set = "Monocytes_FANTOM_2",
                             return_top = FALSE,
                             return_plot = TRUE)
 
-panel_d_gg <- panel_d_gg + line_plot_theme
+panel_d_gg <- panel_d_gg + line_plot_theme + theme(title = element_text(size = 7))
 
 panel_d_gg
 
@@ -227,8 +244,8 @@ panel_e_gg <- ggplot(geneset_weights_df,
                     aes(label = paste("p = ",
                                       signif(..p.value.., digits = 1),
                                       sep = ""))) +
-    xlab("Z Score for VAE z = 3 (Feature 0)") +
-    ylab("Z Score for VAE z = 14\n(Feature 10)") +
+    xlab("Z Score for VAE k = 3 (Feature 0)") +
+    ylab("Z Score for VAE k = 14\n(Feature 10)") +
     theme_bw() +
     theme(axis.title = element_text(size = 7),
           axis.text.x = element_text(size = 6),
@@ -317,8 +334,8 @@ panel_f_gg <- ggplot(gene_weights_df,
     scale_color_manual(name = "Gene Set Class",
                        values = color_labels,
                        breaks = geneset_classes) +
-    xlab("Z Score for VAE z = 3 (Feature 0)") +
-    ylab("Z Score for VAE z = 14\n(Feature 10)") +
+    xlab("Z Score for VAE k = 3 (Feature 0)") +
+    ylab("Z Score for VAE k = 14\n(Feature 10)") +
     theme_bw() +
     theme(axis.title = element_text(size = 7),
           axis.text.x = element_text(size = 6),
@@ -354,8 +371,8 @@ full_neutrophil_results_df <-
 
 full_neutrophil_results_df$feature <-
     dplyr::recode_factor(full_neutrophil_results_df$feature,
-                         'vae_0' = 'VAE z = 3 (Feature 0)',
-                         'vae_10' = 'VAE z = 14 (Feature 10)',
+                         'vae_0' = 'VAE k = 3 (Feature 0)',
+                         'vae_10' = 'VAE k = 14 (Feature 10)',
                          .ordered = TRUE)
 
 head(full_neutrophil_results_df, 3)
@@ -396,6 +413,7 @@ panel_g_gg
 
 # Load and process results
 file <- file.path('results', 'hematopoietic_data_biobombe_results.tsv')
+
 full_heme_results_df <-
     readr::read_tsv(file,
                     col_types = readr::cols(.default = readr::col_double(),
@@ -413,8 +431,8 @@ full_heme_results_df <-
 
 full_heme_results_df$feature <-
     dplyr::recode_factor(full_heme_results_df$feature,
-                         'vae_2' = 'VAE z = 3 (Feature 2)',
-                         'nmf_6' = 'NMF z = 200 (Feature 6)',
+                         'vae_2' = 'VAE k = 3 (Feature 2)',
+                         'nmf_6' = 'NMF k = 200 (Feature 6)',
                          .ordered = TRUE)
 
 head(full_heme_results_df, 3)
@@ -448,7 +466,7 @@ c_and_d_gg <- cowplot::plot_grid(
     panel_c_gg + theme(legend.position = "none"),
     panel_d_gg + theme(legend.position = "none"),
     nrow = 2,
-    labels = c("C", "D")
+    labels = c("c", "d")
 )
 
 c_and_d_gg <- cowplot::plot_grid(
@@ -465,7 +483,7 @@ a_b_c_and_d_gg <- cowplot::plot_grid(
     panel_b_gg,
     c_and_d_gg,
     ncol = 3,
-    labels = c("A", "B", "")
+    labels = c("a", "b", "")
 )
 
 a_b_c_and_d_gg
@@ -474,7 +492,7 @@ e_and_f_gg <- cowplot::plot_grid(
     panel_e_gg,
     panel_f_gg,
     ncol = 2,
-    labels = c("E", "F"),
+    labels = c("e", "f"),
     rel_widths = c(0.7, 1)
 )
 
@@ -484,7 +502,7 @@ g_and_h_gg <- cowplot::plot_grid(
     panel_g_gg,
     panel_h_gg,
     ncol = 2,
-    labels = c("G", "H"),
+    labels = c("g", "h"),
     rel_widths = c(0.7, 1)
 )
 

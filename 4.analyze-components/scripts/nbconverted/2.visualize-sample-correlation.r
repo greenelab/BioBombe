@@ -6,9 +6,11 @@ suppressPackageStartupMessages(library(ggplot2))
 source(file.path("scripts", "util.R"))
 
 # Create theme
-correlation_theme <- theme(axis.text.x = element_text(angle = 90, size = 5),
+correlation_theme <- theme(axis.text.x = element_text(angle = 90,
+                                                      size = 5),
                            plot.title = element_text(hjust = 0.5),
-                           strip.background = element_rect(colour = "black", fill = "#fdfff4"),
+                           strip.background = element_rect(colour = "black",
+                                                           fill = "#fdfff4"),
                            legend.text = element_text(size = 8),
                            legend.key.size = unit(0.7, 'lines'))
 
@@ -118,11 +120,17 @@ head(sample_correlation_list[[dataset_name]], 2)
 
 # 4) Summarize correlations per sample-type and write to file
 disease_summary_df <- sample_correlation_list[[dataset_name]] %>%
-    dplyr::group_by(algorithm, sample_type, num_comp, cor_type, shuffled, data) %>%
+    dplyr::group_by(algorithm,
+                    sample_type,
+                    num_comp,
+                    cor_type,
+                    shuffled,
+                    data) %>%
     dplyr::summarize(mean_cor = mean(correlation),
                      var_cor = var(correlation))
 
-out_file <- file.path("results", paste0(dataset_name, "_sample_correlation_phenotype_summary.tsv.gz"))
+out_file <- file.path("results",
+                      paste0(dataset_name, "_sample_correlation_phenotype_summary.tsv.gz"))
 readr::write_tsv(disease_summary_df, out_file)
 
 head(disease_summary_df)

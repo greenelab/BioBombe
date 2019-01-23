@@ -346,31 +346,42 @@ plot_top_features <- function(top_df, full_df, raw_df, auroc_or_aupr = "AUROC") 
   # Output:
   # The ggplot object
   
+  # First, subset the input data into different categories
+  
+  # Select the top 200 features only that were not randomly selected
+  top_feature_df <- top_df %>%
+      dplyr::filter(z_dim == "top_features: 200",
+                    signal == "real")
+
+  # Select the top 1 feature that were not randomly selected
+  top_one_df <- top_df %>%
+      dplyr::filter(z_dim == "top_features: 1",
+                    signal == "real")
+
+  # Select 200 features only that were randomly selected
+  top_random_df <- top_df %>%
+      dplyr::filter(z_dim == "top_features: 200",
+                    signal == "randomized")
+
+  # Now, setup plotting logic
   if (auroc_or_aupr == "AUROC") {
-    g <- ggplot(top_df,
+    g <- ggplot(top_feature_df,
                 aes(x = algorithm,
                     fill = algorithm,
                     y = auroc))
   } else {
-    g <- ggplot(top_df,
+    g <- ggplot(top_feature_df,
                 aes(x = algorithm,
                     fill = algorithm,
                     y = aupr))
   }
-  
    g <- g +
     geom_bar(color = "black",
              stat = "identity",
              position = position_dodge()) +
     facet_grid(~ gene_or_cancertype) +
-    coord_cartesian(ylim = c(0.3, 1)) +
-    geom_hline(data = raw_df,
-               aes(yintercept = auroc,
-                   linetype = signal),
-               color = "black",
-               lwd = 0.5) +
-    scale_shape_manual(name = "Signal",
-                       values = c(24, 21),
+    scale_shape_manual(name = "Raw Data",
+                       values = c(21, 24),
                        labels = c("signal" = "Real",
                                   "shuffled" = "Permuted")) +
     scale_fill_manual(name = "Algorithm",
@@ -386,8 +397,8 @@ plot_top_features <- function(top_df, full_df, raw_df, auroc_or_aupr = "AUROC") 
                                  "dae" = "DAE",
                                  "vae" = "VAE",
                                  "all" = "ALL")) +
-    scale_linetype_manual(name = "Signal",
-                          values = c("dashed", "solid"),
+    scale_linetype_manual(name = "Raw Data",
+                          values = c("solid", "dashed"),
                           labels = c("signal" = "Real",
                                      "shuffled" = "Permuted")) +
     xlab("Algorithm") +
@@ -400,24 +411,73 @@ plot_top_features <- function(top_df, full_df, raw_df, auroc_or_aupr = "AUROC") 
           legend.key.size = unit(1, "lines"),
           strip.background = element_rect(colour = "black",
                                           fill = "#fdfff4")) +
-    guides(fill = guide_legend(order = 1))
-  
+    guides(fill = guide_legend(order = 1),
+           shape = guide_legend(override.aes = list(size = 0.25)))
+
   if (auroc_or_aupr == "AUROC") {
-    g <- g + geom_point(data = full_df,
-               fill = "grey20",
-               color = "white",
-               size = 1.5,
-               aes(x = algorithm,
-                   y = mean_auroc,
-                   shape = signal))
+    g <- g +
+      coord_cartesian(ylim = c(0.4, 1)) +
+      geom_point(data = full_df,
+                 fill = "grey20",
+                 color = "white",
+                 size = 1.5,
+                 alpha = 0.8,
+                 aes(x = algorithm,
+                     y = mean_auroc,
+                     shape = signal)) +
+      geom_hline(data = raw_df,
+                 aes(yintercept = auroc,
+                     linetype = signal),
+                 color = "black",
+                 lwd = 0.5) +
+      geom_point(data = top_one_df,
+                 fill = "yellow",
+                 color = "black",
+                 shape = 24,
+                 size = 1.2,
+                 alpha = 0.8,
+                 aes(x = algorithm,
+                     y = auroc)) +
+      geom_point(data = top_random_df,
+                 fill = "lightblue",
+                 color = "black",
+                 shape = 25,
+                 size = 1.2,
+                 alpha = 0.8,
+                 aes(x = algorithm,
+                     y = auroc))
   } else {
-    g <- g + geom_point(data = full_df,
-               fill = "grey20",
-               color = "white",
-               size = 1.5,
-               aes(x = algorithm,
-                   y = mean_aupr,
-                   shape = signal))
+    g <- g +
+      coord_cartesian(ylim = c(0.2, 1)) +
+      geom_point(data = full_df,
+                 fill = "grey20",
+                 color = "white",
+                 size = 1.5,
+                 alpha = 0.8,
+                 aes(x = algorithm,
+                     y = mean_aupr,
+                     shape = signal)) +
+      geom_hline(data = raw_df,
+                 aes(yintercept = aupr,
+                     linetype = signal),
+                 color = "black",
+                 lwd = 0.5) +
+      geom_point(data = top_one_df,
+                 fill = "yellow",
+                 color = "black",
+                 shape = 25,
+                 size = 1.2,
+                 alpha = 0.8,
+                 aes(x = algorithm,
+                     y = aupr)) +
+      geom_point(data = top_random_df,
+                 fill = "lightblue",
+                 color = "black",
+                 shape = 23,
+                 size = 1.2,
+                 alpha = 0.8,
+                 aes(x = algorithm,
+                     y = aupr))
   }
   return(g)
 }

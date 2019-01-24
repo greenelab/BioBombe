@@ -32,7 +32,7 @@ For each of the populations, we will also track performance of training and test
    * Calculate Pearson and Spearman correlations
    * May reveal certain biases in sample reconstruction efficiency across algorithms
 
-The population of weight and K matrices are saved for alternative downstream analyses.
+The population of weight and latent space matrices are saved for alternative downstream analyses.
 
 ## Download Results
 

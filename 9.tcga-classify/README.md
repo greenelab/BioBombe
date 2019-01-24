@@ -100,7 +100,8 @@ We were also interested in observing performance using hand picked features.
 
 ![TCGA_BioBombe_Supplementary_Results](https://raw.githubusercontent.com/greenelab/BioBombe/master/9.tcga-classify/figures/supplemental_tcga_top_feature_summary.png)
 
-We compared predictions using k = 200 features to 200 of the top scoring features across all tested k dimensions.
+We compared AUROC (**Panel A Above**) and AUPR (**Panel B Above**) in cross validation (CV) training folds for predictions using k = 200 features to 200 of the top scoring features across all tested k dimensions.
+The height of the bar represents performance in these top 200 features.
 We also compared predictions using the top 1 feature and 200 randomly selected features.
 Also shown are predictions using raw RNAseq data.
 

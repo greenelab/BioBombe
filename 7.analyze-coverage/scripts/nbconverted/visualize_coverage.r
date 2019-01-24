@@ -13,17 +13,31 @@ coverage_theme <- theme_bw() +
         legend.title = element_text(size = 8),
         legend.key.size = unit(1, "lines"))
 
+# Load Constants
 algorithm_plot_labels <- c("pca" = "PCA",
                            "ica" = "ICA",
                            "nmf" = "NMF",
                            "dae" = "DAE",
                            "vae" = "VAE")
-algorithm_colors <- c("#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00")
+algorithm_colors <- c("#e41a1c",
+                      "#377eb8",
+                      "#4daf4a",
+                      "#984ea3",
+                      "#ff7f00")
 algorithms <- names(algorithm_plot_labels)
 
-plot_info_list <- list(c("TCGA", "GpC5BP"),
-                       c("TCGA", "GpC4CM"),
-                       c("GTEX", "GpXCELL"))
+plot_info_list <- list(
+    c("TCGA", "GpH"),
+    c("TCGA", "GpXCELL"),
+    c("TCGA", "GpC4CM"),
+    c("TCGA", "GpC2CPREACTOME"),
+    c("TCGA", "GpC3TFT"),
+    c("TARGET", "GpH"),
+    c("TARGET", "GpXCELL"),
+    c("TARGET", "GpC4CM"),
+    c("GTEX", "GpXCELL")
+)
+
 plot_list <- list()
 
 for (plot_info in plot_info_list) {
@@ -51,7 +65,13 @@ for (plot_info in plot_info_list) {
                                     abs_top_z_score = readr::col_double(),
                                     dataset = readr::col_character(),
                                     geneset_name = readr::col_character()
-                                ))
+                                )) %>%
+        dplyr::mutate(p_val = 2 * pnorm(-abs_top_z_score)) %>%
+        dplyr::group_by(z_dim) %>%
+        dplyr::mutate(bon_alpha = 0.05 / z_dim) %>%
+        dplyr::ungroup() %>%
+        dplyr::mutate(is_bon_filtered = bon_alpha < p_val) %>%
+        dplyr::filter(!is_bon_filtered)
 
     model_df$algorithm <- factor(model_df$algorithm, levels = algorithms)
     model_df$z_dim <-
@@ -67,7 +87,13 @@ for (plot_info in plot_info_list) {
                                        abs_top_z_score = readr::col_double(),
                                        dataset = readr::col_character(),
                                        geneset_name = readr::col_character()
-                                    ))
+                                    )) %>%
+        dplyr::mutate(p_val = 2 * pnorm(-abs_top_z_score)) %>%
+        dplyr::group_by(z_dim) %>%
+        dplyr::mutate(bon_alpha = 0.05 / z_dim) %>%
+        dplyr::ungroup() %>%
+        dplyr::mutate(is_bon_filtered = bon_alpha < p_val) %>%
+        dplyr::filter(!is_bon_filtered)
 
     ensemble_df$algorithm <- factor(ensemble_df$algorithm, levels = algorithms)
     ensemble_df$z_dim <-
@@ -85,7 +111,13 @@ for (plot_info in plot_info_list) {
                                   abs_top_z_score = readr::col_double(),
                                   dataset = readr::col_character(),
                                   geneset_name = readr::col_character()
-                              ))
+                              )) %>%
+        dplyr::mutate(p_val = 2 * pnorm(-abs_top_z_score)) %>%
+        dplyr::group_by(z_dim) %>%
+        dplyr::mutate(bon_alpha = 0.05 / z_dim) %>%
+        dplyr::ungroup() %>%
+        dplyr::mutate(is_bon_filtered = bon_alpha < p_val) %>%
+        dplyr::filter(!is_bon_filtered)
     all_df$z_dim <- factor(all_df$z_dim,
                            levels = sort(as.numeric(paste(unique(all_df$z_dim)))))
     
@@ -135,7 +167,7 @@ for (plot_info in plot_info_list) {
                                 y = geneset_coverage * 100)) +
             geom_point(aes(color = algorithm,
                            size = log10(abs_top_z_score)),
-                       alpha = 0.3) +
+                       alpha = 0.25) +
             geom_point(aes(color = algorithm),
                        size = 0.15) +
             coverage_theme +
@@ -162,7 +194,7 @@ for (plot_info in plot_info_list) {
                                labels = algorithm_plot_labels)
     
     # Add specific scale to certain plots
-    if (base_file != "tcga_gpc5bp.tsv") {
+    if (metaedge != "GpH") {
     plot_list[[plot_identifier]][['all_gg']] <-
         plot_list[[plot_identifier]][['all_gg']] +
             geom_point(data = unique_results_df,
@@ -177,67 +209,186 @@ for (plot_info in plot_info_list) {
     
 }
 
-legend <- get_legend(plot_list[['TCGAGpC5BP']][['all_gg']] +
+legend <- get_legend(plot_list[['TCGAGpXCELL']][['all_gg']] +
                      theme(legend.position = "bottom"))
 
-tcga_go_label <- cowplot::ggdraw() +
-    cowplot::draw_label(label = 'TCGA\n(GO Biological Processes)',
+tcga_x_label <- cowplot::ggdraw() +
+    cowplot::draw_label(label = 'TCGA\n(xCell Cell Types)',
                         size = 8,
-                        hjust = 0.4,
+                        angle = 90)
+gtex_x_label <- cowplot::ggdraw() +
+    cowplot::draw_label(label = 'GTEx\n(xCell Cell Types)',
+                        size = 8,
+                        angle = 90)
+target_x_label <- cowplot::ggdraw() +
+    cowplot::draw_label(label = 'TARGET\n(xCell Cell Types)',
+                        size= 8,
+                        angle = 90)
+tcga_h_label <- cowplot::ggdraw() +
+    cowplot::draw_label(label = 'TCGA\n(Hallmarks)',
+                        size = 8,
+                        angle = 90)
+target_h_label <- cowplot::ggdraw() +
+    cowplot::draw_label(label = 'TARGET\n(Hallmarks)',
+                        size = 8,
+                        angle = 90)
+label_sup <- cowplot::plot_grid(tcga_x_label,
+                                gtex_x_label,
+                                target_x_label,
+                                tcga_h_label,
+                                target_h_label,
+                                nrow = 5)
+
+sup_plot <- (
+    cowplot::plot_grid(
+        plot_list[["TCGAGpXCELL"]][['model_gg']] +
+            xlab('') +
+            theme(legend.position = "none"),
+        plot_list[['TCGAGpXCELL']][['ensemble_gg']] +
+            xlab('') +
+            theme(legend.position = "none"),
+        plot_list[['TCGAGpXCELL']][['all_gg']] +
+            xlab('') +
+            theme(legend.position = "none"),
+        plot_list[["GTEXGpXCELL"]][['model_gg']] +
+            xlab('') +
+            theme(legend.position = "none") +
+            ggtitle(""),
+        plot_list[['GTEXGpXCELL']][['ensemble_gg']] +
+            xlab('') +
+            theme(legend.position = "none") +
+            ggtitle(""),
+        plot_list[['GTEXGpXCELL']][['all_gg']] +
+            xlab('') +
+            theme(legend.position = "none") +
+            ggtitle(""),
+        plot_list[["TARGETGpXCELL"]][['model_gg']] +
+            theme(legend.position = "none") +
+            xlab("") +
+            ggtitle(""),
+        plot_list[['TARGETGpXCELL']][['ensemble_gg']] +
+            theme(legend.position = "none") +
+            xlab("") +
+            ggtitle(""),
+        plot_list[['TARGETGpXCELL']][['all_gg']] +
+            theme(legend.position = "none") +
+            xlab("") +
+            ggtitle(""),
+        plot_list[["TCGAGpH"]][['model_gg']] +
+            xlab('') +
+            ggtitle("") +
+            theme(legend.position = "none"),
+        plot_list[['TCGAGpH']][['ensemble_gg']] +
+            xlab('') +
+            ggtitle("") +
+            theme(legend.position = "none"),
+        plot_list[['TCGAGpH']][['all_gg']] +
+            xlab('') +
+            ggtitle("") +
+            geom_point(mapping = aes(x = z_dim,
+                                     y = geneset_coverage * 8),
+                       size = 0.5) +
+            scale_y_continuous(name = 'Unique Genesets',
+                               sec.axis = sec_axis(trans = ~.*12.5,
+                                                   name = "Coverage (%)"),
+                               limits = c(0, 8)) +
+            theme(legend.position = "none"),
+        plot_list[["TARGETGpH"]][['model_gg']] +
+            theme(legend.position = "none") +
+            ggtitle(""),
+        plot_list[['TARGETGpH']][['ensemble_gg']] +
+            theme(legend.position = "none") +
+            ggtitle(""),
+        plot_list[['TARGETGpH']][['all_gg']] +
+            geom_point(mapping = aes(x = z_dim,
+                                     y = geneset_coverage * 8),
+                       size = 0.5) +
+            scale_y_continuous(name = 'Unique Genesets',
+                               sec.axis = sec_axis(trans = ~.*12.5,
+                                                   name = "Coverage (%)"),
+                               limits = c(0, 8)) +
+            ggtitle("") +
+            theme(legend.position = "none"),
+        labels = c("a", "", "", "b", "", "", "c", "", "", "d", "", "", "e"),
+        ncol = 3,
+        nrow = 5
+    )
+)
+
+sup_plot <- cowplot::plot_grid(label_sup,
+                               sup_plot,
+                               ncol = 2,
+                               rel_widths = c(0.04, 1))
+
+sup_plot <- cowplot::plot_grid(sup_plot,
+                               legend,
+                               rel_heights = c(1, 0.08),
+                               nrow = 2)
+
+sup_plot
+
+for(extension in c('.png', '.pdf')) {
+    fig_file <- paste0("supplemental_coverage", extension)
+    fig_file <- file.path("figures", fig_file)
+    cowplot::save_plot(filename = fig_file,
+                       plot = sup_plot,
+                       base_height = 200,
+                       base_width = 170,
+                       units = "mm")
+}
+
+legend <- get_legend(plot_list[['TCGAGpC2CPREACTOME']][['all_gg']] +
+                     theme(legend.position = "bottom"))
+
+tcga_tf_label <- cowplot::ggdraw() +
+    cowplot::draw_label(label = 'TCGA\n(TF Targets)',
+                        size= 8,
+                        angle = 90)
+tcga_react_label <- cowplot::ggdraw() +
+    cowplot::draw_label(label = 'TCGA\n(REACTOME)',
+                        size = 8,
                         angle = 90)
 tcga_cm_label <- cowplot::ggdraw() +
-    cowplot::draw_label(label = '     TCGA\n(Cancer Modules)',
+    cowplot::draw_label(label = 'TCGA\n(Cancer Modules)',
                         size = 8,
-                        hjust = 0.2,
-                        angle = 90)
-gtex_label <- cowplot::ggdraw() +
-    cowplot::draw_label(label = '        GTEX\n(xCell Cell Types)',
-                        size= 8,
-                        hjust = 0.05,
                         angle = 90)
 
-dataset_main <- cowplot::plot_grid(tcga_go_label,
-                                   tcga_cm_label,
-                                   gtex_label,
-                                   nrow = 3)
+label_main <- cowplot::plot_grid(tcga_tf_label,
+                                 tcga_cm_label,
+                                 tcga_react_label,
+                                 nrow = 3)
 
 main_plot <- (
     cowplot::plot_grid(
-        plot_list[["TCGAGpC5BP"]][['model_gg']] +
+        plot_list[["TCGAGpC3TFT"]][['model_gg']] +
             xlab('') +
             theme(legend.position = "none"),
-        plot_list[['TCGAGpC5BP']][['ensemble_gg']] +
+        plot_list[['TCGAGpC3TFT']][['ensemble_gg']] +
             xlab('') +
             theme(legend.position = "none"),
-        plot_list[['TCGAGpC5BP']][['all_gg']] +
-            xlab('') +
-            geom_point(mapping = aes(x = z_dim,
-                                     y = geneset_coverage * 1200),
-                       size = 0.5) +
-            scale_y_continuous(name = 'Unique Genesets',
-                               sec.axis = sec_axis(trans = ~./12,
-                                                   name = "Coverage (%)"),
-                               limits = c(0, 600)) +
+        plot_list[['TCGAGpC3TFT']][['all_gg']] +
+             xlab('') +
             theme(legend.position = "none"),
+        plot_list[["TCGAGpC2CPREACTOME"]][['model_gg']] +
+            xlab('') +
+            theme(legend.position = "none") +
+            ggtitle(""),
+        plot_list[['TCGAGpC2CPREACTOME']][['ensemble_gg']] +
+            xlab('') +
+            theme(legend.position = "none") +
+            ggtitle(""),
+        plot_list[['TCGAGpC2CPREACTOME']][['all_gg']] +
+            xlab('') +
+            theme(legend.position = "none") +
+            ggtitle(""),
         plot_list[["TCGAGpC4CM"]][['model_gg']] +
             xlab('') +
             theme(legend.position = "none") +
             ggtitle(""),
         plot_list[['TCGAGpC4CM']][['ensemble_gg']] +
-            xlab('') +
             theme(legend.position = "none") +
             ggtitle(""),
         plot_list[['TCGAGpC4CM']][['all_gg']] +
-            xlab('') +
-            theme(legend.position = "none") +
-            ggtitle(""),
-        plot_list[["GTEXGpXCELL"]][['model_gg']] +
-            theme(legend.position = "none") +
-            ggtitle(""),
-        plot_list[['GTEXGpXCELL']][['ensemble_gg']] +
-            theme(legend.position = "none") +
-            ggtitle(""),
-        plot_list[['GTEXGpXCELL']][['all_gg']] +
             theme(legend.position = "none") +
             ggtitle(""),
         labels = c("a", "", "", "b", "", "", "c", "", ""),
@@ -246,19 +397,20 @@ main_plot <- (
     )
 )
 
-main_plot <- cowplot::plot_grid(main_plot,
-                                legend,
-                                rel_heights = c(1, 0.08),
-                                nrow = 2)
-main_plot <- cowplot::plot_grid(dataset_main,
+main_plot <- cowplot::plot_grid(label_main,
                                 main_plot,
                                 ncol = 2,
                                 rel_widths = c(0.04, 1))
 
+main_plot <- cowplot::plot_grid(main_plot,
+                                legend,
+                                rel_heights = c(1, 0.08),
+                                nrow = 2)
+
 main_plot
 
 for(extension in c('.png', '.pdf')) {
-    fig_file <- paste0("coverage", extension)
+    fig_file <- paste0("main_coverage", extension)
     fig_file <- file.path("figures", fig_file)
     cowplot::save_plot(filename = fig_file,
                        plot = main_plot,

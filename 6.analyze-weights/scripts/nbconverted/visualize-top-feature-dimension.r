@@ -76,6 +76,9 @@ filtered_genesets_df <- reshape2::melt(all_top_df,
                      percent_filtered = sum(filtered) / n()) %>%
     dplyr::arrange(desc(num_filtered))
 
+out_file <- file.path("results", "bonferonni_filtered_counts.tsv")
+readr::write_tsv(filtered_genesets_df, out_file)
+
 filtered_genesets_df
 
 # Perform Bonferonni Correction

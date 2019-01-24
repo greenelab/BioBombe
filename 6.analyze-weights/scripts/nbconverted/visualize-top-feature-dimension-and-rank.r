@@ -4,10 +4,13 @@ suppressPackageStartupMessages(library(ggplot2))
 suppressPackageStartupMessages(library(cowplot))
 
 algorithms <- c("PCA", "ICA", "NMF", "DAE", "VAE")
-
-collections <- c("GpXCELL", "GpC4CM",
-                 "GpH", "GpC2CPG",
-                 "GpC2CPREACTOME", "GpC3TFT")
+datasets <- c("TCGA", "TARGET", "GTEX")
+collections <- c("GpXCELL",
+                 "GpC4CM",
+                 "GpH",
+                 "GpC2CPG",
+                 "GpC2CPREACTOME",
+                 "GpC3TFT")
 
 base_dir <- file.path("results", "top_features")
 
@@ -236,6 +239,76 @@ for(extension in c('.png', '.pdf')) {
     cowplot::save_plot(filename = gg_file,
                        plot = main_plot,
                        base_height = 210,
+                       base_width = 170,
+                       units = "mm")
+}
+
+all_top_df <- all_top_df %>% dplyr::mutate(feature_num_group = "greater25")
+all_top_df$feature_num_group[as.numeric(paste(all_top_df$z)) < 25] <- "less25"
+
+all_top_df$dataset <- factor(all_top_df$dataset, levels = datasets)
+all_top_df$feature_num_group <- factor(all_top_df$feature_num_group, levels = c("less25", "greater25"))
+
+rank_gg <- ggplot(data = all_top_df,
+                  aes(x = algorithm,
+                      alpha = feature_num_group,
+                      y = absolute_rank,
+                      fill = algorithm)) +
+    geom_boxplot(outlier.size = 0.1,
+                 size = 0.2) +
+    facet_wrap(dataset ~ collection,
+               scales = 'free_y',
+               nrow = 2,
+               ncol = 5) +
+    scale_fill_manual(name = "Algorithm",
+                     values = c("#e41a1c",
+                                "#377eb8",
+                                "#4daf4a",
+                                "#984ea3",
+                                "#ff7f00"),
+                     labels = c("pca" = "PCA",
+                                "ica" = "ICA",
+                                "nmf" = "NMF",
+                                "dae" = "DAE",
+                                "vae" = "VAE")) +
+    scale_alpha_manual(name = "k Dimension",
+                     values = c("less25" = 0.5,
+                                "greater25" = 1),
+                     labels = c("less25" = "k < 25",
+                                "greater25" = "k >= 25")) +
+    xlab("") +
+    ylab("Absolute Rank") +
+    theme_bw() +
+    theme(strip.background = element_rect(colour = "black",
+                                          fill = "#fdfff4"),
+          strip.text.x = element_text(size = 5,
+                                      margin = margin(t = 3,
+                                                      b = 2,
+                                                      l = 0,
+                                                      r = 0)),
+          legend.position = "bottom",
+          legend.text = element_text(size = 6),
+          legend.margin = margin(t = -0.4,
+                                 b = 0.1,
+                                 l = 0.1,
+                                 r = 0.1, "cm"),
+          legend.title = element_text(size = 7),
+          axis.text.x = element_blank(),
+          axis.text.y = element_text(size = 5),
+          axis.title.y = element_text(size = 7)) +
+    guides(fill = guide_legend(order = 1),
+           alpha = guide_legend(override.aes = list(fill = c("#e41a1c", "#e41a1c"),
+                                                    alpha = c(0.5, 1)),
+                                order = 2))
+
+rank_gg
+
+for(extension in c('.png', '.pdf')) {
+    gg_file <- paste0("top_feature_rank", extension)
+    gg_file <- file.path("figures", gg_file)
+    cowplot::save_plot(filename = gg_file,
+                       plot = rank_gg,
+                       base_height = 90,
                        base_width = 170,
                        units = "mm")
 }

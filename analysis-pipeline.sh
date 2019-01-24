@@ -18,7 +18,7 @@ conda activate biobombe
 ##############################
 # Step 1: Get Data (Module 2)
 ##############################
-cd 2.ensemble-z-analysis
+cd 2.sequential-compression
 
 python download-results-archive.py
 

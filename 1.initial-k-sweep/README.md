@@ -44,7 +44,7 @@ To reproduce the data for this analysis run the following command:
 conda activate biobombe
 
 # Navigate into z-sweep directory
-cd 1.initial-z-sweep
+cd 1.initial-k-sweep
 bash analysis.sh
 ```
 
@@ -54,7 +54,7 @@ We sweep over the following parameter combinations for `Tybalt` and `ADAGE` mode
 
 | Variable | Tybalt Values | ADAGE Values |
 | :------- | :------------ | :----------- |
-| Dimensionality | 5, 25, 50, 75, 100, 125 | 5, 25, 50, 75, 100, 125 |
+| Dimensions (k) | 5, 25, 50, 75, 100, 125 | 5, 25, 50, 75, 100, 125 |
 | Learning Rate | 0.0005, 0.001, 0.0015, 0.002, 0.0025 | 0.00005, 0.00001, 0.0005, 0.001, 0.0015, 0.002 |
 | Batch Size | 50, 100, 150 | 50, 100 |
 | Epochs | 50, 100 | 100 |

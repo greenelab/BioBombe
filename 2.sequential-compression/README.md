@@ -1,11 +1,12 @@
-# Ensemble Z Analysis
+# Sequential Compression Analysis
 
 **Gregory Way, 2018**
 
 Gene expression data compression reveals coordinated gene expression modules that describe important biology.
 
-In the following analysis, we apply five compression algorithms to serially compress three gene expression datasets across various bottleneck dimensionalities.
-We save the population of all models, for each algorithm, across z for downstream analyses.
+In the following analysis, we apply five different compression algorithms to three different gene expression datasets.
+We sequentially compress input data across different bottleneck dimensions (_k_).
+We save the population of all models, for each algorithm, across _k_ for downstream analyses.
 
 ## Algorithms
 
@@ -21,7 +22,7 @@ We compress gene expression data with the following algorithms:
 
 ## Evaluation Metrics
 
-We will evaluate the solutions across the ensemble population over all z dimensions.
+We will evaluate the solutions across the ensemble population over all _k_ dimensions.
 For each of the populations, we will also track performance of training and testing sets independently.
 
 1. Reconstruction Cost - Measures the binary cross entropy of input data to reconstruction
@@ -31,7 +32,7 @@ For each of the populations, we will also track performance of training and test
    * Calculate Pearson and Spearman correlations
    * May reveal certain biases in sample reconstruction efficiency across algorithms
 
-The population of weight and z matrices are saved for alternative downstream analyses.
+The population of weight and latent space matrices are saved for alternative downstream analyses.
 
 ## Download Results
 
@@ -43,7 +44,7 @@ To acquire these results, perform the following:
 ```bash
 conda activate biobombe
 
-cd 2.ensemble-z-analysis
+cd 2.sequential-compression
 python download-biobombe-archive.py
 ```
 
@@ -55,6 +56,6 @@ To rerun the analysis from scratch, perform the following:
 conda activate biobombe
 
 # Navigate into this module folder
-cd 2.ensemble-z-analysis
+cd 2.sequential-compression
 ./analysis.sh
 ```

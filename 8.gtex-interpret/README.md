@@ -4,7 +4,7 @@
 
 ## Exploring increased correlation in GTEx Blood with increased model capacity
 
-Previously, we recognized a sharp increase in the ability of variational autoencoders (VAEs) to capture the correlational structure of blood between z = 2 and z = 3.
+Previously, we recognized a sharp increase in the ability of variational autoencoders (VAEs) to capture the correlational structure of blood between _k_ = 2 and _k_ = 3.
 This increase in model capacity by one, increases the mean correlation of samples by nearly 0.3.
 We do not observe this pattern for other algorithms at this change in dimension.
 
@@ -23,29 +23,29 @@ The relationship of these initial VAE features are visualized in [1.visualize-gt
 
 ## BioBombe network projection application to VAE features
 
-We applied our network projection approach to two VAE models (z=2 and z=3) using a network built from xCell genesets.
+We applied our network projection approach to two VAE models (_k_ = 2 and _k_ = 3) using a network built from xCell gene sets.
 Many cell-type signatures were implicated in both VAE models including skeletal muscle, neurons, keratinocytes, and sebocytes.
-However, a neutrophil signature was extracted from the VAE z = 3 model and not the VAE z = 2 model (**Panel A Below**).
+However, a neutrophil signature was extracted from the VAE _k_ = 3 model and not the VAE _k_ = 2 model (**Panel A Below**).
 
-Furthermore, if we take the mean of all gene sets across all features in both models, we can identify additional geneset signatures which may also be contributing to the full model performance.
-Using the approach, we implicate many of the same cell-type signatures, but we also unviel a set of monocyte signatures that are more enriched in VAE z = 3 than z = 2.
-The signature `Monocytes_FANTOM_2` appears to have the lowest enrichment in VAE z = 2 and a relatively high enrichment in z = 3 (**Panel B Below**).
+Furthermore, if we take the mean of all gene sets across all features in both models, we can identify additional gene set signatures which may also be contributing to the full model performance.
+Using the approach, we implicate many of the same cell-type signatures, but we also unviel a set of monocyte signatures that are more enriched in VAE _k_ = 3 than _k_ = 2.
+The signature `Monocytes_FANTOM_2` appears to have the lowest enrichment in VAE _k_ = 2 and a relatively high enrichment in _k_ = 3 (**Panel B Below**).
 
-Therefore, we elected to follow up with two features implicated in the VAE model z = 3 that may be helping with the sharp increase in correlation in blood tissues with a single increase in model capacity.
-The genesets we chose to follow up with are `Neutrophils_HPCA_2` and `Monocytes_FANTOM_2`.
+Therefore, we elected to follow up with two features implicated in the VAE model _k_ = 3 that may be helping with the sharp increase in correlation in blood tissues with a single increase in model capacity.
+The gene sets we chose to follow up with are `Neutrophils_HPCA_2` and `Monocytes_FANTOM_2`.
 
  ![gtex_main_figure](https://raw.githubusercontent.com/greenelab/BioBombe/master/8.gtex-interpret/figures/gtex_biobombe_main_figure.png)
 
 ## Tracking Neutrophil and Monocyte signatures across algorithms and dimensions
 
-Each algorithm at all dimensions received a score for all xCell genesets.
-We tracked this score and can visualize the enrichment as z increases for `Neutrophils_HPCA_2` (**Panel C Above**) and `Monocytes_FANTOM_2` (**Panel D Above**).
+Each algorithm at all dimensions received a score for all xCell gene sets.
+We tracked this score and can visualize the enrichment as _k_ increases for `Neutrophils_HPCA_2` (**Panel C Above**) and `Monocytes_FANTOM_2` (**Panel D Above**).
 
 Evidently, the scores seem to improve for all algorithms as the dimensions increase, but there are spikes at intermediate dimensions.
-We selected the top scoring feature for both genesets and applied these (along with the origin z = 3 high scoring features) to external datasets.
+We selected the top scoring feature for both gene sets and applied these (along with the origin _k_ = 3 high scoring features) to external datasets.
 
-The scores for the highest scoring `Neutrophils_HPCA_2` geneset feature was feature 10 in VAE z = 14.
-The geneset features enriched in this feature were highly associated with the genesets enriched in VAE z = 3 (**Panel E Above**).
+The scores for the highest scoring `Neutrophils_HPCA_2` gene set feature was feature 10 in VAE _k_ = 14.
+The gene set features enriched in this feature were highly associated with the gene sets enriched in VAE _k_ = 3 (**Panel E Above**).
 The gene weights themselves were also highly enriched (**Panel F Above**).
 
 ## Validating signatures derived from compression algorithms on external datasets
@@ -80,14 +80,14 @@ The BioBombe derived compression signatures are applied to the external datasets
 
 ### Neutrophils
 
-The two VAE features (feature 0 in VAE z = 3 and feature 10 in VAE z = 14) were applied to GSE103706 (**Panel G Above**).
-Feature 0 from VAE z = 3 and feature 10 from VAE z = 14 had the highest scores for the specific neutrophil geneset.
-It does not appear that the z = 3 feature was able to robustly separate the the two treatments from the untreated cell line controls. However, the untreated controls were tending towards negative scores.
-The z = 14 feature perfectly separated the untreated cell lines from the treated cell lines and therefore validate the interpretation approach.
+The two VAE features (feature 0 in VAE _k_ = 3 and feature 10 in VAE _k_ = 14) were applied to GSE103706 (**Panel G Above**).
+Feature 0 from VAE _k_ = 3 and feature 10 from VAE _k_ = 14 had the highest scores for the specific neutrophil gene set.
+It does not appear that the _k_ = 3 feature was able to robustly separate the the two treatments from the untreated cell line controls. However, the untreated controls were tending towards negative scores.
+The _k_ = 14 feature perfectly separated the untreated cell lines from the treated cell lines and therefore validate the interpretation approach.
 
 ### Monocytes
 
-The two features (feature 2 in VAE z = 3 and feature 200 in NMF z = 200) were applied to GSE24759 (**Panel H Above**).
+The two features (feature 2 in VAE _k_ = 3 and feature 200 in NMF _k_ = 200) were applied to GSE24759 (**Panel H Above**).
 Both features showed the highest scores in isolated monocytes.
 Indeed, it appears that, specifically, `Mono2` cells were particularly enriched.
 Granulocytes also had high scores along this axis, indicating similarity between specific hematopoietic differentiation stages.

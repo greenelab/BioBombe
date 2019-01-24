@@ -53,6 +53,65 @@ def build_feature_dictionary(dataset="TCGA"):
     return z_matrix_dict
 
 
+def build_top_feature_dictionary(algorithms, genes, num_features, load_random=True):
+    """
+    Generate a nested dictionary of the specific x matrices to train using
+
+    Arguments:
+    algorithms - list of algorithms to match ['pca', 'ica', 'nmf', 'dae', 'vae', 'all']
+    genes - list of genes to match ['TP53', 'PTEN', 'KRAS', 'PIK3CA', 'TTN']
+    num_features - list of the number of features used in prediction
+    load_random - boolean if the random features should be loaded as well
+
+    Output: a nested dictionary storing the x matrices for training and testing
+    """
+
+    import os
+    import pandas as pd
+
+    base_path = os.path.join("results", "top_feature_matrices")
+    x_matrix_dict = {}
+    for algorithm in algorithms:
+        x_matrix_dict[algorithm] = {}
+
+        for gene in genes:
+            x_matrix_dict[algorithm][gene] = {}
+
+            for n in num_features:
+                x_matrix_dict[algorithm][gene][n] = {}
+
+                base_file = os.path.join(
+                    base_path,
+                    "top_model_algorithm_{}_gene_{}_numtopfeatures_{}".format(
+                        algorithm, gene, n
+                    ),
+                )
+
+                train_file = "{}_train.tsv.gz".format(base_file)
+                test_file = "{}_test.tsv.gz".format(base_file)
+
+                train_df = pd.read_table(train_file, sep="\t", index_col=0)
+                test_df = pd.read_table(test_file, sep="\t", index_col=0)
+
+                x_matrix_dict[algorithm][gene][n]["train"] = train_df
+                x_matrix_dict[algorithm][gene][n]["test"] = test_df
+
+                if load_random and n == 200:
+                    x_matrix_dict[algorithm][gene][n]["randomized"] = {}
+                    base_file = "{}_randomized".format(base_file)
+
+                    train_file = "{}_train.tsv.gz".format(base_file)
+                    test_file = "{}_test.tsv.gz".format(base_file)
+
+                    train_df = pd.read_table(train_file, sep="\t", index_col=0)
+                    test_df = pd.read_table(test_file, sep="\t", index_col=0)
+
+                    x_matrix_dict[algorithm][gene][n]["randomized"]["train"] = train_df
+                    x_matrix_dict[algorithm][gene][n]["randomized"]["test"] = test_df
+
+    return x_matrix_dict
+
+
 def get_threshold_metrics(y_true, y_pred, drop=False):
     """
     Retrieve true/false positive rates and auroc/aupr for class predictions
@@ -420,3 +479,70 @@ def check_status(file):
     import os
 
     return os.path.isfile(file)
+
+
+def get_feature(z_dim, seed, feature):
+    """
+    Given arguments, find the specific compressed feature for test and train data
+
+    Arguments:
+    z_dim - string indicating the bottleneck dimension
+    seed - string indicating which seed to search for model
+    feature - string indicating algorithm and number of specific feature
+
+    Output:
+    Reads compressed z matrices for training and testing and outputs them as a tuple
+    of two pandas series.
+    """
+    import os
+    import pandas as pd
+
+    base_file = os.path.join(
+        "..",
+        "2.ensemble-z-analysis",
+        "results",
+        "TCGA_results",
+        "ensemble_z_matrices",
+        "tcga_components_{}".format(z_dim),
+    )
+    train_file = os.path.join(base_file, "model_{}_z_matrix.tsv.gz".format(seed))
+    test_file = os.path.join(base_file, "model_{}_z_test_matrix.tsv.gz".format(seed))
+
+    test_df = pd.read_table(test_file, index_col=0).loc[:, feature].sort_index()
+    train_df = pd.read_table(train_file, index_col=0).loc[:, feature].sort_index()
+
+    return test_df, train_df
+
+
+def build_good_feature_matrix(coef_df):
+    """
+    Compile training and testing feature matrices (X) given a coefficient DataFrame
+    output from the various mutation classification analyses through repeated calls to
+    `get_feature()`
+
+    Arguments:
+    coef_df - an input dataframe with the following information:
+        z_dim, seed, and feature columns
+
+    Output:
+    Reads a series of compressed z matrices for training and testing and combines them
+    into two dataframes. The dataframes represent the training and testing matrices
+    used in downstream analyses.
+    """
+    import pandas as pd
+
+    all_test_features = []
+    all_train_features = []
+    for feature_idx, feature_row in coef_df.iterrows():
+        z_dim = feature_row.z_dim
+        seed = feature_row.seed
+        feature = feature_row.feature
+
+        test_feature_df, train_feature_df = get_feature(z_dim, seed, feature)
+        all_test_features.append(test_feature_df)
+        all_train_features.append(train_feature_df)
+
+    all_test_features_df = pd.concat(all_test_features, axis="columns")
+    all_train_features_df = pd.concat(all_train_features, axis="columns")
+
+    return all_test_features_df, all_train_features_df

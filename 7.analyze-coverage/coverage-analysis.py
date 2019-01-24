@@ -20,16 +20,29 @@ Several geneset coverage scores summarizing enrichment across features
 import os
 import subprocess
 
-coverage_pairs = [('TCGA', 'GpC5BP'),
-                  ('TCGA', 'GpC4CM'),
-                  ('GTEX', 'GpXCELL')]
+coverage_pairs = [
+    ("TCGA", "GpH"),
+    ("TCGA", "GpXCELL"),
+    ("TCGA", "GpC4CM"),
+    ("TCGA", "GpC2CPREACTOME"),
+    ("TCGA", "GpC3TFT"),
+    ("TARGET", "GpH"),
+    ("TARGET", "GpXCELL"),
+    ("TARGET", "GpC4CM"),
+    ("GTEX", "GpXCELL"),
+]
 
 for dataset, metaedge in coverage_pairs:
     metaedge_lower = metaedge.lower()
-    output_dir = os.path.join('results', dataset.lower(), metaedge_lower)
+    output_dir = os.path.join("results", dataset.lower(), metaedge_lower)
 
-    coverage_command = ['python', 'get-coverage.py',
-                        '--dataset', dataset,
-                        '--geneset', metaedge_lower]
+    coverage_command = [
+        "python",
+        "get-coverage.py",
+        "--dataset",
+        dataset,
+        "--geneset",
+        metaedge_lower,
+    ]
     print(coverage_command)
     subprocess.call(coverage_command)

@@ -70,3 +70,16 @@ The description above applies for this figure as well.
 | GTEX    | GpXCELL        | 91.6155419222904  |
 
 Using all derived features, we capture nearly 100% of gene sets in compressed features.
+
+## Reproducible Analysis
+
+To reproduce the results of the coverage analysis perform the following:
+
+```bash
+# Activate computational environment
+conda activate biobombe
+
+# Perform the analysis
+cd 7.analyze-coverage
+./run_coverage_analysis.sh
+```

@@ -94,7 +94,7 @@ Granulocytes also had high scores along this axis, indicating similarity between
 
 ## Reproducible Analysis
 
-To reproduce the results of the stability analysis perform the following:
+To reproduce the results of the GTEx analysis perform the following:
 
 ```bash
 # Activate computational environment

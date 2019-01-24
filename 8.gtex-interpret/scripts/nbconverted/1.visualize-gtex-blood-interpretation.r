@@ -20,13 +20,17 @@ interpret_data_df$full_feature <- factor(interpret_data_df$full_feature,
 head(interpret_data_df)
 
 # Setup plotting logic
-vae_labels <- c("vae_0_two" = "z = 2 (0)",
-                "vae_1_two" = "z = 2 (1)",
-                "vae_0_three" = "z = 3 (0)",
-                "vae_1_three" = "z = 3 (1)",
-                "vae_2_three" = "z = 3 (2)")
+vae_labels <- c("vae_0_two" = "k = 2 (0)",
+                "vae_1_two" = "k = 2 (1)",
+                "vae_0_three" = "k = 3 (0)",
+                "vae_1_three" = "k = 3 (1)",
+                "vae_2_three" = "k = 3 (2)")
 
-vae_colors <- c("#c994c7", "#dd1c77", "#78c679", "#31a354", "#006837")
+vae_colors <- c("#c994c7",
+                "#dd1c77",
+                "#78c679",
+                "#31a354",
+                "#006837")
 
 color_logic <- (interpret_data_df$z_score > 13 | interpret_data_df$z_score < -18)
 
@@ -70,7 +74,11 @@ ggplot(interpret_data_df,
                                                     alpha = 1)))
 
 fig_file <- file.path("figures", "interpret_compression_vae_neutrophils.png")
-ggsave(fig_file, height = 4.5, width = 6, dpi = 500)
+ggsave(fig_file,
+       height = 90,
+       width = 105,
+       dpi = 300,
+       units = "mm")
 
 results_file <- file.path('results', 'gtex_vae_example_overrepresentation.tsv')
 overrep_data_df <- (
@@ -84,8 +92,11 @@ overrep_data_df <- (
     )
 
 overrep_data_df$full_feature <- factor(overrep_data_df$full_feature,
-                                       levels = c("vae_0_two", "vae_1_two", "vae_0_three",
-                                                  "vae_1_three", "vae_2_three"))
+                                       levels = c("vae_0_two",
+                                                  "vae_1_two",
+                                                  "vae_0_three",
+                                                  "vae_1_three",
+                                                  "vae_2_three"))
 
 overrep_data_df$neg_log10_p <- -log10(overrep_data_df$pval)
 head(overrep_data_df %>% dplyr::arrange(desc(neg_log10_p)))
@@ -148,7 +159,8 @@ sup_panel_a_gg <- ggplot(overrep_data_df,
 sup_panel_a_gg
 
 combined_results_df <- overrep_data_df %>%
-    dplyr::full_join(interpret_data_df, by = c('variable', 'full_feature'))
+    dplyr::full_join(interpret_data_df,
+                     by = c('variable', 'full_feature'))
 
 head(combined_results_df)
 
@@ -215,17 +227,28 @@ feature_info_df <- readr::read_tsv(file,
                                    col_types = readr::cols(.default = readr::col_double(),
                                                            variable = readr::col_character()))
 
-color_logic = feature_info_df$abs_diff > 3.5 | feature_info_df$two > 13  | feature_info_df$three > 13
+color_logic = (feature_info_df$abs_diff > 3.5 |
+               feature_info_df$two > 13  |
+               feature_info_df$three > 13)
 
-ggplot(feature_info_df, aes(x=three, y=two)) +
-    geom_point(alpha = 0.5, size = 0.6, shape = 16, color = ifelse(color_logic, "red", "grey50")) +
+ggplot(feature_info_df,
+       aes(x = three,
+           y = two)) +
+    geom_point(alpha = 0.5,
+               size = 0.6,
+               shape = 16,
+               color = ifelse(color_logic,
+                              "red",
+                              "grey50")) +
     theme_bw() +
     theme(axis.text.x = element_text(size = 8),
           axis.text.y = element_text(size = 8),
           axis.title = element_text(size = 8)) +
-    geom_abline(intercept = 0, slope = 1, linetype = 'dashed') +
+    geom_abline(intercept = 0,
+                slope = 1,
+                linetype = 'dashed') +
     coord_fixed() +
-    geom_text_repel(data = subset(feature_info_df, color_logic),
+    geom_text_repel(data = subset(feature_info_df,color_logic),
                     arrow = arrow(length = unit(0.01, "npc")),
                     segment.size = 0.3,
                     segment.alpha = 0.6,
@@ -233,20 +256,35 @@ ggplot(feature_info_df, aes(x=three, y=two)) +
                     fontface = "italic",
                     box.padding = 0.55,
                     point.padding = 0.15,
-                    aes(x = three, y = two, label = variable)) +
-    xlab("Z Score Enrichment for VAE z = 3") +
-    ylab("Z Score Enrichment for VAE z = 2")
+                    aes(x = three,
+                        y = two,
+                        label = variable)) +
+    xlab("Z Score Enrichment for VAE k = 3") +
+    ylab("Z Score Enrichment for VAE k = 2")
 
 fig_file <- file.path("figures", "vae_feature_differences_2vs3.png")
-ggsave(fig_file, height = 4, width = 6, dpi = 500)
+ggsave(fig_file,
+       height = 90,
+       width = 105,
+       dpi = 300,
+       units = "mm")
+
+legend_gg <- cowplot::get_legend(sup_panel_b_gg)
 
 sup_gg <- cowplot::plot_grid(
-    sup_panel_a_gg + theme(legend.position = 'none'),
-    sup_panel_b_gg,
-    ncol = 2,
-    labels = c("A", "B"),
-    rel_widths = c(0.8, 1)
+    sup_panel_a_gg +
+        theme(legend.position = 'none'),
+    sup_panel_b_gg +
+        theme(legend.position = 'none'),
+    nrow = 2,
+    labels = c("a", "b"),
+    rel_heights = c(1, 1)
 )
+
+sup_gg = cowplot::plot_grid(sup_gg,
+                            legend_gg,
+                            rel_widths = c(1, 0.15),
+                            ncol = 2)
 
 sup_gg
 
@@ -255,6 +293,7 @@ for(extension in c('.png', '.pdf')) {
     gg_file <- file.path("figures", gg_file)
     cowplot::save_plot(filename = gg_file,
                        plot = sup_gg,
-                       base_height = 3.5,
-                       base_width = 8)
+                       base_height = 150,
+                       base_width = 140,
+                       units = "mm")
 }

@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # The purpose of this script is to determine a reasonable set of hyperparameters
-# for different input k dimensions. The ultimate goal is to perform an analysis
-# on the latent space dimensionality, and we want to be sure that the
+# for different latent space dimensions (k). The ultimate goal is to perform an
+# analysis on the latent space dimensionality, and we want to be sure that the
 # comparisons being made are not a result of poor input hyperparameters
 
 # The parameters were selected to represent a range of hyperparameters that

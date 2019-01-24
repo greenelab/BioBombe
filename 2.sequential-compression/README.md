@@ -4,7 +4,8 @@
 
 Gene expression data compression reveals coordinated gene expression modules that describe important biology.
 
-In the following analysis, we apply five compression algorithms to sequentially compress three gene expression datasets across various bottleneck dimensions (_k_).
+In the following analysis, we apply five different compression algorithms to three different gene expression datasets.
+We sequentially compress input data across different bottleneck dimensions (_k_).
 We save the population of all models, for each algorithm, across _k_ for downstream analyses.
 
 ## Algorithms

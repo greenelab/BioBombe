@@ -5,6 +5,10 @@ suppressPackageStartupMessages(library(cowplot))
 
 algorithms <- c("PCA", "ICA", "NMF", "DAE", "VAE")
 
+collections <- c("GpXCELL", "GpC4CM",
+                 "GpH", "GpC2CPG",
+                 "GpC2CPREACTOME", "GpC3TFT")
+
 base_dir <- file.path("results", "top_features")
 
 all_top_list <- list()
@@ -32,8 +36,18 @@ for (top_file in list.files(base_dir)) {
     }
 }
 
-all_top_df <- dplyr::bind_rows(all_top_list)
+all_top_df <- dplyr::bind_rows(all_top_list) %>%
+    dplyr::filter(collection %in% collections)
 
+# Covert z score to p value and generate bonferonni adjusted alphas
+all_top_df <- all_top_df %>%
+    dplyr::mutate(p_val = 2 * pnorm(-abs_z_score)) %>%
+    dplyr::group_by(z) %>%
+    dplyr::mutate(bon_alpha = 0.05 / z) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(is_bon_filtered = bon_alpha < p_val)
+
+# Process data for plotting
 all_top_df$z <- factor(all_top_df$z,
                        levels = sort(as.numeric(paste(unique(all_top_df$z)))))
 
@@ -45,53 +59,102 @@ all_top_df <- all_top_df %>%
     dplyr::mutate(algorithm = toupper(algorithm))
 
 all_top_df$algorithm <- factor(all_top_df$algorithm, levels = algorithms)
+all_top_df$collection <- factor(all_top_df$collection, levels = collections)
 
-# Split TCGA and GTEx data
-tcga_top_df <- all_top_df %>%
+print(dim(all_top_df))
+head(all_top_df)
+
+# How many genesets are filtered
+filtered_genesets_df <- reshape2::melt(all_top_df,
+                                       id.vars = c("algorithm",
+                                                   "dataset",
+                                                   "collection"),
+                                       measure.vars = 'is_bon_filtered',
+                                       value.name = "filtered") %>%
+    dplyr::group_by(algorithm, dataset, collection) %>%
+    dplyr::summarize(num_filtered = sum(filtered),
+                     percent_filtered = sum(filtered) / n()) %>%
+    dplyr::arrange(desc(num_filtered))
+
+filtered_genesets_df
+
+# Perform Bonferonni Correction
+filtered_top_df <- all_top_df %>%
+    dplyr::filter(!is_bon_filtered)
+
+# Split TCGA, GTEx, and TARGET data
+tcga_top_df <- filtered_top_df %>%
   dplyr::filter(dataset == "TCGA")
 
-gtex_top_df <- all_top_df %>%
+gtex_top_df <- filtered_top_df %>%
   dplyr::filter(dataset == "GTEX")
 
-tcga_gg <- ggplot(data = tcga_top_df,
-       aes(x = z, fill = collection, group = collection)) +
-  geom_density(alpha = 0.5, position = "fill") +
-  coord_flip() +
-  scale_fill_manual(name = "",
-                    values = c("#EF767A",
-                               "#0F1FFF",
-                               "#EDF67D",
-                               "#49DCB1",
-                               "#7D82B8"),
+target_top_df <- filtered_top_df %>%
+  dplyr::filter(dataset == "TARGET")
+
+plot_top_feature_distribution <- function(top_df, density_how = "fill") {
+    g <- ggplot(data = top_df,
+                aes(x = z,
+                    fill = collection,
+                    group = collection)) +
+    geom_density(alpha = 0.5,
+                 position = density_how) +
+    coord_flip() +
+    scale_fill_manual(name = "",
+                      values = c("GpC2CPG" = "#0F1FFF",
+                                 "GpC2CPREACTOME" = "green",
+                                 "GpC3TFT" = "#EDF67D",
+                                 "GpH" = "#49DCB1",
+                                 "GpC4CM" = "#7D82B8",
+                                 "GpXCELL" = "#EF767A"),
                     labels = c("GpC2CPG" = "Perturbations (C2CGP)", 
                                "GpC2CPREACTOME" = "Pathways (REACTOME)",
                                "GpC3TFT" = "TF Targets (C3TFT)",
                                "GpH" = "Hallmark Gene Sets",
-                               "GpXCELL" = "Cell Types (xCell)")) +
-  facet_wrap(dataset ~ algorithm, ncol = 5) +
-  xlab("Latent Dimensions") +
-  ylab("Relative Density") +
-  theme_bw() +
-  theme(strip.background = element_rect(colour = "black",
-                                        fill = "#fdfff4"),
-        strip.text = element_text(size = 6),
-        axis.title = element_text(size = 9),
-        axis.text.x = element_text(size = 6),
-        axis.text.y = element_text(size = 7),
-        legend.position = 'bottom',
-        legend.text = element_text(size = 6),
-        legend.margin = margin(0, 0, 0, 0),
-        legend.box.margin = margin(-8, 0, 0, 0)) +
-    guides(fill = guide_legend(reverse = T))
+                               "GpXCELL" = "Cell Types (xCell)",
+                               "GpC4CM" = "Cancer Modules (C4CM)")) +
+    facet_wrap(dataset ~ algorithm, ncol = 5, scales = 'free_x') +
+    xlab("Latent Dimensions") +
+    ylab("Relative Density") +
+    theme_bw() +
+    theme(strip.background = element_rect(colour = "black",
+                                          fill = "#fdfff4"),
+          strip.text.x = element_text(size = 6,
+                                      margin = margin(t = 3,
+                                                      b = 1.5,
+                                                      l = 0,
+                                                      r = 0)),
+          axis.title = element_text(size = 9),
+          axis.text.x = element_text(size = 6),
+          axis.text.y = element_text(size = 5),
+          legend.position = 'bottom',
+          legend.text = element_text(size = 6),
+          legend.margin = margin(0, 0, 0, 0),
+          legend.box.margin = margin(-8, 0, 0, 0)) +
+     guides(fill = guide_legend(reverse = T))
+    
+    return(g)
+    
+}
+
+tcga_gg <- plot_top_feature_distribution(tcga_top_df)
 
 tcga_gg
 
+target_gg <- plot_top_feature_distribution(target_top_df, density_how = "fill")
+
+target_gg
+
 theme_gtex <- theme(strip.background = element_rect(colour = "black",
                                                     fill = "#fdfff4"),
-                    strip.text = element_text(size = 6),
+                    strip.text.x = element_text(size = 6,
+                                                margin = margin(t = 3,
+                                                                b = 1.5,
+                                                                l = 0,
+                                                                r = 0)),
                     axis.title = element_text(size = 9),
                     axis.text.x = element_text(size = 8),
-                    axis.text.y = element_text(size = 7),
+                    axis.text.y = element_text(size = 5),
                     legend.position = 'bottom',
                     legend.title = element_text(size = 8),
                     legend.text = element_text(size = 6),
@@ -143,7 +206,7 @@ b_and_c_gg <- cowplot::plot_grid(
     gtex_stack_gg + theme(legend.position = "none"),
     gtex_fill_gg + theme(legend.position = "none"),
     ncol = 2,
-    labels = c("b", "c")
+    labels = c("c", "d")
 )
 
 b_and_c_gg <- cowplot::plot_grid(
@@ -155,9 +218,11 @@ b_and_c_gg <- cowplot::plot_grid(
 
 main_plot <- cowplot::plot_grid(
     tcga_gg,
+    target_gg,
     b_and_c_gg,
-    nrow = 2,
-    labels = c("a", "")
+    nrow = 3,
+    rel_heights = c(1.05, 0.95, 1),
+    labels = c("a", "b", "")
 )
 
 main_plot
@@ -167,6 +232,7 @@ for(extension in c('.png', '.pdf')) {
     gg_file <- file.path("figures", gg_file)
     cowplot::save_plot(filename = gg_file,
                        plot = main_plot,
-                       base_height = 9,
-                       base_width = 8)
+                       base_height = 210,
+                       base_width = 170,
+                       units = "mm")
 }

@@ -43,7 +43,7 @@ To acquire these results, perform the following:
 ```bash
 conda activate biobombe
 
-cd 2.ensemble-z-analysis
+cd 2.sequential-compression
 python download-biobombe-archive.py
 ```
 
@@ -55,6 +55,6 @@ To rerun the analysis from scratch, perform the following:
 conda activate biobombe
 
 # Navigate into this module folder
-cd 2.ensemble-z-analysis
+cd 2.sequential-compression
 ./analysis.sh
 ```

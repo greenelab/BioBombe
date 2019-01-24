@@ -3,6 +3,21 @@ suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(ggplot2))
 suppressPackageStartupMessages(library(cowplot))
 
+count_gmt <- function(gmt_name) {
+    # Count the number of genesets in a collection
+    xcell_file <- file.path("..", "3.build-hetnets", "data", gmt_name)
+
+    con <- file(xcell_file, open = "r")
+
+    genesets <- c()
+    while (length(geneset <- readLines(con, n = 1, warn = FALSE)) > 0) {
+      geneset <- unlist(strsplit(geneset, "\t"))[1]
+      genesets <- unique(c(geneset, genesets))
+    }
+    close(con)
+    return(length(genesets))
+}
+
 # Set ggplot theme
 coverage_theme <- theme_bw() + 
   theme(axis.text.x = element_text(angle = 90, size = 3.5),
@@ -38,7 +53,25 @@ plot_info_list <- list(
     c("GTEX", "GpXCELL")
 )
 
+gmt_file_list = list(
+    "gpc1" = "c1.all.v6.1.entrez.gmt",
+    "gpc2cpg" = "c2.cgp.v6.1.entrez.gmt",
+    "gpc2cpreactome" = "c2.cp.reactome.v6.1.entrez.gmt",
+    "gpc3mir" = "c3.mir.v6.1.entrez.gmt",
+    "gpc3tft" = "c3.tft.v6.1.entrez.gmt",
+    "gpc4cgn" = "c4.cgn.v6.1.entrez.gmt",
+    "gpc4cm" = "c4.cm.v6.1.entrez.gmt",
+    "gpc5bp" = "c5.bp.v6.1.entrez.gmt",
+    "gpc5cc" = "c5.cc.v6.1.entrez.gmt",
+    "gpc5mf" = "c5.mf.v6.1.entrez.gmt",
+    "gpc6" = "c6.all.v6.1.entrez.gmt",
+    "gpc7" = "c7.all.v6.1.entrez.gmt",
+    "gph" = "h.all.v6.1.entrez.gmt",
+    "gpxcell" = "xcell_all_entrez.gmt"
+)
+
 plot_list <- list()
+plot_results <- list()
 
 for (plot_info in plot_info_list) {
     dataset <- plot_info[1]
@@ -47,6 +80,10 @@ for (plot_info in plot_info_list) {
     plot_identifier <- paste0(dataset, metaedge)
     plot_list[[plot_identifier]] <- list()
 
+    # Load the number of genes in the collection
+    gmt_name <- gmt_file_list[[tolower(metaedge)]]
+    gmt_count <- count_gmt(gmt_name)
+    
     # Setup file names
     base_file <- paste0(tolower(dataset), "_", tolower(metaedge), ".tsv")
 
@@ -118,6 +155,7 @@ for (plot_info in plot_info_list) {
         dplyr::ungroup() %>%
         dplyr::mutate(is_bon_filtered = bon_alpha < p_val) %>%
         dplyr::filter(!is_bon_filtered)
+
     all_df$z_dim <- factor(all_df$z_dim,
                            levels = sort(as.numeric(paste(unique(all_df$z_dim)))))
     
@@ -178,6 +216,8 @@ for (plot_info in plot_info_list) {
             ylab("Coverage (%)") +
             ggtitle("Ensemble Models")
     
+    all_k_coverage <- length(unique(top_results_df$geneset)) / gmt_count * 100
+    
     plot_list[[plot_identifier]][['all_gg']] <-
         ggplot(data = unique_results_df) +
             geom_bar(mapping = aes(x = z_dim,
@@ -186,9 +226,13 @@ for (plot_info in plot_info_list) {
                      alpha = 0.5,
                      position = 'stack',
                      stat = 'identity') +
+            geom_hline(yintercept = all_k_coverage,
+                       color = 'navy',
+                       linetype = 'dashed',
+                       size = 0.4) +
             coverage_theme +
             xlab("k Dimension") +
-            ggtitle("All Models")+
+            ggtitle("All Models") +
             scale_fill_manual(name = "Algorithm",
                                values = algorithm_colors,
                                labels = algorithm_plot_labels)
@@ -207,7 +251,19 @@ for (plot_info in plot_info_list) {
                                limits = c(0, 100))
     }
     
+    # Track the total coverage of all models across all k dimensions
+    plot_results[[plot_identifier]] <- c(dataset, metaedge, all_k_coverage)
+    
 }
+
+all_k_results_table <- t(dplyr::bind_rows(plot_results))
+colnames(all_k_results_table) <- c("Dataset", "Metaedge", "BioBombe_Coverage")
+rownames(all_k_results_table) <- 1:nrow(all_k_results_table)
+
+out_file <- file.path("biobombe_coverage_results.tsv")
+readr::write_tsv(as.data.frame(all_k_results_table), out_file)
+
+all_k_results_table
 
 legend <- get_legend(plot_list[['TCGAGpXCELL']][['all_gg']] +
                      theme(legend.position = "bottom"))

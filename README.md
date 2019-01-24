@@ -11,7 +11,7 @@ The repository stores data and data processing modules to enable compressed gene
 Named after the [mechanical device developed by cryptologists in World War II](https://en.wikipedia.org/wiki/Bombe) to decipher secret messages sent by [Enigma machines](https://en.wikipedia.org/wiki/Enigma_machine), BioBombe is used to decipher hidden signals in gene expression data.
 Inspired by the number-crunching knobs of [Alan Turing's](https://en.wikipedia.org/wiki/Alan_Turing) device, BioBombe serially compresses gene expression input with increasing bottleneck dimensionality and deciphers the learned compressed features using biological network projection approaches.
 
-In this repository, we serially compress three different gene expression datasets across different bottleneck dimensions (_z_) for five different algorithms.
+In this repository, we serially compress three different gene expression datasets across different bottleneck dimensions (_k_) for five different algorithms.
 We evaluate each algorithm and dimension on a variety of metrics.
 Our goal is to construct reproducible gene expression features with unsupervised learning, and to begin interpreting what these compression features represent using network projection approaches.
 
@@ -33,10 +33,10 @@ To reproduce the results of the analysis, the modules should be run in order.
 | Name | Description |
 | :--- | :---------- |
 | [0.expression-download](0.expression-download/) | Download and process gene expression data to run through pipeline |
-| [1.initial-z-sweep](1.initial-z-sweep/) | Determine a set of optimal hyperparameters for Tybalt and ADAGE models across a representative range of z dimensionality |
-| [2.ensemble-z-analysis](2.ensemble-z-analysis/) | Train various algorithms to compress gene expression data across a large range of z dimensions |
+| [1.initial-k-sweep](1.initial-k-sweep/) | Determine a set of optimal hyperparameters for Tybalt and ADAGE models across a representative range of k dimensions |
+| [2.sequential-compression](2.sequential-compression/) | Train various algorithms to compress gene expression data across a large range of k dimensions |
 | [3.build-hetnets](3.build-hetnets/) | Download, process, and integrate various curated gene sets into a single heterogeneous network |
-| [4.analyze-components](4.analyze-components/) | Visualize the reconstruction and sample correlation results of the ensemble z analysis |
+| [4.analyze-components](4.analyze-components/) | Visualize the reconstruction and sample correlation results of the sequential compression analysis |
 | [5.analyze-stability](5.analyze-stability/) | Determine how stable compression solutions are between and across algorithms, and across dimensions |
 | [6.analyze-weights](6.analyze-weights/) | Apply our matrix interpretation analysis and overrepresentation analyses to assign biological knowledge to compression features |
 | [7.analyze-coverage](7.analyze-coverage/) | Determine the coverage, or proportion, of enriched gene sets in compressed latent space features for all models and ensembles of models |
@@ -45,7 +45,7 @@ To reproduce the results of the analysis, the modules should be run in order.
 
 ## Algorithms
 
-See [2.ensemble-z-analysis](2.ensemble-z-analysis) for more details.
+See [2.sequential-compression](2.sequential-compression/) for more details.
 
 ## Computational Environment
 

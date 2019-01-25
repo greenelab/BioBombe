@@ -38,7 +38,7 @@ To reproduce the results of the analysis, the modules should be run in order.
 | [3.build-hetnets](3.build-hetnets/) | Download, process, and integrate various curated gene sets into a single heterogeneous network |
 | [4.analyze-components](4.analyze-components/) | Visualize the reconstruction and sample correlation results of the sequential compression analysis |
 | [5.analyze-stability](5.analyze-stability/) | Determine how stable compression solutions are between and across algorithms, and across dimensions |
-| [6.analyze-weights](6.analyze-weights/) | Apply our matrix interpretation analysis and overrepresentation analyses to assign biological knowledge to compression features |
+| [6.biobombe-projection](6.biobombe-projection/) | Apply BioBombe matrix interpretation analysis and overrepresentation analyses to assign biological knowledge to compression features |
 | [7.analyze-coverage](7.analyze-coverage/) | Determine the coverage, or proportion, of enriched gene sets in compressed latent space features for all models and ensembles of models |
 | [8.gtex-interpret](9.gtex-interpret/) | Interpret compressed features in the GTEX data |
 | [9.tcga-classify](9.tcga-classify/) | Input compressed features from TCGA data into supervised machine learning classifiers to detect pathway aberration |

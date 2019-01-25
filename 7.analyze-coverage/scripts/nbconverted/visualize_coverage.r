@@ -365,7 +365,7 @@ sup_plot <- (
                                limits = c(0, 8)) +
             ggtitle("") +
             theme(legend.position = "none"),
-        labels = c("a", "", "", "b", "", "", "c", "", "", "d", "", "", "e"),
+        labels = c("a", "b", "c", "", "", "", "", "", "", "", "", "", ""),
         ncol = 3,
         nrow = 5
     )
@@ -447,7 +447,7 @@ main_plot <- (
         plot_list[['TCGAGpC4CM']][['all_gg']] +
             theme(legend.position = "none") +
             ggtitle(""),
-        labels = c("a", "", "", "b", "", "", "c", "", ""),
+        labels = c("a", "b", "c", "", "", "", "", "", ""),
         ncol = 3,
         nrow = 3
     )

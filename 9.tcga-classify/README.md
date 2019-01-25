@@ -114,7 +114,7 @@ Also, aggregating features together removes some prediction signal, as the raw d
 
 ## Reproducible Analysis
 
-To reproduce the results of the stability analysis perform the following:
+To reproduce the results of the TCGA classification analysis perform the following:
 
 ```bash
 # Activate computational environment

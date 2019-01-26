@@ -30,7 +30,7 @@ To reproduce the network projection results, perform the following:
 conda activate biobombe
 
 # Perform the analysis
-cd 6.analyze-weights
+cd 6.biobombe-projection
 python interpret-compression.py
 
 # Visualize feature dimension and rank

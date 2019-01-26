@@ -41,7 +41,7 @@ bash stability_analysis.sh
 ##############################
 # Step 4: Analyze Weights (Module 6)
 ##############################
-cd ../6.analyze-weights
+cd ../6.biobombe-projection
 
 # Project the networks onto the compressed weight matrices to derive biological insight
 python interpret-compression.py
@@ -52,4 +52,21 @@ python interpret-compression.py
 cd ../7.analyze-coverage
 
 # Project the networks onto the compressed weight matrices to derive biological insight
-python coverage-analysis.py
+bash run_coverage_analysis.sh
+
+##############################
+# Step 6: Perform GTEx module interpretation of increased blood correlation
+##############################
+cd ../8.gtex-interpret
+
+# Determine the difference between VAE models k = 2 and k = 3 and apply features to
+# external datasets
+bash gtex_analysis.sh
+
+##############################
+# Step 7: Perform the TCGA classification analysis predicting cancer type and mutations
+##############################
+cd ../9.tcga-classify
+
+# Train several models and visualize results
+bash classify_analysis.sh

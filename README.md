@@ -6,6 +6,8 @@
 
 **University of Pennsylvania**
 
+[![DOI](https://zenodo.org/badge/126377943.svg)](https://zenodo.org/badge/latestdoi/126377943)
+
 The repository stores data and data processing modules to enable compressed gene expression feature interpretation.
 
 Named after the [mechanical device developed by cryptologists in World War II](https://en.wikipedia.org/wiki/Bombe) to decipher secret messages sent by [Enigma machines](https://en.wikipedia.org/wiki/Enigma_machine), BioBombe is used to decipher hidden signals in gene expression data.

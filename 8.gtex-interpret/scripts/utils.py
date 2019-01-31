@@ -48,6 +48,15 @@ def load_weight_matrix(dataset, z_dim, seed, shuffled=False):
     return weight_df
 
 
+def extract_feature(weight_df, algorithm, feature):
+    """
+    From a weight matrix, pull out a single feature
+    """
+    node = '{}_{}'.format(algorithm.lower(), feature)
+    feature = weight_df.loc[:, node]
+    return feature
+
+
 def load_enrichment_results(
     dataset,
     z_dim,
@@ -87,7 +96,7 @@ def load_enrichment_results(
     return enr_df
 
 
-def apply_signature(weight_df, other_df, feature, align=False):
+def apply_signature(weight_df, other_df, feature=None, align=False):
     """
     Apply a signature to alternative datasets
     """
@@ -99,7 +108,12 @@ def apply_signature(weight_df, other_df, feature, align=False):
     if align:
         other_df = other_df.reindex(weight_df.index, axis="columns").fillna(0)
 
-    signature_df = pd.DataFrame(weight_df.loc[:, feature])
+    # Subset feature if specified
+    if feature:
+        signature_df = pd.DataFrame(weight_df.loc[:, feature])
+    else:
+        signature_df = weight_df
+
     result_df = other_df @ signature_df
 
     return result_df, missing_genes

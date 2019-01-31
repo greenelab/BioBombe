@@ -17,7 +17,7 @@
 # 
 # Here, we apply the VAE feature enriched for neutrophil genes to a publicly available dataset capturing neutrophil differentiation in two leukemia cell lines.
 # 
-# ![cell_type_Neutrophils_HPCA_2.png](https://github.com/greenelab/BioBombe/raw/master/6.analyze-weights/figures/GTEX/signal/GpXCELL/gene_set_Neutrophils_HPCA_2.png)
+# ![cell_type_Neutrophils_HPCA_2.png](https://github.com/greenelab/BioBombe/raw/master/6.biobombe-projection/figures/GTEX/signal/GpXCELL/gene_set_Neutrophils_HPCA_2.png)
 # 
 # ## Part 2:
 # 
@@ -25,7 +25,7 @@
 # 
 # Here, we apply the VAE features enriched for monocyte genes to a different publicly available dataset that captures various cell-types undergoing hematopoiesis.
 # 
-# ![cell_type_Monocytes_FANTOM_2.png](https://github.com/greenelab/BioBombe/raw/master/6.analyze-weights/figures/GTEX/signal/GpXCELL/gene_set_Monocytes_FANTOM_2.png)
+# ![cell_type_Monocytes_FANTOM_2.png](https://github.com/greenelab/BioBombe/raw/master/6.biobombe-projection/figures/GTEX/signal/GpXCELL/gene_set_Monocytes_FANTOM_2.png)
 # 
 # ## Output
 # 
@@ -40,9 +40,6 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-
-import hetio.readwrite
-import hetmech.matrix
 
 from scripts.utils import load_weight_matrix, apply_signature, load_enrichment_results
 

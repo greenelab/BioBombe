@@ -89,13 +89,26 @@ for (plot_idx in 1:length(gg_list)) {
 
 classifier_base_theme <-
     theme(strip.background = element_rect(colour = "black", fill = "#fdfff4"),
-          strip.text = element_text(size = 7),
-          axis.title = element_text(size = 8),
+          strip.text.x = element_text(size = 6,
+                                      margin = margin(
+                                          t = 4,
+                                          b = 3,
+                                          l = 0,
+                                          r = 0)
+                                     ),
+          strip.text.y = element_text(size = 6,
+                                      margin = margin(
+                                          t = 0,
+                                          b = 0,
+                                          l = 3,
+                                          r = 4)
+                                     ),
+          axis.title = element_text(size = 7),
           axis.text.x = element_blank(),
           axis.text.y = element_text(size = 6),
           legend.position = "bottom",
-          legend.title = element_text(size = 8),
-          legend.text = element_text(size = 7),
+          legend.title = element_text(size = 7),
+          legend.text = element_text(size = 6),
           legend.margin = margin(t = 0, r = 0, b = 0, l = 0),
           legend.box.margin = margin(t = -3, r = 0, b = -3, l = -3))
 
@@ -134,6 +147,20 @@ panel_b_gg <- panel_b_gg +
 
 panel_b_gg
 
+cancertype_delta_auroc_df <- process_delta_auroc(full_cancertype_df, seed = "165158")
+head(cancertype_delta_auroc_df)
+
+panel_c_gg <- plot_delta_auroc_simple(plot_df = cancertype_delta_auroc_df,
+                                      plot_title = "Cancer Type")
+panel_c_gg
+
+mutation_delta_auroc_df <- process_delta_auroc(focus_mut_df, seed = "165158")
+head(mutation_delta_auroc_df)
+
+panel_d_gg <- plot_delta_auroc_simple(plot_df = mutation_delta_auroc_df,
+                                      plot_title = "Mutations")
+panel_d_gg
+
 # Load Results
 full_coef_results <- load_results(results_path = mut_path,
                                   file_string = "coefficients")
@@ -149,7 +176,7 @@ raw_sparsity_metric_df <- process_sparsity(coef_df = raw_coef_df,
                                            mut_df = full_raw_mutation_df,
                                            focus_genes = focus_genes)
 
-panel_c_gg <- ggplot(sparsity_metric_df,
+panel_e_gg <- ggplot(sparsity_metric_df,
                      aes(x = percent_zero,
                          y = auroc)) +
   geom_point(aes(color = algorithm,
@@ -180,12 +207,26 @@ panel_c_gg <- ggplot(sparsity_metric_df,
   theme_bw() +
   theme(strip.background = element_rect(colour = "black", fill = "#fdfff4"),
         strip.text = element_text(size = 7),
-        axis.title = element_text(size = 8),
-        axis.text.x = element_text(size = 7),
-        axis.text.y = element_text(size = 7),
+        strip.text.x = element_text(size = 6,
+                                      margin = margin(
+                                          t = 4,
+                                          b = 3,
+                                          l = 0,
+                                          r = 0)
+                                     ),
+          strip.text.y = element_text(size = 6,
+                                      margin = margin(
+                                          t = 0,
+                                          b = 0,
+                                          l = 3,
+                                          r = 4)
+                                     ),
+        axis.title = element_text(size = 7),
+        axis.text.x = element_text(size = 6),
+        axis.text.y = element_text(size = 6),
         legend.position = "right",
-        legend.title = element_text(size = 8),
-        legend.text = element_text(size = 7),
+        legend.title = element_text(size = 7),
+        legend.text = element_text(size = 6),
         legend.margin = margin(t = 0, r = 0, b = 0, l = 0),
         legend.box.margin = margin(t = -3, r = 0, b = -3, l = -3)) +
   guides(color = guide_legend(order = 1,
@@ -202,7 +243,7 @@ panel_c_gg <- ggplot(sparsity_metric_df,
                               override.aes = list(size = 3,
                                                   alpha = 1)))
 
-panel_c_gg
+panel_e_gg
 
 # Find Model with High Sparsity and High Performance
 top_gene <- "TP53"
@@ -229,7 +270,7 @@ top_tp53_features <- coef_df %>%
 
 top_tp53_features$ranked <- 1:nrow(top_tp53_features)
 
-panel_d_gg <- ggplot(top_tp53_features,
+panel_f_gg <- ggplot(top_tp53_features,
                      aes(x = ranked, y = weight)) +
   geom_point(alpha = 0.3,
              size = 0.02) +
@@ -246,11 +287,11 @@ panel_d_gg <- ggplot(top_tp53_features,
                   fontface = 'italic',
                   aes(x = ranked, y = weight, label = feature)) +
   theme_bw() +
-  theme(axis.title = element_text(size = 8),
-        axis.text.x = element_text(size = 7),
-        axis.text.y = element_text(size = 7))
+  theme(axis.title = element_text(size = 7),
+        axis.text.x = element_text(size = 6),
+        axis.text.y = element_text(size = 6))
 
-panel_d_gg
+panel_f_gg
 
 metric_col_type <- readr::cols(
     .default = readr::col_double(),
@@ -312,15 +353,15 @@ curve_labels <- c("dae cv" = "DAE CV",
                   "raw train" = "Raw Train")
 
 curve_base_theme <-
-    theme(axis.title = element_text(size = 8),
-          axis.text.x = element_text(size = 7),
-          axis.text.y = element_text(size = 7),
-          legend.title = element_text(size = 8),
-          legend.text = element_text(size = 7),
+    theme(axis.title = element_text(size = 7),
+          axis.text.x = element_text(size = 6),
+          axis.text.y = element_text(size = 6),
+          legend.title = element_text(size = 7),
+          legend.text = element_text(size = 6),
           legend.margin = margin(t = 0, r = 0, b = 0, l = 0),
           legend.box.margin = margin(t = -3, r = 0, b = -3, l = -3))
 
-panel_e_gg <- ggplot(full_roc_df,
+panel_g_gg <- ggplot(full_roc_df,
                      aes(x = fpr,
                          y = tpr,
                          color = model_groups)) +
@@ -353,9 +394,9 @@ panel_e_gg <- ggplot(full_roc_df,
          linetype = FALSE)
 
 
-panel_e_gg
+panel_g_gg
 
-panel_f_gg <- ggplot(full_pr_df,
+panel_h_gg <- ggplot(full_pr_df,
                      aes(x = recall,
                          y = precision,
                          color = model_groups)) +
@@ -381,7 +422,7 @@ panel_f_gg <- ggplot(full_pr_df,
                               override.aes = list(size = 0.8)),
          linetype = FALSE)
 
-panel_f_gg
+panel_h_gg
 
 a_and_b_legend_gg <- cowplot::get_legend(panel_a_gg)
 
@@ -400,39 +441,61 @@ a_and_b_gg <- cowplot::plot_grid(
     nrow = 2
 )
 
-e_and_f_legend_gg <- cowplot::get_legend(panel_e_gg)
+c_and_d_gg <- cowplot::plot_grid(
+    panel_c_gg +
+        theme(legend.position = "none",
+              plot.title = element_text(margin = margin(b = 1, unit = "pt")),
+              plot.margin = unit(c(5.5, 5.5, 0, 5.5), "pt")) +
+        xlab(""),
+    panel_d_gg + theme(legend.position = "none",
+                       plot.title = element_text(margin = margin(b = 1, unit = "pt")),
+                       plot.margin = unit(c(0, 5.5, 5.5, 5.5), "pt")),
+    nrow = 2,
+    labels = c("c", "d")
+)
 
-e_and_f_gg <- cowplot::plot_grid(
-    panel_e_gg + theme(legend.position = "none"),
-    panel_f_gg + theme(legend.position = "none"),
+c_d_and_e_gg <- cowplot::plot_grid(
+    c_and_d_gg,
+    panel_e_gg,
+    rel_widths = c(0.4, 1),
+    labels = c("", "e"),
+    ncol = 2
+)
+
+
+g_and_h_legend_gg <- cowplot::get_legend(panel_g_gg)
+
+g_and_h_gg <- cowplot::plot_grid(
+    panel_g_gg + theme(legend.position = "none"),
+    panel_h_gg + theme(legend.position = "none"),
     rel_widths = c(1, 1),
-    labels = c("e", "f"),
+    labels = c("g", "h"),
     ncol = 2,
     nrow = 1
 )
 
-e_and_f_gg <- cowplot::plot_grid(
-    e_and_f_gg,
-    e_and_f_legend_gg,
+g_and_h_gg <- cowplot::plot_grid(
+    g_and_h_gg,
+    g_and_h_legend_gg,
     rel_widths = c(1, 0.15),
     ncol = 2
 )
 
-d_e_and_f_gg <- cowplot::plot_grid(
-    panel_d_gg,
-    e_and_f_gg,
+f_g_and_h_gg <- cowplot::plot_grid(
+    panel_f_gg,
+    g_and_h_gg,
     rel_widths = c(0.4, 1),
-    labels = c("d", ""),
+    labels = c("f", ""),
     ncol = 2
 )
 
 full_gg <- cowplot::plot_grid(
     a_and_b_gg,
-    panel_c_gg,
-    d_e_and_f_gg,
+    c_d_and_e_gg,
+    f_g_and_h_gg,
     nrow = 3,
-    labels = c("", "c", ""),
-    rel_heights = c(1.2, 1, 0.7)
+    labels = c("", "", ""),
+    rel_heights = c(1.2, 0.9, 0.7)
 )
 
 full_gg

@@ -5,8 +5,11 @@
 # 
 # **Gregory Way, 2018**
 # 
-# Instead of focusing only on two compressed gene set features, like we did in [notebook 3](https://github.com/greenelab/BioBombe/blob/master/8.gtex-interpret/3.apply-signatures.ipynb), we apply all of the signatures in the following plots to their external validation data.
+# Instead of focusing only on two compressed features, like we did in [notebook 3](https://github.com/greenelab/BioBombe/blob/master/8.gtex-interpret/3.apply-signatures.ipynb), we apply all of the signatures in the following plots to their external validation data.
 # 
+# We previously demonstrated that the enrichment of specific genesets (like Neutrophils and Monocytes) were different across algorithms and k dimensions.
+# This implies that certain biological features are best captured by different dimensions and algorithms.
+# Here, we test if our network projection scores were associated with strength of signature separation across different groups of samples.
 # 
 # ## Part 1:
 # 
@@ -20,7 +23,7 @@
 # 
 # ### Enrichment of Monocyte Signatures
 # 
-# Publicly available dataset that captures various cell-types undergoing hematopoiesis.
+# Publicly available dataset that captures various cell-types, including monocytes, undergoing hematopoiesis.
 # 
 # ![cell_type_Monocytes_FANTOM_2.png](https://github.com/greenelab/BioBombe/raw/master/6.biobombe-projection/figures/GTEX/signal/GpXCELL/gene_set_Monocytes_FANTOM_2.png)
 # 
@@ -273,6 +276,8 @@ final_neutrophil_results_df.to_csv(file, sep='\t', index=False)
 
 
 # ## 2.0. Load External Monocyte Dataset
+# 
+# We perform a similar procedure, but apply top monocyte signatures to an alternative publicly available dataset.
 
 # In[17]:
 

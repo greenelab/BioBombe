@@ -49,6 +49,13 @@ jupyter nbconvert --to=html \
         --ExecutePreprocessor.timeout=10000000 \
         --execute 4.visualize-signatures.ipynb
 
+# Step 5 - Apply compressed feature signatures to neutrophil and monocyte data
+jupyter nbconvert --to=html \
+        --FilesWriter.build_directory=scripts/html \
+        --ExecutePreprocessor.kernel_name=python3 \
+        --ExecutePreprocessor.timeout=10000000 \
+        --execute 5.detect-signature-separation.ipynb
+
 # Convert all notebooks to scripts
 jupyter nbconvert --to=script \
         --FilesWriter.build_directory=scripts/nbconverted \

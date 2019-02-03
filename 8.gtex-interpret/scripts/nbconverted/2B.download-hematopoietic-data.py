@@ -174,71 +174,71 @@ geo_scaled_zeroone_df.head()
 
 cell_class = {
     # Hematopoietic Stem Cells
-    'HSC1': 'HSC',
-    'HSC2': 'HSC',
-    'HSC3': 'HSC',
+    'HSC1': ['HSC', 'Non Monocyte'],
+    'HSC2': ['HSC', 'Non Monocyte'],
+    'HSC3': ['HSC', 'Non Monocyte'],
     
     # Myeloid Progenitors
-    'CMP': 'Myeloid',
-    'MEP': 'Myeloid',
-    'GMP': 'Myeloid',
+    'CMP': ['Myeloid', 'Non Monocyte'],
+    'MEP': ['Myeloid', 'Non Monocyte'],
+    'GMP': ['Myeloid', 'Non Monocyte'],
     
     # Erythroid Populations
-    'ERY1': 'Erythroid',
-    'ERY2': 'Erythroid',
-    'ERY3': 'Erythroid',
-    'ERY4': 'Erythroid',
-    'ERY5': 'Erythroid',
+    'ERY1': ['Erythroid', 'Non Monocyte'],
+    'ERY2': ['Erythroid', 'Non Monocyte'],
+    'ERY3': ['Erythroid', 'Non Monocyte'],
+    'ERY4': ['Erythroid', 'Non Monocyte'],
+    'ERY5': ['Erythroid', 'Non Monocyte'],
     
     # Megakaryocytic Populations
-    'MEGA1': 'Megakaryocytic',
-    'MEGA2': 'Megakaryocytic',
+    'MEGA1': ['Megakaryocytic', 'Non Monocyte'],
+    'MEGA2': ['Megakaryocytic', 'Non Monocyte'],
     
     # Granulocytic Populations
-    'GRAN1': 'Granulocytic',
-    'GRAN2': 'Granulocytic',
-    'GRAN3': 'Granulocytic',
+    'GRAN1': ['Granulocytic', 'Non Monocyte'],
+    'GRAN2': ['Granulocytic', 'Non Monocyte'],
+    'GRAN3': ['Granulocytic', 'Non Monocyte'],
     
-    # Monocyte Population
-    'MONO1': 'Monocyte',
-    'MONO2': 'Monocyte',
+    # Monocyte Population (Note MONO1 is a CFU-M)
+    'MONO1': ['Monocyte', 'Non Monocyte'],
+    'MONO2': ['Monocyte', 'Monocyte'],
     
     # Basophil Population
-    'BASO1': 'Basophil',
+    'BASO1': ['Basophil', 'Non Monocyte'],
     
     # Eosinophil Population
-    'EOS2': 'Eosinophil',
+    'EOS2': ['Eosinophil', 'Non Monocyte'],
     
     # B Lymphoid Progenitors
-    'PRE_BCELL2': 'B Lymphoid Progenitor',
-    'PRE_BCELL3': 'B Lymphoid Progenitor',
+    'PRE_BCELL2': ['B Lymphoid Progenitor', 'Non Monocyte'],
+    'PRE_BCELL3': ['B Lymphoid Progenitor', 'Non Monocyte'],
     
     # Naive Lymphoid Progenitors
-    'BCELLA1': 'Naive Lymphoid',
-    'TCELLA6': 'Naive Lymphoid',
-    'TCELLA2': 'Naive Lymphoid',
+    'BCELLA1': ['Naive Lymphoid', 'Non Monocyte'],
+    'TCELLA6': ['Naive Lymphoid', 'Non Monocyte'],
+    'TCELLA2': ['Naive Lymphoid', 'Non Monocyte'],
     
     # Differentiated B Cells
-    'BCELLA2': 'Differentiated B Cell',
-    'BCELLA3': 'Differentiated B Cell',
-    'BCELLA4': 'Differentiated B Cell',
+    'BCELLA2': ['Differentiated B Cell', 'Non Monocyte'],
+    'BCELLA3': ['Differentiated B Cell', 'Non Monocyte'],
+    'BCELLA4': ['Differentiated B Cell', 'Non Monocyte'],
     
     # Differentiated T Cells
-    'TCELLA7': 'Differentiated T Cell',
-    'TCELLA8': 'Differentiated T Cell',
-    'TCELLA1': 'Differentiated T Cell',
-    'TCELLA3': 'Differentiated T Cell',
-    'TCELLA4': 'Differentiated T Cell',
+    'TCELLA7': ['Differentiated T Cell', 'Non Monocyte'],
+    'TCELLA8': ['Differentiated T Cell', 'Non Monocyte'],
+    'TCELLA1': ['Differentiated T Cell', 'Non Monocyte'],
+    'TCELLA3': ['Differentiated T Cell', 'Non Monocyte'],
+    'TCELLA4': ['Differentiated T Cell', 'Non Monocyte'],
     
     # Natural Killer Population
-    'NKA1': 'NK Cell',
-    'NKA2': 'NK Cell',
-    'NKA3': 'NK Cell',
-    'NKA4': 'NK Cell',
+    'NKA1': ['NK Cell', 'Non Monocyte'],
+    'NKA2': ['NK Cell', 'Non Monocyte'],
+    'NKA3': ['NK Cell', 'Non Monocyte'],
+    'NKA4': ['NK Cell', 'Non Monocyte'],
     
     # Dendritic Cell
-    'DENDA1': 'Dendritic',
-    'DENDA2': 'Dendritic',
+    'DENDA1': ['Dendritic', 'Non Monocyte'],
+    'DENDA2': ['Dendritic', 'Non Monocyte'],
 }
 
 
@@ -247,10 +247,10 @@ cell_class = {
 
 # Write data to file
 cell_class_df = (
-    pd.DataFrame(cell_class, index=[0])
+    pd.DataFrame.from_dict(cell_class)
     .transpose()
     .reset_index()
-    .rename(columns={'index': 'label', 0: 'classification'})
+    .rename(columns={'index': 'label', 0: 'classification', 1: 'monocyte'})
 )
 
 cell_class_df.head()

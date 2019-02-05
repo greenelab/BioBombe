@@ -540,3 +540,88 @@ plot_top_features <- function(top_df, full_df, raw_df, auroc_or_aupr = "AUROC") 
   }
   return(g)
 }
+
+process_delta_auroc <- function(summary_df, seed) {
+  # Perform a series of dplyr steps and extract delta auroc between signal and
+  # permuted data across algorithm, gene_or_cancertype, and z dimension
+  #
+  # Arguments:
+  # summary_df - dataframe with mutation or cancertype performance
+  # seed - a string of the seed to subset (we only need one)
+  #
+  # Output:
+  # A processed dataframe
+  
+  summary_df <- summary_df %>%
+    dplyr::group_by(z_dim, algorithm, signal, gene_or_cancertype) %>%
+    dplyr::mutate(avg_auroc = mean(auroc)) %>%
+    dplyr::filter(seed == !!seed) %>%
+    dplyr::arrange(z_dim, seed, algorithm, gene_or_cancertype) %>%
+    dplyr::ungroup()
+  
+  signal_df <- summary_df %>% dplyr::filter(signal == 'signal')
+  permuted_df <- summary_df %>% dplyr::filter(signal != 'signal')
+  
+  signal_df <- signal_df %>%
+    dplyr::mutate(delta_auroc = signal_df$avg_auroc - permuted_df$avg_auroc) %>%
+    dplyr::group_by(algorithm, gene_or_cancertype) %>%
+    dplyr::arrange(z_dim, .by_group = TRUE) %>%
+    dplyr::mutate(auroc_k_diff = delta_auroc -
+                    dplyr::lag(delta_auroc,
+                               default = dplyr::first(delta_auroc))) %>%
+    dplyr::group_by(z_dim, algorithm) %>%
+    dplyr::mutate(mean_delta_auroc = mean(delta_auroc),
+                  sd_delta_auroc = sd(delta_auroc)) %>%
+    dplyr::ungroup()
+  
+  signal_df$grouping_ <- paste(signal_df$grouping_, signal_df$algorithm)
+  
+  return(signal_df)
+  
+}
+
+plot_delta_auroc_simple <- function(plot_df, plot_title) {
+  # Plot the delta AUROC across k dimension
+  #
+  # Arguments:
+  # plot_df - Dataframe to extract plotting info from
+  # plot_title - string indicating what to name the title of plot
+  #
+  # Returns:
+  # a ggplot2 object to save downstream
+
+  g <- ggplot(plot_df,
+              aes(x = z_dim,
+                  y = mean_delta_auroc,
+                  color = algorithm,
+                  group = algorithm)) +
+    geom_point(size = 0.15) +
+    geom_line(lwd = 0.1) +
+    scale_color_manual(name = "Algorithm",
+                       values = c("#e41a1c",
+                                  "#377eb8",
+                                  "#4daf4a",
+                                  "#984ea3",
+                                  "#ff7f00",
+                                  "grey25"),
+                       labels = c("pca" = "PCA",
+                                  "ica" = "ICA",
+                                  "nmf" = "NMF",
+                                  "dae" = "DAE",
+                                  "vae" = "VAE",
+                                  "all" = "ALL")) +
+    theme_bw() +
+    ggtitle(plot_title) +
+    ylab(expression(paste(Delta, " CV AUROC"))) +
+    xlab("k Dimensions") +
+    theme(axis.title.x = element_text(size = 6),
+          axis.title.y = element_text(size = 6),
+          axis.text.x = element_text(angle = 90, size = 4),
+          axis.text.y = element_text(size = 5),
+          plot.title = element_text(size = 8, hjust = 0.5),
+          legend.text = element_text(size = 6),
+          legend.title = element_text(size = 7),
+          legend.key.size = unit(0.7, "lines"))
+  
+  return(g)
+}

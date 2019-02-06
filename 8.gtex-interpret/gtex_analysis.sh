@@ -6,6 +6,11 @@
 #
 # Perform the full pipeline for the GTEx analysis and validation
 
+# Convert all notebooks to scripts
+jupyter nbconvert --to=script \
+        --FilesWriter.build_directory=scripts/nbconverted \
+        *.ipynb
+
 # Step 0 - Apply BioBombe Network Projection to the VAE features of interest
 jupyter nbconvert --to=html \
         --FilesWriter.build_directory=scripts/html \
@@ -43,13 +48,4 @@ jupyter nbconvert --to=html \
         --execute 3.detect-signature-separation-ttest.ipynb
 
 # Step 4 - Generate the final figure visualizing the applied signatures
-jupyter nbconvert --to=html \
-        --FilesWriter.build_directory=scripts/html \
-        --ExecutePreprocessor.kernel_name=python3 \
-        --ExecutePreprocessor.timeout=10000000 \
-        --execute 4.visualize-signatures.ipynb
-
-# Convert all notebooks to scripts
-jupyter nbconvert --to=script \
-        --FilesWriter.build_directory=scripts/nbconverted \
-        *.ipynb
+Rscript --vanilla scripts/nbconverted/4.visualize-signatures.r

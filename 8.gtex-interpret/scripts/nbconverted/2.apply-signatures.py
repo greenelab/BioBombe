@@ -276,7 +276,7 @@ plt.tight_layout()
 # ## 1.5. Compare the two signatures derived from both models
 # 
 # Use the function `load_enrichment_results` to retrieve and subset previously compiled BioBombe results.
-# The files are located in `6.analyze-weights/results/`.
+# The files are located in `6.biobombe-projection/results/`.
 
 # In[18]:
 
@@ -450,7 +450,7 @@ print('{:.2f}% of monocyte genes are missing'.format(len(monocyte_fantom_genes_m
 
 
 # Additionall, the top scoring feature for Monocytes_FANTOM_2 is in the nmf model with 200 features
-file = os.path.join('..', '6.analyze-weights', 'results', 'gtex',
+file = os.path.join('..', '6.biobombe-projection', 'results', 'gtex',
                     'gpxcell', 'signal',
                     'gtex_z_200_GpXCELL__geneset_scores.tsv.gz')
 

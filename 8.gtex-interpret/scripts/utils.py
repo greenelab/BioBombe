@@ -36,7 +36,7 @@ def load_weight_matrix(dataset, z_dim, seed, shuffled=False):
         results_dir = "{}_results".format(dataset)
 
     base_dir = os.path.join(
-        "..", "2.ensemble-z-analysis", "results", results_dir, "ensemble_z_matrices"
+        "..", "2.sequential-compression", "results", results_dir, "ensemble_z_matrices"
     )
     z_dir = "{}_components_{}".format(dataset.lower(), str(z_dim))
     weight_file = "model_{}_weight_matrix.tsv.gz".format(str(seed))
@@ -79,7 +79,7 @@ def load_enrichment_results(
 
     base_file = "{}_z_{}_{}__geneset_scores.tsv.gz".format(dataset, z_dim, metaedge)
     base_dir = os.path.join(
-        "..", "6.analyze-weights", "results", dataset, metaedge.lower(), signal_dir
+        "..", "6.biobombe-projection", "results", dataset, metaedge.lower(), signal_dir
     )
     enr_file = os.path.join(base_dir, base_file)
     enr_df = pd.read_table(enr_file)

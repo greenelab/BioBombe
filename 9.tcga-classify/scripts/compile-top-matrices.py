@@ -23,6 +23,7 @@ import os
 import argparse
 import numpy as np
 import pandas as pd
+from tcga_util import get_feature
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -39,27 +40,6 @@ random_features = args.random_features
 genes = ["TP53", "PTEN", "PIK3CA", "KRAS", "TTN"]
 algorithms = ["pca", "ica", "nmf", "dae", "vae", "all"]
 base_path = os.path.join("results", "top_feature_matrices")
-
-
-def get_feature(z_dim, algorithm, seed, feature):
-    """
-    Load z matrix and extract specific feature scores
-    """
-    base_file = os.path.join(
-        "..",
-        "2.ensemble-z-analysis",
-        "results",
-        "TCGA_results",
-        "ensemble_z_matrices",
-        "tcga_components_{}".format(z_dim),
-    )
-    train_file = os.path.join(base_file, "model_{}_z_matrix.tsv.gz".format(seed))
-    test_file = os.path.join(base_file, "model_{}_z_test_matrix.tsv.gz".format(seed))
-
-    test_df = pd.read_table(test_file, index_col=0).loc[:, feature].sort_index()
-    train_df = pd.read_table(train_file, index_col=0).loc[:, feature].sort_index()
-
-    return test_df, train_df
 
 np.random.seed(123)
 

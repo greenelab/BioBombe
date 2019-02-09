@@ -226,7 +226,7 @@ full_line_gg <- cowplot::plot_grid(
   line_gg_list[[1]] +
     theme(legend.position = "none") +
     ggtitle("TARGET NBL MYCN Status"),
-  labels = c("A", "C")
+  labels = c("a", "c")
 )
 
 full_line_gg <- cowplot::plot_grid(full_line_gg,
@@ -237,7 +237,7 @@ full_line_gg <- cowplot::plot_grid(full_line_gg,
 box_gg <- cowplot::plot_grid(
   gtex_sex_gg,
   mycn_amp_gg,
-  labels = c("B", "D"),
+  labels = c("b", "d"),
   ncol = 2
 )
 

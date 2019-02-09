@@ -1,0 +1,2 @@
+gene	signal	z_dim	seed	algorithm	weight	num_features	percent_zero	auroc	aupr	data_type
+TP53	signal	all	ensemble_all_features	all_feature_ensemble	30555	30872	0.9897317958020212	0.91202	0.88231	cv

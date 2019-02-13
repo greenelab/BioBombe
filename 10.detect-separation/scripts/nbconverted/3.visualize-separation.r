@@ -220,9 +220,9 @@ top_feature_df$tcga_id <- full_tcga_ids
 top_feature_df <- top_feature_df %>%
   dplyr::left_join(tcga_pheno_df, by = c("tcga_id" = "bcr_patient_barcode"))
 
-top_feature_df$gender[is.na(top_feature_df$gender)] <- "Unknown"
+top_feature_df$gender[is.na(top_feature_df$gender)] <- "Unlabeled"
 top_feature_df$gender <- dplyr::recode_factor(top_feature_df$gender, "MALE" = "Male", "FEMALE" = "Female")
-top_feature_df$gender <- factor(top_feature_df$gender, levels = c("Female", "Male", "Unknown"))
+top_feature_df$gender <- factor(top_feature_df$gender, levels = c("Female", "Male", "Unlabeled"))
 
 tcga_sex_gg <- ggplot(top_feature_df,
                       aes(y = vae_16,
@@ -236,16 +236,16 @@ tcga_sex_gg <- ggplot(top_feature_df,
               width = 0.3) +
   scale_fill_manual(labels = c("Male" = "Male",
                                "Female" = "Female",
-                               "Unknown" = "Unknown"),
+                               "Unlabeled" = "Unlabeled"),
                     values = c("Male" = "#42c8f4",
                                "Female" = "#f489c9",
-                               "Unknown" = "grey25")) +
+                               "Unlabeled" = "grey25")) +
   scale_color_manual(labels = c("Male" = "Male",
                                 "Female" = "Female",
-                                "Unknown" = "Unknown"),
+                                "Unlabeled" = "Unlabeled"),
                      values = c("Male" = "#42c8f4",
                                 "Female" = "#f489c9",
-                                "Unknown" = "grey25")) +
+                                "Unlabeled" = "grey25")) +
   theme_bw() +
   ylab("VAE Feature 16 (k = 20)") +
   xlab("") +

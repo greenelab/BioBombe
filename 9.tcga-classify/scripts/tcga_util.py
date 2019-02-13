@@ -6,20 +6,35 @@ Interpret Compression
 Usage: For import only
 """
 
+import os
+import glob
+import pandas as pd
+from sklearn.metrics import (
+    roc_auc_score,
+    roc_curve,
+    precision_recall_curve,
+    average_precision_score,
+)
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import cross_val_predict
+from sklearn.pipeline import Pipeline
+from sklearn.linear_model import SGDClassifier
+from dask_searchcv import GridSearchCV
 
-def build_feature_dictionary(dataset="TCGA"):
+
+def build_feature_dictionary(dataset="TCGA", load_data=False, store_train_test="both"):
     """
     Generate a nested dictionary of the directory structure pointing to compressed
     feature matrices for training and testing sets
 
     Arguments:
     dataset - which dataset to load the z matrices from (default - "TCGA")
+    load_data - boolean if the data is to be loaded and stored in the return dict
+    store_train_test - string indicating which data to load ['train', 'test', 'both']
 
     Output: a nested dictionary storing the feature matrices from training and testing
     sets
     """
-    import os
-    import glob
 
     z_matrix_dict = {}
     for signal in ["signal", "shuffled"]:
@@ -46,9 +61,23 @@ def build_feature_dictionary(dataset="TCGA"):
                     z_matrix_dict[signal][z_dim][seed] = {}
 
                 if "_test_" in z_file:
-                    z_matrix_dict[signal][z_dim][seed]["test"] = z_file
+                    if store_train_test == "train":
+                        continue
+                    if load_data:
+                        z_matrix_dict[signal][z_dim][seed]["test"] = pd.read_table(
+                            z_file, index_col=0
+                        )
+                    else:
+                        z_matrix_dict[signal][z_dim][seed]["test"] = z_file
                 else:
-                    z_matrix_dict[signal][z_dim][seed]["train"] = z_file
+                    if store_train_test == "test":
+                        continue
+                    if load_data:
+                        z_matrix_dict[signal][z_dim][seed]["train"] = pd.read_table(
+                            z_file, index_col=0
+                        )
+                    else:
+                        z_matrix_dict[signal][z_dim][seed]["train"] = z_file
 
     return z_matrix_dict
 
@@ -65,9 +94,6 @@ def build_top_feature_dictionary(algorithms, genes, num_features, load_random=Tr
 
     Output: a nested dictionary storing the x matrices for training and testing
     """
-
-    import os
-    import pandas as pd
 
     base_path = os.path.join("results", "top_feature_matrices")
     x_matrix_dict = {}
@@ -112,6 +138,50 @@ def build_top_feature_dictionary(algorithms, genes, num_features, load_random=Tr
     return x_matrix_dict
 
 
+def get_feature(
+    z_dim, seed, feature=None, algorithm=None, shuffled=False, dataset="TCGA"
+):
+    """
+    Load z matrix and extract specific feature scores
+    """
+
+    if shuffled:
+        base_results = "{}_shuffled_results".format(dataset)
+        model_train_file = "model_{}_shuffled_z_matrix.tsv.gz".format(seed)
+        model_test_file = "model_{}_shuffled_z_test_matrix.tsv.gz".format(seed)
+    else:
+        base_results = "{}_results".format(dataset)
+        model_train_file = "model_{}_z_matrix.tsv.gz".format(seed)
+        model_test_file = "model_{}_z_test_matrix.tsv.gz".format(seed)
+
+    base_file = os.path.join(
+        "..",
+        "2.ensemble-z-analysis",
+        "results",
+        base_results,
+        "ensemble_z_matrices",
+        "tcga_components_{}".format(z_dim),
+    )
+    train_file = os.path.join(base_file, model_train_file)
+    test_file = os.path.join(base_file, model_test_file)
+
+    if algorithm:
+        test_df = pd.read_table(test_file, index_col=0)
+        test_df = test_df.loc[:, test_df.columns.str.contains(algorithm)].sort_index()
+        train_df = pd.read_table(train_file, index_col=0)
+        train_df = train_df.loc[
+            :, train_df.columns.str.contains(algorithm)
+        ].sort_index()
+    elif feature:
+        test_df = pd.read_table(test_file, index_col=0).loc[:, feature].sort_index()
+        train_df = pd.read_table(train_file, index_col=0).loc[:, feature].sort_index()
+    else:
+        test_df = pd.read_table(test_file, index_col=0)
+        train_df = pd.read_table(train_file, index_col=0)
+
+    return test_df, train_df
+
+
 def get_threshold_metrics(y_true, y_pred, drop=False):
     """
     Retrieve true/false positive rates and auroc/aupr for class predictions
@@ -124,10 +194,6 @@ def get_threshold_metrics(y_true, y_pred, drop=False):
     Output:
     dict of AUROC, AUPR, pandas dataframes of ROC and PR data, and cancer-type
     """
-    import pandas as pd
-    from sklearn.metrics import roc_auc_score, roc_curve
-    from sklearn.metrics import precision_recall_curve, average_precision_score
-
     roc_columns = ["fpr", "tpr", "threshold"]
     pr_columns = ["precision", "recall", "threshold"]
 
@@ -211,8 +277,6 @@ def extract_coefficients(cv_pipeline, feature_names, signal, z_dim, seed, algori
     seed - the seed used to compress the data
     algorithm - the algorithm used to compress the data
     """
-    import pandas as pd
-
     final_pipeline = cv_pipeline.best_estimator_
     final_classifier = final_pipeline.named_steps["classify"]
 
@@ -260,9 +324,6 @@ def process_y_matrix(
     Output:
     Write file of cancer-type filtering to disk and output a processed y vector
     """
-    import os
-    import pandas as pd
-
     if include_copy:
         y_df = y_copy + y_mutation
     else:
@@ -326,9 +387,6 @@ def process_y_matrix_cancertype(
     Output:
     A y status DataFrame and a status count dataframe
     """
-
-    import pandas as pd
-
     y_df = sample_freeze.assign(status=0)
     y_df.loc[y_df.DISEASE == acronym, "status"] = 1
 
@@ -357,9 +415,6 @@ def align_matrices(x_file_or_df, y, add_cancertype_covariate=True, algorithm=Non
     Output:
     The samples used to subset and the processed X and y matrices
     """
-    import pandas as pd
-    from sklearn.preprocessing import StandardScaler
-
     # Load Data
     try:
         x_df = pd.read_table(x_file_or_df, index_col=0)
@@ -409,11 +464,6 @@ def train_model(x_train, x_test, y_train, alphas, l1_ratios, n_folds=5, max_iter
     The full pipeline sklearn object and y matrix predictions for training, testing,
     and cross validation
     """
-    from sklearn.model_selection import cross_val_predict
-    from sklearn.pipeline import Pipeline
-    from sklearn.linear_model import SGDClassifier
-    from dask_searchcv import GridSearchCV
-
     # Setup the classifier parameters
     clf_parameters = {
         "classify__loss": ["log"],
@@ -481,39 +531,6 @@ def check_status(file):
     return os.path.isfile(file)
 
 
-def get_feature(z_dim, seed, feature):
-    """
-    Given arguments, find the specific compressed feature for test and train data
-
-    Arguments:
-    z_dim - string indicating the bottleneck dimension
-    seed - string indicating which seed to search for model
-    feature - string indicating algorithm and number of specific feature
-
-    Output:
-    Reads compressed z matrices for training and testing and outputs them as a tuple
-    of two pandas series.
-    """
-    import os
-    import pandas as pd
-
-    base_file = os.path.join(
-        "..",
-        "2.ensemble-z-analysis",
-        "results",
-        "TCGA_results",
-        "ensemble_z_matrices",
-        "tcga_components_{}".format(z_dim),
-    )
-    train_file = os.path.join(base_file, "model_{}_z_matrix.tsv.gz".format(seed))
-    test_file = os.path.join(base_file, "model_{}_z_test_matrix.tsv.gz".format(seed))
-
-    test_df = pd.read_table(test_file, index_col=0).loc[:, feature].sort_index()
-    train_df = pd.read_table(train_file, index_col=0).loc[:, feature].sort_index()
-
-    return test_df, train_df
-
-
 def build_good_feature_matrix(coef_df):
     """
     Compile training and testing feature matrices (X) given a coefficient DataFrame
@@ -529,8 +546,6 @@ def build_good_feature_matrix(coef_df):
     into two dataframes. The dataframes represent the training and testing matrices
     used in downstream analyses.
     """
-    import pandas as pd
-
     all_test_features = []
     all_train_features = []
     for feature_idx, feature_row in coef_df.iterrows():
@@ -538,7 +553,7 @@ def build_good_feature_matrix(coef_df):
         seed = feature_row.seed
         feature = feature_row.feature
 
-        test_feature_df, train_feature_df = get_feature(z_dim, seed, feature)
+        test_feature_df, train_feature_df = get_feature(z_dim, seed, feature=feature)
         all_test_features.append(test_feature_df)
         all_train_features.append(train_feature_df)
 
@@ -546,3 +561,75 @@ def build_good_feature_matrix(coef_df):
     all_train_features_df = pd.concat(all_train_features, axis="columns")
 
     return all_test_features_df, all_train_features_df
+
+
+def load_ensemble_dict(zs, seeds, algorithm=None, use_all_features=False):
+    """
+    Return algorithm dictionary storing ensemble matrices for single algorithms
+    """
+    algorithm_dict = {}
+    ensemble_algorithm_dict = {}
+    for signal in ["signal", "shuffled"]:
+        all_ensemble_test = []
+        all_ensemble_train = []
+        if signal == "signal":
+            shuffled = False
+        else:
+            shuffled = True
+        algorithm_dict[signal] = {}
+        ensemble_algorithm_dict[signal] = {}
+        for z in zs:
+            algorithm_dict[signal][str(z)] = {}
+
+            ensemble_test = []
+            ensemble_train = []
+            for seed in seeds:
+
+                # Inform status
+                print(
+                    "Now processing: {} for k = {} and seed = {}. Data is {}".format(
+                        algorithm, z, seed, signal
+                    )
+                )
+
+                # Load the specific z matrix (training and testing) and pull out feature
+                test_feature_df, train_feature_df = get_feature(
+                    z_dim=z, seed=seed, algorithm=algorithm, shuffled=shuffled
+                )
+
+                test_feature_df.columns = test_feature_df.columns + "_{}_{}_{}".format(
+                    seed, z, signal
+                )
+                train_feature_df.columns = (
+                    train_feature_df.columns + "_{}_{}_{}".format(seed, z, signal)
+                )
+
+                # Append to growing list
+                if not use_all_features:
+                    ensemble_test.append(test_feature_df)
+                    ensemble_train.append(train_feature_df)
+                else:
+                    all_ensemble_test.append(test_feature_df)
+                    all_ensemble_train.append(train_feature_df)
+
+            # Load matrices into dictionary
+            if not use_all_features:
+                algorithm_dict[signal][str(z)]["test"] = pd.concat(
+                    ensemble_test, axis="columns"
+                )
+                algorithm_dict[signal][str(z)]["train"] = pd.concat(
+                    ensemble_train, axis="columns"
+                )
+
+        if use_all_features:
+            ensemble_algorithm_dict[signal]["test"] = pd.concat(
+                all_ensemble_test, axis="columns"
+            )
+            ensemble_algorithm_dict[signal]["train"] = pd.concat(
+                all_ensemble_train, axis="columns"
+            )
+
+    if use_all_features:
+        return ensemble_algorithm_dict
+    else:
+        return algorithm_dict

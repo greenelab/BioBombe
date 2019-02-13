@@ -1,7 +1,7 @@
 
 # coding: utf-8
 
-# ## Generating a Table of the BioBombe Interpreted Features in a High Scoring DAE model of TP53 inactivation
+# ## Generating a Table of the BioBombe Interpreted Features in a High Scoring Ensemble model of TP53 inactivation
 # 
 # **Gregory Way, 2019**
 # 
@@ -21,7 +21,7 @@ import pandas as pd
 # In[2]:
 
 
-model_file = os.path.join("results", "top_dae_tp53_feature_for_followup.tsv")
+model_file = os.path.join("results", "top_model_ensemble_tp53_feature_for_followup.tsv")
 top_model_df = pd.read_table(model_file)
 top_model_df
 
@@ -29,9 +29,9 @@ top_model_df
 # In[3]:
 
 
-seed = top_model_df.seed.values[0]
+# The seed we used to compile single model
+seed = "165158"
 z_dim = top_model_df.z_dim.values[0]
-algorithm = top_model_df.algorithm.values[0].lower()
 
 
 # ## Load the BioBombe network projection results for Cancer Hallmarks
@@ -39,7 +39,7 @@ algorithm = top_model_df.algorithm.values[0].lower()
 # In[4]:
 
 
-file = os.path.join("..", "6.analyze-weights", "results", "tcga",
+file = os.path.join("..", "6.biobombe-projection", "results", "tcga",
                     "gph", "signal", "tcga_z_200_GpH__geneset_scores.tsv.gz")
 
 scores_df = (
@@ -47,7 +47,6 @@ scores_df = (
     .read_table(file)
     .query("seed == @seed")
     .query("z == @z_dim")
-    .query("algorithm == @algorithm")
 )
 
 scores_df = (
@@ -63,7 +62,10 @@ scores_df.head()
 # In[5]:
 
 
-file = os.path.join("results", "mutation", "TP53", "TP53_coefficients.tsv.gz")
+file = os.path.join("results",
+                    "mutation_ensemble",
+                    "TP53",
+                    "TP53_ensemble_all_alg_coefficients.tsv.gz")
 
 top_n_features = 10
 
@@ -71,13 +73,28 @@ coef_df = (
     pd.read_table(file)
     .query("seed == @seed")
     .query("z_dim == @z_dim")
-    .query("algorithm == @algorithm")
     .query("signal == 'signal'")
     .sort_values(by='abs', ascending=False)
     .head(top_n_features)
+    .reset_index(drop=True)
 )
 
-use_features = coef_df.feature.tolist()
+# Rename columns
+coef_extract_df = (
+    pd.DataFrame(coef_df.feature.str.split('_').values.tolist(),
+                 columns=['feature_alg', 'feature_num',
+                          'feature_seed', 'feature_z',
+                          'feature_signal'])
+)
+
+coef_extract_df = (
+    coef_extract_df
+    .assign(use_feature=coef_extract_df.feature_alg + "_" + coef_extract_df.feature_num)
+)
+
+coef_df = pd.concat([coef_df, coef_extract_df], axis='columns')
+
+use_features = coef_df.use_feature.tolist()
 coef_df
 
 
@@ -93,7 +110,7 @@ biobombe_df = (
     .merge(coef_df,
            how='left',
            left_on=['full_feature', 'algorithm', 'seed'],
-           right_on=['feature', 'algorithm', 'seed'])
+           right_on=['use_feature', 'feature_alg', 'seed'])
     .drop(['model_type', 'feature_x', 'feature_y', 'signal'], axis='columns')
     .sort_values(by=['abs', 'abs_z_score'], ascending=False)
     .reset_index(drop=True)
@@ -121,6 +138,6 @@ top_biobombe_df
 
 
 # Output biobombe scores applied to high scoring DAE features
-file = os.path.join('results', 'tcga_tp53_classify_top_biobombe_scores_dae_table.tsv')
+file = os.path.join('results', 'tcga_tp53_classify_top_biobombe_scores_ensemble_model_table.tsv')
 top_biobombe_df.to_csv(file, sep='\t', index=False)
 

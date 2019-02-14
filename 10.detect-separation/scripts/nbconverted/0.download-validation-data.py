@@ -8,6 +8,8 @@
 # We are downloading the dataset associated with [Harenza et al. 2017](https://doi.org/10.1038/sdata.2017.33). The data profiles RNAseq data from 39 commonly used neuroblastoma (NBL) cell lines.
 # 
 # We are interested in the MYCN amplification status of these cell lines. We will test if the MYCN amplification score learned through the BioBombe signature approach applied to TARGET data generalizes to this cell line dataset.
+# 
+# MYCN Amplification refers to the number of copies of the _MYCN_ gene. MYCN amplification is used as a biomarker for poor prognosis in neuroblastoma patients ([Huang and Weiss 2013](https://doi.org/10.1101/cshperspect.a014415)).
 
 # In[1]:
 

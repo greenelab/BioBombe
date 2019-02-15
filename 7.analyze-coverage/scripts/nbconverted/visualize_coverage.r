@@ -190,7 +190,7 @@ for (plot_info in plot_info_list) {
         ggplot(model_df, aes(x = z_dim,
                              y = geneset_coverage * 100)) +
             geom_boxplot(aes(color = algorithm),
-                         outlier.size = 0.15,
+                         outlier.size = 0.05,
                          lwd = 0.23) +
             coverage_theme +
             scale_color_manual(name = "Algorithm",
@@ -410,8 +410,8 @@ tcga_cm_label <- cowplot::ggdraw() +
                         angle = 90)
 
 label_main <- cowplot::plot_grid(tcga_tf_label,
-                                 tcga_cm_label,
                                  tcga_react_label,
+                                 tcga_cm_label,
                                  nrow = 3)
 
 main_plot <- (
@@ -438,7 +438,6 @@ main_plot <- (
             theme(legend.position = "none") +
             ggtitle(""),
         plot_list[["TCGAGpC4CM"]][['model_gg']] +
-            xlab('') +
             theme(legend.position = "none") +
             ggtitle(""),
         plot_list[['TCGAGpC4CM']][['ensemble_gg']] +

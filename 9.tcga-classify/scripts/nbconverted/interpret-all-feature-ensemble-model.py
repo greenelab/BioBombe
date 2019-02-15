@@ -1,11 +1,11 @@
 
 # coding: utf-8
 
-# ## Generating a Table of the BioBombe Interpreted Features in the All Feature Ensemble model of TP53 inactivation
+# ## Interpreting Ensemble Compressed Features
 # 
 # **Gregory Way, 2019**
 # 
-# I use the model previously identified that was used to predict TP53 inactivation.
+# The following notebook will assign biological knowledge to the compressed features using the network projection approach. I use the model previously identified that was used to predict TP53 inactivation.
 # I observe the BioBombe gene set enrichment scores for the features with high coefficients in this model.
 
 # In[1]:

@@ -10,10 +10,11 @@
 
 import os
 import sys
-import matplotlib.pyplot as plt
-import seaborn as sns
 import numpy as np
 import pandas as pd
+from scipy.stats import ttest_ind
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 sys.path.append("../8.gtex-interpret")
 from scripts.utils import load_weight_matrix, apply_signature
@@ -132,4 +133,14 @@ merged_df['MYCN status'].value_counts()
 
 
 sns.boxplot(x="MYCN status", y=top_feature, data=merged_df);
+
+
+# In[14]:
+
+
+# Perform t-test on the result
+amplified_scores = merged_df.loc[merged_df['MYCN status'] == "Amplified", "vae_111"]
+notamplified_scores = merged_df.loc[merged_df['MYCN status'] != "Amplified", "vae_111"]
+
+ttest_ind(amplified_scores, notamplified_scores)
 

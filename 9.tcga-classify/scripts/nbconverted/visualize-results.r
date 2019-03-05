@@ -281,14 +281,13 @@ line_plot_ready_cancertype_ensemble_df$algorithm <-
 
 head(line_plot_ready_cancertype_ensemble_df)
 
-panel_c_gg <- plot_delta_auc_simple(plot_df = line_plot_ready_cancertype_ensemble_df,
-                                    auroc_or_aupr = "aupr",
-                                    plot_ensemble = TRUE,
-                                    plot_all_features = TRUE,
-                                    all_feature_df = cancertype_delta_auc_ensemble_all_features_df,
-                                    plot_title = "Cancer Type")
-
-panel_c_gg
+cancertype_delta_gg <-
+    plot_delta_auc_simple(plot_df = line_plot_ready_cancertype_ensemble_df,
+                          auroc_or_aupr = "aupr",
+                          plot_ensemble = TRUE,
+                          plot_all_features = TRUE,
+                          all_feature_df = cancertype_delta_auc_ensemble_all_features_df,
+                          plot_title = "Cancer Type")
 
 mutation_delta_auroc_df <- process_delta_auc(focus_mut_df,
                                              auroc_or_aupr = "aupr",
@@ -315,15 +314,34 @@ line_plot_ready_mutation_ensemble_df$algorithm <-
 
 head(line_plot_ready_mutation_ensemble_df)
 
-panel_d_gg <- plot_delta_auc_simple(plot_df = line_plot_ready_mutation_ensemble_df,
-                                    auroc_or_aupr = "aupr",
-                                    plot_ensemble = TRUE,
-                                    plot_all_features = TRUE,
-                                    all_feature_df = mutation_delta_auc_ensemble_all_features_df,
-                                    plot_title = "Mutations")
+mutation_delta_gg <-
+    plot_delta_auc_simple(plot_df = line_plot_ready_mutation_ensemble_df,
+                          auroc_or_aupr = "aupr",
+                          plot_ensemble = TRUE,
+                          plot_all_features = TRUE,
+                          all_feature_df = mutation_delta_auc_ensemble_all_features_df,
+                          plot_title = "Mutations")
 
-panel_d_gg <- panel_d_gg + ylim(c(-0.04, 0.3))
-panel_d_gg
+mutation_delta_gg <- mutation_delta_gg + ylim(c(-0.04, 0.3))
+
+panel_c_gg <- cowplot::plot_grid(
+    cancertype_delta_gg +
+        theme(legend.position = "none",
+              plot.title = element_text(margin = margin(b = 1,
+                                                        unit = "pt")),
+              plot.margin = unit(c(5.5, 5.5, 0, 5.5),
+                                 "pt")) +
+        xlab(""),
+    mutation_delta_gg + theme(legend.position = "none",
+                       plot.title = element_text(margin = margin(b = 1,
+                                                                 unit = "pt")),
+                       plot.margin = unit(c(3, 5.5, 5.5, 5.5),
+                                          "pt")),
+    nrow = 2,
+    labels = c("c", "")
+)
+
+panel_c_gg
 
 # Load Results
 full_coef_results <- load_results(results_path = mut_path,
@@ -405,7 +423,7 @@ plot_ready_sparsity_df$algorithm <-
 
 head(plot_ready_sparsity_df)
 
-panel_e_gg <- ggplot(plot_ready_sparsity_df,
+panel_d_gg <- ggplot(plot_ready_sparsity_df,
                      aes(x = percent_zero,
                          y = aupr)) +
   geom_point(aes(color = algorithm,
@@ -475,7 +493,7 @@ panel_e_gg <- ggplot(plot_ready_sparsity_df,
                               override.aes = list(size = 3,
                                                   alpha = 1)))
 
-panel_e_gg
+panel_d_gg
 
 # Create a dummy plot to use in cowplot legend for sparsity figure
 custom_data <- as.data.frame(cbind(c(1, 2), c(3, 4), c("A", "B")))
@@ -658,7 +676,7 @@ curve_base_theme <-
           legend.margin = margin(t = 0, r = 0, b = 0, l = 0),
           legend.box.margin = margin(t = -3, r = 0, b = -3, l = -3))
 
-panel_f_gg <- ggplot(full_roc_df,
+roc_gg <- ggplot(full_roc_df,
                      aes(x = fpr,
                          y = tpr,
                          color = model_groups)) +
@@ -692,9 +710,7 @@ panel_f_gg <- ggplot(full_roc_df,
                               override.aes = list(size = 0.8)),
          linetype = FALSE)
 
-panel_f_gg
-
-panel_g_gg <- ggplot(full_pr_df,
+pr_gg <- ggplot(full_pr_df,
                      aes(x = recall,
                          y = precision,
                          color = model_groups)) +
@@ -722,24 +738,40 @@ panel_g_gg <- ggplot(full_pr_df,
                               override.aes = list(size = 0.8)),
          linetype = FALSE)
 
-panel_g_gg
+# Combine ROC and PR into panel e
+e_legend_gg <- cowplot::get_legend(roc_gg +
+                                   theme(legend.justification = c(0.5, 0.7)))
+
+panel_e_gg <- cowplot::plot_grid(
+    roc_gg + theme(legend.position = "none"),
+    pr_gg + theme(legend.position = "none"),
+    rel_widths = c(1, 1),
+    labels = c("e", ""),
+    ncol = 2,
+    nrow = 1
+)
+
+panel_e_gg <- cowplot::plot_grid(
+    panel_e_gg,
+    e_legend_gg,
+    rel_widths = c(1, 0.2),
+    ncol = 2
+)
+
+panel_e_gg
+
+top_tp53_features$knum <- as.numeric(paste(top_tp53_features$k))
 
 algorithm_contribution_df <- top_tp53_features %>%
-    dplyr::group_by(algorithm_label, pos_label, k) %>%
-    dplyr::summarize(algorithm_contribution = sum(abs)) %>%
+    dplyr::group_by(algorithm_label, k) %>%
+    dplyr::mutate(algorithm_contribution = sum(abs) / knum) %>%
     dplyr::arrange(desc(algorithm_contribution)) %>%
-    dplyr::filter(algorithm_contribution != 0)
+    dplyr::filter(algorithm_contribution != 0) %>%
+    dplyr::distinct(algorithm_label, k, algorithm_contribution)
 
 algorithm_contribution_df$algorithm_label <-
     factor(algorithm_contribution_df$algorithm_label,
            levels = c("pca", "ica", "nmf", "dae", "vae", "log10"))
-
-algorithm_contribution_df$pos_label <-
-    factor(algorithm_contribution_df$pos_label,
-           levels = c("Negative", "Positive"))
-
-algorithm_contribution_df[algorithm_contribution_df$pos_label != "Positive", "algorithm_contribution"] <-
-    algorithm_contribution_df[algorithm_contribution_df$pos_label != "Positive", "algorithm_contribution"] * -1
 
 algorithm_contribution_df$k <-
     factor(algorithm_contribution_df$k,
@@ -753,8 +785,7 @@ bar_colors <- c(
     "ica" = "#377eb8",
     "nmf" = "#4daf4a",
     "dae" = "#984ea3",
-    "vae" = "#ff7f00",
-    "log10" = "grey75"
+    "vae" = "#ff7f00"
 )
 
 bar_labels <- c(
@@ -762,11 +793,10 @@ bar_labels <- c(
     "ica" = "ICA",
     "nmf" = "NMF",
     "dae" = "DAE",
-    "vae" = "VAE",
-    "log10" = "log10"
+    "vae" = "VAE"
 )
 
-panel_h_gg <- ggplot(algorithm_contribution_df,
+panel_f_gg <- ggplot(algorithm_contribution_df,
                      aes(x = k,
                          y = algorithm_contribution,
                          fill = algorithm_label)) +
@@ -779,7 +809,7 @@ panel_h_gg <- ggplot(algorithm_contribution_df,
     scale_fill_manual(name = "",
                       labels = bar_labels,
                       values = bar_colors) +
-    ylab("Weight Sum") +
+    ylab("Adj. Weight Sum\n(Abs. Value)") +
     xlab("k Dimension") +
     theme_bw() +
     theme(axis.title = element_text(size = 7),
@@ -796,7 +826,7 @@ panel_h_gg <- ggplot(algorithm_contribution_df,
                                default.unit = "inch",
                                override.aes = list(size = 0.8)))
 
-panel_h_gg
+panel_f_gg
 
 a_and_b_legend_gg <- cowplot::get_legend(panel_a_gg)
 
@@ -815,32 +845,15 @@ a_and_b_gg <- cowplot::plot_grid(
     nrow = 2
 )
 
-c_and_d_gg <- cowplot::plot_grid(
-    panel_c_gg +
-        theme(legend.position = "none",
-              plot.title = element_text(margin = margin(b = 1,
-                                                        unit = "pt")),
-              plot.margin = unit(c(5.5, 5.5, 0, 5.5),
-                                 "pt")) +
-        xlab(""),
-    panel_d_gg + theme(legend.position = "none",
-                       plot.title = element_text(margin = margin(b = 1,
-                                                                 unit = "pt")),
-                       plot.margin = unit(c(3, 5.5, 5.5, 5.5),
-                                          "pt")),
-    nrow = 2,
-    labels = c("c", "d")
-)
-
-panel_e_legend <- cowplot::get_legend(panel_e_gg +
+panel_d_legend <- cowplot::get_legend(panel_d_gg +
                                      theme(legend.justification = c(0.54, 0.6)))
 custom_legend <- cowplot::get_legend(custom_gg +
                                      theme(legend.justification = c(0.30, 0.55)))
 
-panel_e_full_legend <- (
+panel_d_full_legend <- (
     cowplot::plot_grid(
         cowplot::ggdraw(),
-        panel_e_legend,
+        panel_d_legend,
         custom_legend,
         ncol = 1,
         nrow = 3,
@@ -848,54 +861,35 @@ panel_e_full_legend <- (
     )
 )
 
-panel_e_with_legend_gg = (
+panel_d_with_legend_gg = (
     cowplot::plot_grid(
-        panel_e_gg + theme(legend.position = "none"),
-        panel_e_full_legend,
+        panel_d_gg + theme(legend.position = "none"),
+        panel_d_full_legend,
         rel_widths = c(1, 0.2),
         ncol = 2
     )
 )
 
-c_d_and_e_gg <- cowplot::plot_grid(
-    c_and_d_gg,
-    panel_e_with_legend_gg,
+c_and_d_gg <- cowplot::plot_grid(
+    panel_c_gg,
+    panel_d_with_legend_gg,
     rel_widths = c(0.4, 1),
-    labels = c("", "e"),
+    labels = c("", "d"),
     ncol = 2
 )
 
-f_and_g_legend_gg <- cowplot::get_legend(panel_f_gg +
-                                         theme(legend.justification = c(0.5, 0.7)))
-
-f_and_g_gg <- cowplot::plot_grid(
-    panel_f_gg + theme(legend.position = "none"),
-    panel_g_gg + theme(legend.position = "none"),
-    rel_widths = c(1, 1),
-    labels = c("f", "g"),
-    ncol = 2,
-    nrow = 1
-)
-
-f_and_g_gg <- cowplot::plot_grid(
-    f_and_g_gg,
-    f_and_g_legend_gg,
-    rel_widths = c(1, 0.2),
-    ncol = 2
-)
-
-f_g_and_h_gg <- cowplot::plot_grid(
-    f_and_g_gg,
-    panel_h_gg + theme(legend.position = "right"),
+e_and_f_gg <- cowplot::plot_grid(
+    panel_e_gg,
+    panel_f_gg + theme(legend.position = "right"),
     rel_widths = c(1, 0.6),
-    labels = c("", "h"),
+    labels = c("e", "f"),
     ncol = 2
 )
 
 full_gg <- cowplot::plot_grid(
     a_and_b_gg,
-    c_d_and_e_gg,
-    f_g_and_h_gg,
+    c_and_d_gg,
+    e_and_f_gg,
     nrow = 3,
     labels = c("", "", ""),
     rel_heights = c(1.5, 0.9, 0.6)

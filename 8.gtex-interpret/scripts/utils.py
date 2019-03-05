@@ -99,6 +99,19 @@ def load_enrichment_results(
 def apply_signature(weight_df, other_df, feature=None, align=False):
     """
     Apply a signature to alternative datasets
+
+    Arguments:
+    weight_df - a gene by compression feature pandas DataFrame
+    other_df - an alternative dataset to transform using weights (sample by gene)
+    feature - a string indicating a specific feature (weight matrix column name)
+              if `None` then multiply the full weight_df
+    align - boolean if the other_df should be aligned into the same gene dimensions
+            to enable proper matrix multiplication
+
+    Output:
+    a tuple storing:
+    1) The transformed alternative dataset using the signature of interest
+    2) The genes that were not indentified in the alternative dataset
     """
 
     missing_genes = list(

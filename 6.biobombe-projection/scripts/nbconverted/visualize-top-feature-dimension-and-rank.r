@@ -247,15 +247,27 @@ all_top_df <- all_top_df %>% dplyr::mutate(feature_num_group = "greater25")
 all_top_df$feature_num_group[as.numeric(paste(all_top_df$z)) < 25] <- "less25"
 
 all_top_df$dataset <- factor(all_top_df$dataset, levels = datasets)
-all_top_df$feature_num_group <- factor(all_top_df$feature_num_group, levels = c("less25", "greater25"))
+all_top_df$feature_num_group <- factor(all_top_df$feature_num_group, levels = c("greater25", "less25"))
+
+# Setup full group parameter
+all_top_df$big_group <- paste(all_top_df$feature_num_group, all_top_df$algorithm)
 
 rank_gg <- ggplot(data = all_top_df,
                   aes(x = algorithm,
                       alpha = feature_num_group,
                       y = absolute_rank,
                       fill = algorithm)) +
-    geom_boxplot(outlier.size = 0.1,
+    geom_boxplot(outlier.alpha = 0,
                  size = 0.2) +
+    geom_point(position = position_jitterdodge(dodge.width = 0.75,
+                                               jitter.width = 0.6),
+               alpha = 0.5,
+               size = 0.2,
+               pch = 21,
+               stroke = 0.3,
+               color = '#00000044',
+               aes(fill = algorithm,
+                   group = big_group)) +
     facet_wrap(dataset ~ collection,
                scales = 'free_y',
                nrow = 2,
@@ -272,12 +284,12 @@ rank_gg <- ggplot(data = all_top_df,
                                 "dae" = "DAE",
                                 "vae" = "VAE")) +
     scale_alpha_manual(name = "k Dimension",
-                     values = c("less25" = 0.5,
-                                "greater25" = 1),
-                     labels = c("less25" = "k < 25",
-                                "greater25" = "k >= 25")) +
-    xlab("") +
-    ylab("Absolute Rank") +
+                       values = c("less25" = 0.5,
+                                  "greater25" = 1),
+                       labels = c("less25" = "k < 25",
+                                  "greater25" = "k >= 25")) +
+    xlab("Algorithm") +
+    ylab("Absolute Rank Enrichment of Top Feature") +
     theme_bw() +
     theme(strip.background = element_rect(colour = "black",
                                           fill = "#fdfff4"),
@@ -295,10 +307,11 @@ rank_gg <- ggplot(data = all_top_df,
           legend.title = element_text(size = 7),
           axis.text.x = element_blank(),
           axis.text.y = element_text(size = 5),
+          axis.title.x = element_text(size = 7),
           axis.title.y = element_text(size = 7)) +
     guides(fill = guide_legend(order = 1),
-           alpha = guide_legend(override.aes = list(fill = c("#e41a1c", "#e41a1c"),
-                                                    alpha = c(0.5, 1)),
+           alpha = guide_legend(override.aes = list(fill = c("less25" = "#e41a1c",
+                                                             "greater25" = "#e41a1c")),
                                 order = 2))
 
 rank_gg

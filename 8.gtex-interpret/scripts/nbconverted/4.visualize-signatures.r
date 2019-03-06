@@ -406,6 +406,229 @@ for(extension in c('.png', '.pdf')) {
                        units = "mm")
 }
 
+cell_types <- c(
+  "Neutrophil", "Monocyte"
+)
+
+line_plot <- list()
+for (cell_type in cell_types) {
+    file <- file.path("results", paste0("all_", tolower(cell_type),
+                                        "_top_scores_and_separation.tsv"))
+    final_results_df <- readr::read_tsv(file,
+                                        col_types = readr::cols(
+                                            .default = readr::col_integer(),
+                                            algorithm = readr::col_character(),
+                                            t_stat = readr::col_double(),
+                                            t_p = readr::col_double(),
+                                            neg_log_p = readr::col_double(),
+                                            variable = readr::col_character(),
+                                            model_type = readr::col_character(),
+                                            value = readr::col_double(),
+                                            z_score = readr::col_double(),
+                                            abs_z_score = readr::col_double()))
+    final_results_df$algorithm <- 
+      dplyr::recode(final_results_df$algorithm,
+                    "pca" = "PCA", "ica" = "ICA", "nmf" = "NMF", "dae" = "DAE",
+                    "vae" = "VAE")
+  
+    # Create factors for plotting
+    final_results_df$z <-
+      factor(final_results_df$z,
+             levels =
+               sort(as.numeric(paste(unique(final_results_df$z))))
+      )
+  
+    final_results_df$algorithm <-
+      factor(final_results_df$algorithm,
+             levels = c("PCA", "ICA", "NMF", "DAE", "VAE"))
+  
+    final_results_df <- final_results_df %>% dplyr::arrange(z)
+
+    # Generate plot title
+    if (cell_type == "Neutrophil") {
+        gse <- "GSE103706"
+    } else {
+        gse <- "GSE24759"
+    }
+    plot_title <- paste(cell_type, "-", gse)
+
+    line_plot[[cell_type]] <- # Plot and save to file
+      ggplot(final_results_df,
+             aes(x = z,
+                 y = neg_log_p,
+                 color = algorithm,
+                 group = algorithm)) +
+      geom_point(size = 0.1) +
+      geom_smooth(lwd = 0.2,
+                  formula = y ~ x,
+                  method = "loess",
+                  alpha = 0.2,
+                  aes(fill = algorithm)) +
+      scale_color_manual(name = "Algorithm",
+                         values = c("#e41a1c",
+                                    "#377eb8",
+                                    "#4daf4a",
+                                    "#984ea3",
+                                    "#ff7f00"),
+                         labels = c("pca" = "PCA",
+                                    "ica" = "ICA",
+                                    "nmf" = "NMF",
+                                    "dae" = "DAE",
+                                    "vae" = "VAE")) +
+      scale_fill_manual(name = "Algorithm",
+                        values = c("#e41a1c",
+                                   "#377eb8",
+                                   "#4daf4a",
+                                   "#984ea3",
+                                   "#ff7f00"),
+                        labels = c("pca" = "PCA",
+                                   "ica" = "ICA",
+                                   "nmf" = "NMF",
+                                   "dae" = "DAE",
+                                   "vae" = "VAE")) +
+      theme_bw() +
+      ggtitle(plot_title) +
+      ylab("-log 10 P") +
+      xlab("k Dimensions") +
+      theme(axis.title.x = element_text(size = 7),
+            axis.title.y = element_text(size = 7),
+            axis.text.x = element_text(angle = 90,
+                                     size = 5),
+            axis.text.y = element_text(size = 6),
+            plot.title = element_text(hjust = 0.5,
+                                    size = 8),
+            legend.text = element_text(size = 6),
+            legend.title = element_text(size = 7),
+            legend.key.size = unit(0.7, "lines"))
+}
+
+# Plot
+line_legend <- cowplot::get_legend(line_plot[['Neutrophil']])
+sup_fig_2_panel_a_gg <- cowplot::plot_grid(
+    line_plot[['Neutrophil']] + theme(legend.position = "none"),
+    line_plot[['Monocyte']] + theme(legend.position = "none"),
+    labels = c("a", ""),
+    ncol = 2
+)
+
+sup_fig_2_panel_a_gg <- cowplot::plot_grid(
+    sup_fig_2_panel_a_gg,
+    line_legend,
+    rel_widths = c(1, 0.15),
+    ncol = 2
+)
+
+sup_fig_2_panel_a_gg
+
+myPalette <- colorRampPalette(rev(c("#43b8d8",
+                                    "#9e5eed",
+                                    "#ef07c4",
+                                    "#ef0707")))
+
+career_path_plot <- list()
+for (cell_type in cell_types) {
+    file <- file.path("results", paste0("all_", tolower(cell_type),
+                                      "_top_scores_and_separation.tsv"))
+    final_results_df <- readr::read_tsv(file,
+                                        col_types = readr::cols(
+                                            .default = readr::col_integer(),
+                                            algorithm = readr::col_character(),
+                                            t_stat = readr::col_double(),
+                                            t_p = readr::col_double(),
+                                            neg_log_p = readr::col_double(),
+                                            variable = readr::col_character(),
+                                            model_type = readr::col_character(),
+                                            value = readr::col_double(),
+                                            z_score = readr::col_double(),
+                                            abs_z_score = readr::col_double()))
+    final_results_df$algorithm <- 
+    dplyr::recode(final_results_df$algorithm,
+                  "pca" = "PCA", "ica" = "ICA", "nmf" = "NMF", "dae" = "DAE",
+                  "vae" = "VAE")
+
+    # Create factors for plotting
+    final_results_df$z <-
+    factor(final_results_df$z,
+           levels =
+             sort(as.numeric(paste(unique(final_results_df$z))))
+    )
+
+    final_results_df$algorithm <-
+    factor(final_results_df$algorithm,
+           levels = c("PCA", "ICA", "NMF", "DAE", "VAE"))
+
+    final_results_df <- final_results_df %>% dplyr::arrange(z)
+
+    career_path_plot[[cell_type]] <-
+    ggplot(final_results_df,
+                          aes(y = neg_log_p,
+                              x = abs_z_score,
+                              group = algorithm)) +
+    geom_point(size = 0.1, alpha = 0.9) +
+    geom_path(aes(color = z_dim),
+              lwd = 0.2) +
+    facet_wrap(~algorithm, ncol = 5) +
+    scale_color_gradientn(name = "k Dimension",
+                          colours = myPalette(300),
+                          values = scales::rescale(c(200, 125, 25, 10, 0)),
+                          limits = c(0, 200)) +
+    theme_bw() +
+    ylab("-log10 P") +
+    xlab("BioBombe Score") +
+    theme(strip.background = element_rect(colour = "black",
+                                          fill = "#fdfff4"),
+          strip.text.x = element_text(size = 5,
+                                      margin = margin(t = 2,
+                                                      b = 1,
+                                                      l = 0,
+                                                      r = 0)),
+          axis.title.x = element_text(size = 7),
+          axis.title.y = element_text(size = 7),
+          axis.text.x = element_text(angle = 90,
+                                     size = 5),
+          axis.text.y = element_text(size = 6),
+          legend.text = element_text(size = 6),
+          legend.title = element_text(size = 7),
+          legend.key.size = unit(0.7, "lines"))
+}
+
+career_legend <- cowplot::get_legend(career_path_plot[['Neutrophil']])
+
+sup_fig_2_panel_b_gg <- cowplot::plot_grid(
+    career_path_plot[['Neutrophil']] + theme(legend.position = "none"),
+    career_path_plot[['Monocyte']] + theme(legend.position = "none"),
+    labels = c("b", ""),
+    ncol = 2
+)
+
+sup_fig_2_panel_b_gg <- cowplot::plot_grid(
+    sup_fig_2_panel_b_gg,
+    career_legend,
+    rel_widths = c(1, 0.15),
+    ncol = 2
+)
+
+sup_fig_2_panel_b_gg
+
+sup_fig_2_panel_a_and_b_gg <- cowplot::plot_grid(
+    sup_fig_2_panel_a_gg,
+    sup_fig_2_panel_b_gg,
+    nrow = 2,
+    rel_heights = c(1.1, 0.9)
+)
+
+sup_fig_2_panel_a_and_b_gg
+
+for(extension in c('.png', '.pdf')) {
+    gg_file <- paste0("gtex_biobombe_supplementary_validation_figure", extension)
+    gg_file <- file.path("figures", gg_file)
+    cowplot::save_plot(filename = gg_file,
+                       plot = sup_fig_2_panel_a_and_b_gg,
+                       base_height = 110,
+                       base_width = 170,
+                       units = "mm")
+}
+
 # Load and process data
 results_file <- file.path('results', 'gtex_vae_example_interpret_compression.tsv')
 interpret_data_df <- (
@@ -433,6 +656,11 @@ color_logic <- (interpret_data_df$z_score > 13 |
                 interpret_data_df$raw_score < -22)
 
 # Plot
+neutrophil_points_df <- subset(interpret_data_df, color_logic)
+num_points <- dim(neutrophil_points_df)[1]
+neutrophil_colors <- rep("black", num_points)
+neutrophil_colors[neutrophil_points_df$variable == 'Neutrophils_HPCA_2'] <- "red"
+
 panel_a_gg <- ggplot(interpret_data_df,
                      aes(x = raw_score,
                          y = z_score)) +
@@ -442,8 +670,9 @@ panel_a_gg <- ggplot(interpret_data_df,
     scale_color_manual(name = "",
                        values = vae_colors,
                        labels =  vae_labels) +
-    geom_text_repel(data = subset(interpret_data_df, color_logic),
+    geom_text_repel(data = neutrophil_points_df,
                     arrow = arrow(length = unit(0.01, "npc")),
+                    color = neutrophil_colors,
                     segment.size = 0.3,
                     segment.alpha = 0.6,
                     size = 1.5,
@@ -463,8 +692,8 @@ panel_a_gg <- ggplot(interpret_data_df,
           legend.text = element_text(size = 4.7),
           legend.margin = margin(0, 0, 0, 0),
           legend.box.margin = margin(-8, 0, 0, 0)) +
-    guides(color = guide_legend(nrow = 1,
-                                ncol = 5,
+    guides(color = guide_legend(nrow = 2,
+                                ncol = 3,
                                 byrow = FALSE,
                                 keywidth = 0.1,
                                 keyheight = 0.1,
@@ -483,14 +712,21 @@ feature_info_df <- readr::read_tsv(file,
 # Setup plotting logic
 color_logic = feature_info_df$abs_diff > 3.5 | feature_info_df$two > 13  | feature_info_df$three > 13
 
+# Plot
+monocyte_points_df <- subset(feature_info_df, color_logic)
+num_points <- dim(monocyte_points_df)[1]
+monocyte_colors <- rep("black", num_points)
+monocyte_colors[monocyte_points_df$variable == 'Monocytes_FANTOM_2'] <- "red"
+
 panel_b_gg <- ggplot(feature_info_df, aes(x = three, y = two)) +
     geom_point(alpha = 0.5,
                size = 0.6,
                shape = 16,
                color = ifelse(color_logic, "red", "grey50")) +
     geom_abline(intercept = 0, slope = 1, linetype = 'dashed') +
-    geom_text_repel(data = subset(feature_info_df, color_logic),
+    geom_text_repel(data = monocyte_points_df,
                     arrow = arrow(length = unit(0.01, "npc")),
+                    color = monocyte_colors,
                     segment.size = 0.3,
                     segment.alpha = 0.6,
                     size = 1.5,
@@ -706,210 +942,6 @@ panel_f_gg <- ggplot(full_heme_results_df,
 
 panel_f_gg
 
-cell_types <- c(
-  "Neutrophil", "Monocyte"
-)
-
-line_plot <- list()
-for (cell_type in cell_types) {
-    file <- file.path("results", paste0("all_", tolower(cell_type),
-                                        "_top_scores_and_separation.tsv"))
-    final_results_df <- readr::read_tsv(file,
-                                        col_types = readr::cols(
-                                            .default = readr::col_integer(),
-                                            algorithm = readr::col_character(),
-                                            t_stat = readr::col_double(),
-                                            t_p = readr::col_double(),
-                                            neg_log_p = readr::col_double(),
-                                            variable = readr::col_character(),
-                                            model_type = readr::col_character(),
-                                            value = readr::col_double(),
-                                            z_score = readr::col_double(),
-                                            abs_z_score = readr::col_double()))
-    final_results_df$algorithm <- 
-      dplyr::recode(final_results_df$algorithm,
-                    "pca" = "PCA", "ica" = "ICA", "nmf" = "NMF", "dae" = "DAE",
-                    "vae" = "VAE")
-  
-    # Create factors for plotting
-    final_results_df$z <-
-      factor(final_results_df$z,
-             levels =
-               sort(as.numeric(paste(unique(final_results_df$z))))
-      )
-  
-    final_results_df$algorithm <-
-      factor(final_results_df$algorithm,
-             levels = c("PCA", "ICA", "NMF", "DAE", "VAE"))
-  
-    final_results_df <- final_results_df %>% dplyr::arrange(z)
-
-    # Generate plot title
-    if (cell_type == "Neutrophil") {
-        gse <- "GSE103706"
-    } else {
-        gse <- "GSE24759"
-    }
-    plot_title <- paste(cell_type, "-", gse)
-
-    line_plot[[cell_type]] <- # Plot and save to file
-      ggplot(final_results_df,
-             aes(x = z,
-                 y = neg_log_p,
-                 color = algorithm,
-                 group = algorithm)) +
-      geom_point(size = 0.1) +
-      geom_smooth(lwd = 0.2,
-                  formula = y ~ x,
-                  method = "loess",
-                  alpha = 0.2,
-                  aes(fill = algorithm)) +
-      scale_color_manual(name = "Algorithm",
-                         values = c("#e41a1c",
-                                    "#377eb8",
-                                    "#4daf4a",
-                                    "#984ea3",
-                                    "#ff7f00"),
-                         labels = c("pca" = "PCA",
-                                    "ica" = "ICA",
-                                    "nmf" = "NMF",
-                                    "dae" = "DAE",
-                                    "vae" = "VAE")) +
-      scale_fill_manual(name = "Algorithm",
-                        values = c("#e41a1c",
-                                   "#377eb8",
-                                   "#4daf4a",
-                                   "#984ea3",
-                                   "#ff7f00"),
-                        labels = c("pca" = "PCA",
-                                   "ica" = "ICA",
-                                   "nmf" = "NMF",
-                                   "dae" = "DAE",
-                                   "vae" = "VAE")) +
-      theme_bw() +
-      ggtitle(plot_title) +
-      ylab("-log 10 P") +
-      xlab("k Dimensions") +
-      theme(axis.title.x = element_text(size = 7),
-            axis.title.y = element_text(size = 7),
-            axis.text.x = element_text(angle = 90,
-                                     size = 5),
-            axis.text.y = element_text(size = 6),
-            plot.title = element_text(hjust = 0.5,
-                                    size = 8),
-            legend.text = element_text(size = 6),
-            legend.title = element_text(size = 7),
-            legend.key.size = unit(0.7, "lines"))
-}
-
-# Plot
-line_legend <- cowplot::get_legend(line_plot[['Neutrophil']])
-panel_g_gg <- cowplot::plot_grid(
-    line_plot[['Neutrophil']] + theme(legend.position = "none"),
-    line_plot[['Monocyte']] + theme(legend.position = "none"),
-    labels = c("g", ""),
-    ncol = 2
-)
-
-panel_g_gg <- cowplot::plot_grid(
-    panel_g_gg,
-    line_legend,
-    rel_widths = c(1, 0.15),
-    ncol = 2
-)
-
-panel_g_gg
-
-myPalette <- colorRampPalette(rev(c("#43b8d8",
-                                    "#9e5eed",
-                                    "#ef07c4",
-                                    "#ef0707")))
-
-career_path_plot <- list()
-for (cell_type in cell_types) {
-    file <- file.path("results", paste0("all_", tolower(cell_type),
-                                      "_top_scores_and_separation.tsv"))
-    final_results_df <- readr::read_tsv(file,
-                                        col_types = readr::cols(
-                                            .default = readr::col_integer(),
-                                            algorithm = readr::col_character(),
-                                            t_stat = readr::col_double(),
-                                            t_p = readr::col_double(),
-                                            neg_log_p = readr::col_double(),
-                                            variable = readr::col_character(),
-                                            model_type = readr::col_character(),
-                                            value = readr::col_double(),
-                                            z_score = readr::col_double(),
-                                            abs_z_score = readr::col_double()))
-    final_results_df$algorithm <- 
-    dplyr::recode(final_results_df$algorithm,
-                  "pca" = "PCA", "ica" = "ICA", "nmf" = "NMF", "dae" = "DAE",
-                  "vae" = "VAE")
-
-    # Create factors for plotting
-    final_results_df$z <-
-    factor(final_results_df$z,
-           levels =
-             sort(as.numeric(paste(unique(final_results_df$z))))
-    )
-
-    final_results_df$algorithm <-
-    factor(final_results_df$algorithm,
-           levels = c("PCA", "ICA", "NMF", "DAE", "VAE"))
-
-    final_results_df <- final_results_df %>% dplyr::arrange(z)
-
-    career_path_plot[[cell_type]] <-
-    ggplot(final_results_df,
-                          aes(y = neg_log_p,
-                              x = abs_z_score,
-                              group = algorithm)) +
-    geom_point(size = 0.1, alpha = 0.9) +
-    geom_path(aes(color = z_dim),
-              lwd = 0.2) +
-    facet_wrap(~algorithm, ncol = 5) +
-    scale_color_gradientn(name = "k Dimension",
-                          colours = myPalette(300),
-                          values = scales::rescale(c(200, 125, 25, 10, 0)),
-                          limits = c(0, 200)) +
-    theme_bw() +
-    ylab("-log10 P") +
-    xlab("BioBombe Score") +
-    theme(strip.background = element_rect(colour = "black",
-                                          fill = "#fdfff4"),
-          strip.text.x = element_text(size = 5,
-                                      margin = margin(t = 2,
-                                                      b = 1,
-                                                      l = 0,
-                                                      r = 0)),
-          axis.title.x = element_text(size = 7),
-          axis.title.y = element_text(size = 7),
-          axis.text.x = element_text(angle = 90,
-                                     size = 5),
-          axis.text.y = element_text(size = 6),
-          legend.text = element_text(size = 6),
-          legend.title = element_text(size = 7),
-          legend.key.size = unit(0.7, "lines"))
-}
-
-career_legend <- cowplot::get_legend(career_path_plot[['Neutrophil']])
-
-panel_h_gg <- cowplot::plot_grid(
-    career_path_plot[['Neutrophil']] + theme(legend.position = "none"),
-    career_path_plot[['Monocyte']] + theme(legend.position = "none"),
-    labels = c("h", ""),
-    ncol = 2
-)
-
-panel_h_gg <- cowplot::plot_grid(
-    panel_h_gg,
-    career_legend,
-    rel_widths = c(1, 0.15),
-    ncol = 2
-)
-
-panel_h_gg
-
 c_and_d_legend_gg <- cowplot::get_legend(panel_c_gg) 
 c_and_d_gg <- cowplot::plot_grid(
     panel_c_gg + theme(legend.position = "none"),
@@ -921,7 +953,7 @@ c_and_d_gg <- cowplot::plot_grid(
 c_and_d_gg <- cowplot::plot_grid(
     c_and_d_gg,
     c_and_d_legend_gg,
-    rel_widths = c(1, 0.15),
+    rel_widths = c(1, 0.17),
     ncol = 2
 )
 
@@ -948,21 +980,11 @@ e_and_f_gg <- cowplot::plot_grid(
 
 e_and_f_gg
 
-g_and_h_gg <- cowplot::plot_grid(
-    panel_g_gg,
-    panel_h_gg,
-    nrow = 2,
-    rel_heights = c(1.1, 0.9)
-)
-
-g_and_h_gg
-
 full_gg <- cowplot::plot_grid(
     a_b_c_and_d_gg,
     e_and_f_gg,
-    g_and_h_gg,
-    nrow = 3,
-    rel_heights = c(1, 1.1, 1)
+    nrow = 2,
+    rel_heights = c(1, 1.1)
 )
 
 full_gg
@@ -972,7 +994,7 @@ for(extension in c('.png', '.pdf')) {
     gg_file <- file.path("figures", gg_file)
     cowplot::save_plot(filename = gg_file,
                        plot = full_gg,
-                       base_height = 200,
+                       base_height = 170,
                        base_width = 170,
                        units = "mm")
 }

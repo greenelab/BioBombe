@@ -1,0 +1,20 @@
+# Detecting Gene Expression Signatures
+
+**Gregory Way 2019**
+
+In this module we perform a series of t-tests to detect sample sex in GTEx samples and TCGA patients as well as MYCN amplification status in neuroblastoma (NBL) tumors using TARGET data.
+
+![signatures](https://raw.githubusercontent.com/greenelab/BioBombe/master/10.detect-separation/figures/full_separation_plot.png)
+
+## Reproducible Analysis
+
+To reproduce the results of the gene expression signature analysis perform the following:
+
+```bash
+# Activate computational environment
+conda activate biobombe
+
+# Perform the analysis
+cd 10.gene-expression-signatures
+./signature_analysis.sh
+```

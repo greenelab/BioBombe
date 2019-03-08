@@ -21,7 +21,7 @@ Observing how these compressed features participated in the models (by model coe
 * All models are adjusted for log10 mutation rate
 * Gene alteration predictions only:
   * These models are also adjusted by cancer type
-  * To regulate balanced class sizes, only cancer types with greater than 15% and more than 5 samples in either positive or negative gene alteration class were used to train models
+  * To regulate balanced class sizes, only cancer types with greater than 15% of either positive or negative gene alteration class (and more than 5 samples in) were used to train models
   * Gene alteration was defined as any non-silent mutation in the gene of interest, or a copy number amplification for an oncogene, or copy number deletion for a tumor suppressor gene.
 
 ### Predicting cancer types

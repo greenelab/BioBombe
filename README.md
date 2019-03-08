@@ -13,7 +13,7 @@ The repository stores data and data processing modules to sequentially compress 
 Named after the [mechanical device developed by cryptologists in World War II](https://en.wikipedia.org/wiki/Bombe) to decipher secret messages sent by [Enigma machines](https://en.wikipedia.org/wiki/Enigma_machine), BioBombe is used to enhance biological signatures in gene expression data.
 Inspired by the number-crunching knobs of [Alan Turing's](https://en.wikipedia.org/wiki/Alan_Turing) device, BioBombe sequentially compresses gene expression input across latent dimensionalities and deciphers the the biological signals embedded within compressed gene expression features.
 
-In this repository, we sequentially compress three different gene expression data sets (TCGA, GTEx, and TARGET) across 28 different latent dimensions (_k_) for five different algorithms (PCA, ICA, NMF, DAE, and VAE).
+In this repository, we sequentially compress three different gene expression data sets (TCGA, GTEx, and TARGET) across 28 different latent dimensions (_k_) using five different algorithms (PCA, ICA, NMF, DAE, and VAE).
 We evaluate each algorithm and dimension using a variety of metrics.
 Our goal is to construct reproducible gene expression signatures with unsupervised learning.
 

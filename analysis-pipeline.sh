@@ -70,3 +70,11 @@ cd ../9.tcga-classify
 
 # Train several models and visualize results
 bash classify_analysis.sh
+
+##############################
+# Step 8: Perform signature analysis to detect sex and MYCN amplification
+##############################
+cd ../10.gene-expression-signatures
+
+# Train several models and visualize results
+bash signature_analysis.sh

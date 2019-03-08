@@ -1,6 +1,6 @@
 ![logo](https://raw.githubusercontent.com/greenelab/BioBombe/master/logo.png)
 
-# Biological Interpretation of Serially Compressed Gene Expression Features using Network Projection
+# Sequential Compression of Gene Expression Data Across Latent Space Dimensions
 
 **Gregory Way and Casey Greene 2018**
 
@@ -8,14 +8,14 @@
 
 [![DOI](https://zenodo.org/badge/126377943.svg)](https://zenodo.org/badge/latestdoi/126377943)
 
-The repository stores data and data processing modules to enable compressed gene expression feature interpretation.
+The repository stores data and data processing modules to sequentially compress gene expression data.
 
-Named after the [mechanical device developed by cryptologists in World War II](https://en.wikipedia.org/wiki/Bombe) to decipher secret messages sent by [Enigma machines](https://en.wikipedia.org/wiki/Enigma_machine), BioBombe is used to decipher hidden signals in gene expression data.
-Inspired by the number-crunching knobs of [Alan Turing's](https://en.wikipedia.org/wiki/Alan_Turing) device, BioBombe serially compresses gene expression input with increasing bottleneck dimensionality and deciphers the learned compressed features using biological network projection approaches.
+Named after the [mechanical device developed by cryptologists in World War II](https://en.wikipedia.org/wiki/Bombe) to decipher secret messages sent by [Enigma machines](https://en.wikipedia.org/wiki/Enigma_machine), BioBombe is used to enhance biological signatures in gene expression data.
+Inspired by the number-crunching knobs of [Alan Turing's](https://en.wikipedia.org/wiki/Alan_Turing) device, BioBombe sequentially compresses gene expression input across latent dimensionalities and deciphers the the biological signals embedded within compressed gene expression features.
 
-In this repository, we serially compress three different gene expression datasets across different bottleneck dimensions (_k_) for five different algorithms.
-We evaluate each algorithm and dimension on a variety of metrics.
-Our goal is to construct reproducible gene expression features with unsupervised learning, and to begin interpreting what these compression features represent using network projection approaches.
+In this repository, we sequentially compress three different gene expression data sets (TCGA, GTEx, and TARGET) across 28 different latent dimensions (_k_) using five different algorithms (PCA, ICA, NMF, DAE, and VAE).
+We evaluate each algorithm and dimension using a variety of metrics.
+Our goal is to construct reproducible gene expression signatures with unsupervised learning.
 
 Our approach is outlined below:
 
@@ -23,14 +23,13 @@ Our approach is outlined below:
 
 ## BioBombe Training Implementation
 
-To acquire our transformed data, we independently trained five different algorithms using three different datasets.
 Our model implementation is described below.
 
 ![implementation](https://raw.githubusercontent.com/greenelab/BioBombe/master/biobombe-implementation.png)
 
-## Modules
+## Analysis Modules
 
-To reproduce the results of the analysis, the modules should be run in order.
+To reproduce the results and figures of the analysis, the modules should be run in order.
 
 | Name | Description |
 | :--- | :---------- |
@@ -42,8 +41,9 @@ To reproduce the results of the analysis, the modules should be run in order.
 | [5.analyze-stability](5.analyze-stability/) | Determine how stable compression solutions are between and across algorithms, and across dimensions |
 | [6.biobombe-projection](6.biobombe-projection/) | Apply BioBombe matrix interpretation analysis and overrepresentation analyses to assign biological knowledge to compression features |
 | [7.analyze-coverage](7.analyze-coverage/) | Determine the coverage, or proportion, of enriched gene sets in compressed latent space features for all models and ensembles of models |
-| [8.gtex-interpret](9.gtex-interpret/) | Interpret compressed features in the GTEX data |
+| [8.gtex-interpret](8.gtex-interpret/) | Interpret compressed features in the GTEX data |
 | [9.tcga-classify](9.tcga-classify/) | Input compressed features from TCGA data into supervised machine learning classifiers to detect pathway aberration |
+| [10.gene-expression-signatures](10.gene-expression-signatures/) | Identify gene expression signatures for sample sex in GTEx and TCGA data, and MYCN amplification in TARGET data |
 
 ## Algorithms
 

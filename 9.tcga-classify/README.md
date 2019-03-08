@@ -7,7 +7,7 @@
 In this module, we use the compressed latent features from 5 algorithms and across 28 different dimensions, to predict cancer type and gene alteration status in The Cancer Genome Atlas (TCGA) gene expression data.
 
 We predict cancer types and gene alterations using a logistic regression algorithm penalized with elastic net.
-We previously used a similar approach to predict Ras pathway activation in the same dataset ([Way et al. 2018](https://doi.org/10.1016/j.celrep.2018.03.046)).
+We previously used a similar approach to predict Ras pathway activation in the same data set ([Way et al. 2018](https://doi.org/10.1016/j.celrep.2018.03.046)).
 Rather than using raw gene expression features, we predict cancer types and mutations using compressed gene expression features.
 
 Our goal in this analysis was to determine the ability of the constructed features to learn signals representing cancer type and gene alterations.
@@ -17,11 +17,11 @@ Observing how these compressed features participated in the models (by model coe
 
 **Notes**
 
-* Samples with a hypermutater phenotype were removed from the dataset (greater than 5 standard deviations over the mean of log10 mutation rate)
+* Samples with a hypermutater phenotype were removed from the data set (greater than 5 standard deviations over the mean of log10 mutation rate)
 * All models are adjusted for log10 mutation rate
 * Gene alteration predictions only:
   * These models are also adjusted by cancer type
-  * To regulate balanced class sizes, only cancer types with greater than 15% and more than 5 samples in either positive or negative gene alteration class were used to train models
+  * To regulate balanced class sizes, only cancer types with greater than 15% of either positive or negative gene alteration class (and more than 5 samples in) were used to train models
   * Gene alteration was defined as any non-silent mutation in the gene of interest, or a copy number amplification for an oncogene, or copy number deletion for a tumor suppressor gene.
 
 ### Predicting cancer types
@@ -33,6 +33,14 @@ We constructed supervised machine learning tasks to distinguish each cancer-type
 
 We selected the [top 50 most mutated genes](https://github.com/greenelab/BioBombe/blob/master/9.tcga-classify/top-50-pancanatlas-mutations.ipynb) in TCGA to predict.
 Using non silent mutation and copy number status, we predicted the alteration status of these genes in the included cancer types.
+
+## Ensemble Models
+
+We also track performance of the supervised learning algorithm using features derived from three different kinds of ensemble models.
+
+1. 5 iterations of VAE fitting for each latent dimension (VAE Ensemble)
+2. 1 iteration of 5 algorithms (PCA, ICA, NMF, DAE, VAE) for each latent dimension (Model Ensemble)
+3. All BioBombe compressed features in a single model (All Ensemble) (30,850 features)
 
 ## Compression classification results
 
@@ -47,52 +55,63 @@ The red and blue dotted lines represents prediction performance with raw gene ex
 Note that the permuted models include covariate information.
 
 It appears that all of these cancer types can be predicted with 100% accuracy with raw gene expression features and at early to intermediate compression dimensions.
-However, the gene alteration status are predicted with modest accuracy, and signal only starts to emerge at intermediate to late compression dimensions.
+However, the gene alteration status are predicted with modest accuracy, and signal only starts to emerge at intermediate to late compression dimensions (**Panel C Above**).
 This indicates that cancer-type signatures are features learned at early dimensions and are some of the highest sources of variation in this dataset, while mutation signatures are learned in higher dimensions.
 
 ### Sparsity
 
-We also track the sparsity, as the percentage of the model coefficients that are zero, for real and compressed predictions of gene alteration status (**Panel C Above**).
+We also track the sparsity, as the percentage of the model coefficients that are zero, for real and compressed predictions of gene alteration status (**Panel D Above**).
 The grey square represents the models with raw gene expression.
 In all cases, it appears that the models with low dimension are not performing as well as the models with high dimensions.
 It also appears that denoising autoencoders (DAE) are the sparsest models.
 
-### Exploring a Denoising Autoencoder Model
+### Exploring the All Ensemble Model to Predict TP53 inactivation
 
-We followed up with one of the sparse DAE models used to predict TP53 inactivation.
-The feature we followed up included 200 compression features and 22 covariates (log10 mutations and 21 cancer type dummy variables) (`seed 908341`) and had 80.6% of the features with zero coefficients (179 out of 222).
-Therefore 43 coefficients were non zero.
-The top ranked coefficients are shown in **Panel D Above**.
+We specifically tracked the performance of the all feature ensemble model to predict TP53 inactivation.
+The all feature ensemble model included 30,850 compression features and had 98.97% of the features with zero coefficients (30,533 out of 30,850).
+Therefore 317 coefficients were non zero.
 
-We applied the network projection interpretation approach to the top DAE coefficients used in predicting TP53 alterations.
+We applied the network projection interpretation approach to these coefficients used in predicting TP53 alterations.
 The top ranked `GpH` gene sets for these features included:
 
-| Full Feature | Absolute Value Z Score | Gene Set                        | raw score | z_score  | ML coefficient |
-|--------------|-------------|--------------------------------------------|-----------|----------|----------------|
-| dae_156      | 4.48129     | HALLMARK_INTERFERON_GAMMA_RESPONSE         | 1.46557   | 4.48129  | 0.23558  |
-| dae_156      | 4.92812     | HALLMARK_COAGULATION                       | -2.63723  | -4.92812 | 0.23558  |
-| dae_122      | 7.87064     | HALLMARK_EPITHELIAL_MESENCHYMAL_TRANSITION | 5.53091   | 7.87064  | 0.19832  |
-| dae_122      | 4.64101     | HALLMARK_KRAS_SIGNALING_DN                 | -1.28863  | -4.64101 | 0.19832  |
-| dae_7        | 5.68651     | HALLMARK_MYC_TARGETS_V1                    | 3.34075   | 5.68651  | 0.16581  |
-| dae_7        | 11.0546     | HALLMARK_MYOGENESIS                        | -6.15819  | -11.0546 | 0.16581  |
-| dae_186      | 4.65232     | HALLMARK_INTERFERON_GAMMA_RESPONSE         | 2.93655   | 4.65232  | 0.14635  |
-| dae_186      | 5.05547     | HALLMARK_FATTY_ACID_METABOLISM             | -2.34884  | -5.05547 | 0.14635  |
-| dae_143      | 10.7977     | HALLMARK_COMPLEMENT                        | 2.39042   | 10.7977  | 0.13902  |
-| dae_143      | 3.2203      | HALLMARK_E2F_TARGETS                       | -2.33799  | -3.2203  | 0.13902  |
-| dae_88       | 7.40728     | HALLMARK_ESTROGEN_RESPONSE_EARLY           | 3.25406   | 7.40728  | -0.15494 |
-| dae_88       | 6.57371     | HALLMARK_XENOBIOTIC_METABOLISM             | -3.46226  | -6.57371 | -0.15494 |
-| dae_130      | 4.19995     | HALLMARK_OXIDATIVE_PHOSPHORYLATION         | 0.536709  | 4.19995  | -0.16391 |
-| dae_130      | 9.04101     | HALLMARK_EPITHELIAL_MESENCHYMAL_TRANSITION | -11.3443  | -9.04101 | -0.16391 |
-| dae_24       | 3.79301     | HALLMARK_EPITHELIAL_MESENCHYMAL_TRANSITION | 2.48863   | 3.79301  | -0.18192 |
-| dae_24       | 6.65545     | HALLMARK_KRAS_SIGNALING_DN                 | -2.61153  | -6.65545 | -0.18192 |
-| dae_46       | 4.03099     | HALLMARK_INTERFERON_ALPHA_RESPONSE         | 2.27472   | 4.03099  | -0.22864 |
-| dae_46       | 7.15103     | HALLMARK_OXIDATIVE_PHOSPHORYLATION         | -3.15448  | -7.15103 | -0.22864 |
+| big_feature_id            | abs_z_score | individual_feature | k   | signal | weight    | abs      | gene | variable                                   | value     | z_score  |
+|---------------------------|-------------|--------------------|-----|--------|-----------|----------|------|--------------------------------------------|-----------|----------|
+| vae_133_978124_200_signal | 10.5085     | 133                | 200 | signal | 0.082262  | 0.082262 | TP53 | HALLMARK_ESTROGEN_RESPONSE_EARLY           | -3.89942  | -10.5085 |
+| vae_133_978124_200_signal | 6.83035     | 133                | 200 | signal | 0.082262  | 0.082262 | TP53 | HALLMARK_ESTROGEN_RESPONSE_LATE            | -4.346    | -6.83035 |
+| vae_133_978124_200_signal | 6.42001     | 133                | 200 | signal | 0.082262  | 0.082262 | TP53 | HALLMARK_P53_PATHWAY                       | -3.46517  | -6.42001 |
+| vae_133_978124_200_signal | 6.38283     | 133                | 200 | signal | 0.082262  | 0.082262 | TP53 | HALLMARK_COAGULATION                       | -2.60747  | -6.38283 |
+| vae_133_978124_200_signal | 6.15825     | 133                | 200 | signal | 0.082262  | 0.082262 | TP53 | HALLMARK_XENOBIOTIC_METABOLISM             | -3.64404  | -6.15825 |
+| vae_6_908341_50_signal    | 13.4192     | 6                  | 50  | signal | 0.075826  | 0.075826 | TP53 | HALLMARK_TNFA_SIGNALING_VIA_NFKB           | -4.42049  | -13.4192 |
+| vae_6_908341_50_signal    | 10.688      | 6                  | 50  | signal | 0.075826  | 0.075826 | TP53 | HALLMARK_XENOBIOTIC_METABOLISM             | -5.68437  | -10.688  |
+| vae_6_908341_50_signal    | 7.52623     | 6                  | 50  | signal | 0.075826  | 0.075826 | TP53 | HALLMARK_COAGULATION                       | -4.08482  | -7.52623 |
+| vae_6_908341_50_signal    | 7.41978     | 6                  | 50  | signal | 0.075826  | 0.075826 | TP53 | HALLMARK_MYC_TARGETS_V1                    | 0.408717  | 7.41978  |
+| vae_6_908341_50_signal    | 6.68337     | 6                  | 50  | signal | 0.075826  | 0.075826 | TP53 | HALLMARK_KRAS_SIGNALING_UP                 | -4.51147  | -6.68337 |
+| vae_4_908341_150_signal   | 8.68153     | 4                  | 150 | signal | -0.065103 | 0.065103 | TP53 | HALLMARK_BILE_ACID_METABOLISM              | 0.0707084 | 8.68153  |
+| vae_4_908341_150_signal   | 7.60301     | 4                  | 150 | signal | -0.065103 | 0.065103 | TP53 | HALLMARK_EPITHELIAL_MESENCHYMAL_TRANSITION | -4.43528  | -7.60301 |
+| vae_4_908341_150_signal   | 6.80611     | 4                  | 150 | signal | -0.065103 | 0.065103 | TP53 | HALLMARK_FATTY_ACID_METABOLISM             | -0.831578 | 6.80611  |
+| vae_4_908341_150_signal   | 5.90416     | 4                  | 150 | signal | -0.065103 | 0.065103 | TP53 | HALLMARK_OXIDATIVE_PHOSPHORYLATION         | -0.54764  | 5.90416  |
+| vae_4_908341_150_signal   | 5.87387     | 4                  | 150 | signal | -0.065103 | 0.065103 | TP53 | HALLMARK_ESTROGEN_RESPONSE_EARLY           | -0.789038 | 5.87387  |
+| dae_140_451283_150_signal | 8.40018     | 140                | 150 | signal | -0.062348 | 0.062348 | TP53 | HALLMARK_INTERFERON_ALPHA_RESPONSE         | -3.10989  | -8.40018 |
+| dae_140_451283_150_signal | 3.81763     | 140                | 150 | signal | -0.062348 | 0.062348 | TP53 | HALLMARK_INTERFERON_GAMMA_RESPONSE         | -2.36052  | -3.81763 |
+| dae_140_451283_150_signal | 3.6102      | 140                | 150 | signal | -0.062348 | 0.062348 | TP53 | HALLMARK_CHOLESTEROL_HOMEOSTASIS           | 1.30372   | 3.6102   |
+| dae_140_451283_150_signal | 3.43927     | 140                | 150 | signal | -0.062348 | 0.062348 | TP53 | HALLMARK_REACTIVE_OXIGEN_SPECIES_PATHWAY   | -0.811733 | -3.43927 |
+| dae_140_451283_150_signal | 3.09878     | 140                | 150 | signal | -0.062348 | 0.062348 | TP53 | HALLMARK_ESTROGEN_RESPONSE_LATE            | 1.6836    | 3.09878  |
+| nmf_97_486191_200_signal  | 16.9001     | 97                 | 200 | signal | -0.061847 | 0.061847 | TP53 | HALLMARK_E2F_TARGETS                       | 31.2308   | 16.9001  |
+| nmf_97_486191_200_signal  | 12.4126     | 97                 | 200 | signal | -0.061847 | 0.061847 | TP53 | HALLMARK_G2M_CHECKPOINT                    | 22.7514   | 12.4126  |
+| nmf_97_486191_200_signal  | 10.763      | 97                 | 200 | signal | -0.061847 | 0.061847 | TP53 | HALLMARK_DNA_REPAIR                        | 11.8644   | 10.763   |
+| nmf_97_486191_200_signal  | 9.65131     | 97                 | 200 | signal | -0.061847 | 0.061847 | TP53 | HALLMARK_MYC_TARGETS_V1                    | 18.653    | 9.65131  |
+| nmf_97_486191_200_signal  | 6.02457     | 97                 | 200 | signal | -0.061847 | 0.061847 | TP53 | HALLMARK_MITOTIC_SPINDLE                   | 8.9368    | 6.02457  |
 
-These genesets represent the highest scoring hallmark processes activated and deactivated in samples with TP53 activation.
+These genesets represent a sample of the highest scoring hallmark processes activated and deactivated in samples with TP53 activation.
 
 #### Model Performance
 
-Receiver operating characteristic (ROC) curves (**Panel E Above**) and precision recall curves (**Panel F Above**) are presented for training, testing, and cross validation (CV) data partitions for predictions using raw gene expression features and compressed gene expression features.
+Receiver operating characteristic (ROC) curves and precision recall curves (**Panel E Above**) are presented for training, testing, and cross validation (CV) data partitions for predictions using raw gene expression features and compressed gene expression features.
+
+#### Algorithm and Latent Dimensionality Contribution
+
+We also tracked which features were being used by the logistic regression model across algorithms and latent dimensions.
+VAEs were generally useful throughout k dimension, but the classifier used signal that was generated across algorithms and latent dimensions (**Panel F Above**)
 
 ## Predicting Gene Mutation Status with Top Scoring Compressed Features
 

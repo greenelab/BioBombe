@@ -1,0 +1,482 @@
+<html>
+  <head>
+    <title>BioBombe</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <style>
+      @import url('https://use.fontawesome.com/releases/v5.8.2/css/all.css');
+      @import url('https://fonts.googleapis.com/css?family=Lato:400');
+      @import url('https://fonts.googleapis.com/css?family=Crimson+Pro:500,600');
+
+      * {
+        --black: #000000;
+        --gray: #b0b0b0;
+        --white: #ffffff;
+        --light: #e0f2f1;
+        --medium: #b2dfdb;
+        --dark: #009688;
+        --serif: 'Crimson Pro', serif;
+        --sans-serif: 'Lato', sans-serif;
+
+        box-sizing: border-box;
+        font-family: var(--sans-serif);
+        line-height: 1.5;
+        color: var(--black);
+      }
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: var(--white);
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+      }
+      main {
+        flex-grow: 1;
+      }
+      header,
+      footer {
+        text-align: center;
+        background: var(--light);
+      }
+      section {
+        padding: 30px 40px;
+      }
+      section:not(:first-child) {
+        padding-top: 15px;
+      }
+      section:not(:last-child) {
+        padding-bottom: 15px;
+      }
+      header > section {
+        padding-bottom: 0;
+      }
+      .section {
+        max-width: 860px;
+        margin: 0 auto;
+      }
+      h2 {
+        position: relative;
+        margin: 0;
+        margin-bottom: 20px;
+        padding-bottom: 5px;
+        font-family: var(--serif);
+        font-weight: 600;
+        font-size: 1.75em;
+        border-bottom: solid 1px var(--gray);
+        word-break: break-word;
+        overflow-wrap: break-word;
+      }
+      h3 {
+        margin-bottom: 10px;
+        font-size: 1.1em;
+      }
+      h4 {
+        margin: 0;
+        margin-bottom: 10px;
+        font-weight: 400;
+        font-style: italic;
+      }
+      p {
+        margin: 0;
+        margin-bottom: 20px;
+      }
+      p.small {
+        margin-bottom: 10px;
+      }
+      p:last-child {
+        margin-bottom: 0;
+      }
+      a {
+        padding: 1px 2px;
+      }
+      a,
+      a * {
+        color: var(--dark);
+        transition: background 0.25s ease, color 0.25s ease;
+      }
+      a:hover,
+      a:focus {
+        color: var(--black);
+      }
+      figure {
+        margin: 0;
+        max-width: 100%;
+      }
+      figure img {
+        max-width: 100%;
+      }
+      i.fas,
+      i.fab {
+        margin-left: 10px;
+      }
+      .logo {
+        margin: 40px 0;
+      }
+      .logo > img {
+        width: 100%;
+        max-height: 100px;
+        object-fit: contain;
+      }
+      nav {
+        text-align: center;
+        font-size: 1.25em;
+      }
+      nav > a {
+        display: inline-block;
+        padding: 15px 25px;
+        color: var(--black);
+        font-family: var(--serif);
+        font-weight: 500;
+        text-decoration: none;
+        transition: background 0.25s ease, opacity 0.25s ease;
+      }
+      nav:hover a,
+      nav:focus a {
+        opacity: 0.25;
+      }
+      nav > a:hover,
+      nav > a:focus {
+        opacity: 1;
+        background: var(--medium);
+      }
+      .link {
+        display: inline-block;
+        margin-right: 5px;
+        padding: 5px 10px;
+        text-decoration: none;
+        transition: background 0.25s ease, color 0.25s ease;
+      }
+      .link:hover,
+      .link:focus {
+        color: var(--black);
+        background: var(--medium);
+      }
+      .link:hover i,
+      .link:focus i {
+        color: var(--black);
+      }
+
+      /* for mobile screens */
+      @media only screen and (max-width: 860px) {
+        header > section {
+          padding-bottom: 20px;
+        }
+        .logo {
+          margin-bottom: 20px;
+        }
+        nav > a {
+          width: 100%;
+          padding: 10px 15px;
+        }
+      }
+
+      /* anchor styles */
+      .anchor {
+        margin-left: 10px;
+        opacity: 0;
+        transition: opacity 0.25s ease;
+      }
+      h2:hover .anchor,
+      .anchor:focus {
+        opacity: 1;
+        background: none;
+      }
+      .anchor i {
+        margin: 0;
+      }
+      @media (hover: none) {
+        .anchor {
+          opacity: 1;
+        }
+      }
+      [data-glow='true'] {
+        animation: highlight_glow 2s;
+      }
+      @keyframes highlight_glow {
+        0% {
+          background: none;
+        }
+        10% {
+          background: var(--light);
+        }
+        100% {
+          background: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <section>
+        <div class="section">
+          <div class="logo">
+            <img src="logo.svg" />
+          </div>
+          <nav>
+            <a href="#summary">Summary</a>
+            <a href="#citation">Citation</a>
+            <a href="#approach">Approach</a>
+            <a href="#resources">Resources</a>
+            <a href="#acknowledgements">Acknowledgements</a>
+          </nav>
+        </div>
+      </section>
+    </header>
+    <main>
+      <section id="summary">
+        <div class="section">
+          <h2>Summary</h2>
+          <p>
+            BioBombe represents an approach to optimize extraction of biological
+            representations in gene expression data. Named after the large
+            mechanical devices built by Alan Turing and other cryptologists
+            during World War II to decode secret messages, BioBombe is used to
+            decipher hidden messages embedded in gene expression data. By
+            applying multiple common dimensionality reduction algorithms across
+            a wide range of latent dimensionalities, we use the BioBombe
+            approach to study which algorithms and latent dimensionalities best
+            capture certain biological signal.
+          </p>
+          <p>
+            This website provides convenient links to all the resources provided
+            by the manuscript including software, processed gene expression
+            input data, compressed features for all algorithms, latent
+            dimensionalities, and initializations for all datasets, and
+            performance results and models for the large scale cancer-type and
+            mutation classification analysis.
+          </p>
+          <h3>Primary Findings</h3>
+          <p>
+            <i
+              >There does not exist a single optimal algorithm or latent
+              dimensionality for learning biological representations</i
+            >. Many different biological signatures are learned by different
+            compression algorithms at various latent dimensionalities. A
+            practitioner aiming to optimize feature discovery by compressing
+            gene expression data should use multiple algorithms across a large
+            range of latent dimensionalities.
+          </p>
+        </div>
+      </section>
+      <section id="citation">
+        <div class="section">
+          <h2>Citation</h2>
+          <p>
+            <b
+              >Sequential compression across latent space dimensions enhances
+              gene expression signatures</b
+            ><br />
+            Way, G.P., Zietz, M., Himmelstein, D.S., Greene, C.S.<br />
+            <i>biorXiv preprint</i> (2019) &middot;
+            <a href="https://www.biorxiv.org/content/10.1101/573782v1"
+              >doi:10.1101/573782</a
+            >
+          </p>
+        </div>
+      </section>
+      <section id="approach">
+        <div class="section">
+          <h2>Approach</h2>
+          <p>
+            We train five compression algorithms (principal components analysis
+            (PCA), independent components analysis (ICA), non-negative matrix
+            factorization (NMF), denoising autoencoders (DAE), and variational
+            autoencoders (VAE)) using three benchmark gene expression datasets:
+            The Cancer Genome Atlas (TCGA), Genome Tissue Expression Consortium
+            project (GTEx), and the Therapeutically Applicable Research To
+            Generate Effective Treatments (TARGET) project across a wide range
+            of latent dimensionalities (k). We assess model performance by
+            measuring reconstruction, correlation between input and
+            reconstructed output, model stability and geneset coverage.
+          </p>
+          <figure>
+            <a href="approach.png"><img src="approach.png"/></a>
+          </figure>
+        </div>
+      </section>
+      <section id="resources">
+        <div class="section">
+          <h2>Resources</h2>
+          <h3>Software</h3>
+          <p class="small">
+            <a class="link" href="https://github.com/greenelab/BioBombe"
+              >Development<i class="fab fa-github"></i></a
+            ><a class="link" href="https://zenodo.org/record/2587854"
+              >Archive<i class="fas fa-external-link-alt"></i
+            ></a>
+          </p>
+          <p>
+            Includes code, data, documentation, results, figures, and a
+            computational environment for the full analysis. Each numbered
+            module represents specific data processing steps or analysis
+            results.
+          </p>
+          <h3>Input Data</h3>
+          <p class="small">
+            <a
+              class="link"
+              href="https://github.com/greenelab/BioBombe/tree/master/0.expression-download/data"
+              >Data<i class="fab fa-github"></i
+            ></a>
+          </p>
+          <p>
+            Includes Processed Training and Testing Datasets for TCGA, GTEx, and
+            Target as git LFS files
+          </p>
+          <h3>Heterogeneous Networks</h3>
+          <p class="small">
+            <a
+              class="link"
+              href="https://github.com/greenelab/BioBombe/tree/master/3.build-hetnets/hetnets"
+              >Gene Sets<i class="fab fa-github"></i></a
+            ><a class="link" href="https://het.io/"
+              >Info<i class="fas fa-external-link-alt"></i
+            ></a>
+          </p>
+          <p>
+            Includes real and permuted hetnets<sup>1</sup> for MSigDB<sup
+              >2</sup
+            >
+            and xCell<sup>3</sup> gene sets, as well as more details about
+            heterogeneous networks.
+          </p>
+          <p>
+            <sup>1</sup>
+            <b
+              >Systematic integration of biomedical knowledge prioritizes drugs
+              for repurposing</b
+            ><br />
+            Himmelstein DS, Lizee A, Hessler C, Brueggeman L, Chen SL, Hadley D,
+            Green A, Khankhanian P, Baranzini SE.<br />
+            <i>eLife</i> (2017) &middot;
+            <a href="https://elifesciences.org/articles/26726"
+              >doi:10.7554/eLife.26726</a
+            >
+          </p>
+          <p>
+            <sup>2</sup>
+            <b>The Molecular Signatures Database Hallmark Gene Set Collection</b
+            ><br />
+            Liberzon A, Birger C, Thorvaldsd&oacute;ttir H, Ghandi M, Mesirov
+            JP, Tamayo P.<br />
+            <i>Cell Systems</i> (2015) &middot; 1:417-25
+          </p>
+          <p>
+            <sup>3</sup>
+            <b
+              >xCell: digitally portraying the tissue cellular heterogeneity
+              landscape</b
+            ><br />
+            Aran D, Hu Z, Butte AJ.<br />
+            <i>Genome Biology</i> (2017) &middot;
+            <a
+              href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-017-1349-1"
+              >doi:10.1186/s13059-017-1349-1</a
+            >
+          </p>
+          <h3>Compressed Features</h3>
+          <p class="small">
+            Results:
+          </p>
+          <p class="small">
+            <a class="link" href="https://zenodo.org/record/2110752"
+              >TCGA<i class="fas fa-external-link-alt"></i></a
+            ><a class="link" href="https://zenodo.org/record/2300616"
+              >GTEX<i class="fas fa-external-link-alt"></i></a
+            ><a class="link" href="https://zenodo.org/record/2222463"
+              >TARGET<i class="fas fa-external-link-alt"></i
+            ></a>
+          </p>
+          <p class="small">
+            Randomly Permuted Data:
+          </p>
+          <p class="small">
+            <a class="link" href="https://zenodo.org/record/2221216"
+              >TCGA<i class="fas fa-external-link-alt"></i></a
+            ><a class="link" href="https://zenodo.org/record/2386816"
+              >GTEX<i class="fas fa-external-link-alt"></i></a
+            ><a class="link" href="https://zenodo.org/record/2222469"
+              >TARGET<i class="fas fa-external-link-alt"></i
+            ></a>
+          </p>
+          <h3>TCGA Classification Results</h3>
+          <p class="small">
+            <a
+              class="link"
+              href="https://zenodo.org/record/2535759#.XXVUeJNKg1I"
+              >Results<i class="fas fa-external-link-alt"></i
+            ></a>
+          </p>
+          <p>
+            Includes BioBombe feature coefficients, sample activation scores,
+            and classifier metrics for all supervised learning models (elastic
+            net logistic regression) trained to predict cancer-type and mutation
+            status.
+          </p>
+        </div>
+      </section>
+      <section id="acknowledgements">
+        <div class="section">
+          <h2>Acknowledge<wbr />ments</h2>
+          <p>
+            This work was funded in party by The Gordon and Betty Moore
+            Foundation under GBMF 4552 (CSG) and the National Institutes of
+            Health's National Human Genome Research Institute under R01 HG010067
+            (CSG) and the National Institutes of Health under T32 HG000046
+            (GPW).
+          </p>
+          <p>
+            We would like to thank Jaclyn Taroni, Yoson Park, and Alexandra Lee
+            for insightful discussions and code review. We also thank Jo Lynne
+            Rokita and John Maris for insightful discussions regarding the
+            neuroblastoma analysis.
+          </p>
+        </div>
+      </section>
+    </main>
+    <footer>
+      <section>
+        A project of the <a href="https://greenelab.com/">Greene Lab</a><br />
+      </section>
+    </footer>
+    <script>
+      // create section links next to each heading of certain type
+      function createAnchors() {
+        const headers = document.querySelectorAll('h2');
+        for (const header of headers) {
+          // find closest parent element with id
+          let element = header;
+          while (!element.id && element !== document.body)
+            element = element.parentElement;
+          const id = element.id;
+          if (!id) continue;
+
+          // create link object
+          const link = document.createElement('a');
+          link.classList.add('anchor');
+          link.innerHTML = '<i class="fas fa-link fa-xs"></i>';
+          link.href = '#' + id;
+          header.appendChild(link);
+        }
+      }
+
+      // glow section when user navigates to it
+      function onHashChange() {
+        const id = window.location.hash.replace('#', '');
+        const element = document.getElementById(id);
+        if (!element) return;
+
+        // start css glow animation
+        element.setAttribute('data-glow', 'true');
+        window.setTimeout(() => element.removeAttribute('data-glow'), 2000);
+      }
+
+      window.addEventListener('load', createAnchors);
+      window.addEventListener('load', onHashChange);
+      window.addEventListener('hashchange', onHashChange);
+    </script>
+  </body>
+</html>

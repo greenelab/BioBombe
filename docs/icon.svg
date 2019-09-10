@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-100 -100 200 200">
+  <!-- rim -->
+  <circle cx="0" cy="0" r="100" fill="#000000" />
+  <!-- letters -->
+  <g fill="#80cbc4">
+    <rect transform="rotate(000.00)" x="-2" y="-93" width="4" height="7" />
+    <rect transform="rotate(013.84)" x="-2" y="-93" width="4" height="7" />
+    <rect transform="rotate(027.69)" x="-2" y="-93" width="4" height="7" />
+    <rect transform="rotate(041.53)" x="-2" y="-93" width="4" height="7" />
+    <rect transform="rotate(055.38)" x="-2" y="-93" width="4" height="7" />
+    <rect transform="rotate(069.23)" x="-2" y="-93" width="4" height="7" />
+    <rect transform="rotate(083.07)" x="-2" y="-93" width="4" height="7" />
+    <rect transform="rotate(096.92)" x="-2" y="-93" width="4" height="7" />
+    <rect transform="rotate(110.76)" x="-2" y="-93" width="4" height="7" />
+    <rect transform="rotate(124.61)" x="-2" y="-93" width="4" height="7" />
+    <rect transform="rotate(138.46)" x="-2" y="-93" width="4" height="7" />
+    <rect transform="rotate(152.30)" x="-2" y="-93" width="4" height="7" />
+    <rect transform="rotate(166.15)" x="-2" y="-93" width="4" height="7" />
+    <rect transform="rotate(180.00)" x="-2" y="-93" width="4" height="7" />
+    <rect transform="rotate(193.84)" x="-2" y="-93" width="4" height="7" />
+    <rect transform="rotate(207.69)" x="-2" y="-93" width="4" height="7" />
+    <rect transform="rotate(221.53)" x="-2" y="-93" width="4" height="7" />
+    <rect transform="rotate(235.38)" x="-2" y="-93" width="4" height="7" />
+    <rect transform="rotate(249.23)" x="-2" y="-93" width="4" height="7" />
+    <rect transform="rotate(263.07)" x="-2" y="-93" width="4" height="7" />
+    <rect transform="rotate(276.92)" x="-2" y="-93" width="4" height="7" />
+    <rect transform="rotate(290.76)" x="-2" y="-93" width="4" height="7" />
+    <rect transform="rotate(304.61)" x="-2" y="-93" width="4" height="7" />
+    <rect transform="rotate(318.46)" x="-2" y="-93" width="4" height="7" />
+    <rect transform="rotate(332.30)" x="-2" y="-93" width="4" height="7" />
+    <rect transform="rotate(346.15)" x="-2" y="-93" width="4" height="7" />
+  </g>
+  <!-- plate -->
+  <circle cx="0" cy="0" r="80" fill="#009688" />
+  <!-- holes -->
+  <g fill="#000000">
+    <circle transform="rotate(00)" cx="0" cy="-50" r="8" />
+    <circle transform="rotate(30)" cx="0" cy="-50" r="8" />
+    <circle transform="rotate(60)" cx="0" cy="-50" r="8" />
+    <circle transform="rotate(90)" cx="0" cy="-50" r="8" />
+    <circle transform="rotate(120)" cx="0" cy="-50" r="8" />
+    <circle transform="rotate(150)" cx="0" cy="-50" r="8" />
+    <circle transform="rotate(180)" cx="0" cy="-50" r="8" />
+    <circle transform="rotate(210)" cx="0" cy="-50" r="8" />
+    <circle transform="rotate(240)" cx="0" cy="-50" r="8" />
+    <circle transform="rotate(270)" cx="0" cy="-50" r="8" />
+    <circle transform="rotate(300)" cx="0" cy="-50" r="8" />
+    <circle transform="rotate(330)" cx="0" cy="-50" r="8" />
+  </g>
+  <!-- disc -->
+  <circle cx="0" cy="0" r="35" fill="#80cbc4" />
+  <!-- reflector -->
+  <g fill="#ffffff" transform="rotate(-45)">
+    <circle cx="0" cy="0" r="20" />
+    <path
+      transform="translate(0,-2) rotate(-6)"
+      d="
+          M 0 0
+          L 60 0
+          A 10 10 0 0 0 50 -10
+          L 0 -10
+          z
+        "
+    />
+    <path
+      transform="translate(0,2) rotate(6)"
+      d="
+          M 0 0
+          L 60 0
+          A 10 10 0 0 1 50 10
+          L 0 10
+          z
+        "
+    />
+  </g>
+  <!-- shaft -->
+  <circle cx="0" cy="0" r="6" fill="#009688" />
+</svg>

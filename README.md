@@ -1,4 +1,4 @@
-![logo](https://raw.githubusercontent.com/greenelab/BioBombe/master/logo.png)
+![logo](https://raw.githubusercontent.com/greenelab/BioBombe/docs/master/logo.png)
 
 # Sequential Compression of Gene Expression Data Across Latent Space Dimensions
 
@@ -10,12 +10,20 @@
 
 The repository stores data and data processing modules to sequentially compress gene expression data.
 
-Named after the [mechanical device developed by cryptologists in World War II](https://en.wikipedia.org/wiki/Bombe) to decipher secret messages sent by [Enigma machines](https://en.wikipedia.org/wiki/Enigma_machine), BioBombe is used to enhance biological signatures in gene expression data.
-Inspired by the number-crunching knobs of [Alan Turing's](https://en.wikipedia.org/wiki/Alan_Turing) device, BioBombe sequentially compresses gene expression input across latent dimensionalities and deciphers the the biological signals embedded within compressed gene expression features.
+Named after the [mechanical device](https://en.wikipedia.org/wiki/Bombe) developed by [Alan Turing](https://en.wikipedia.org/wiki/Alan_Turing) and other cryptologists in World War II to decipher secret messages sent by [Enigma machines](https://en.wikipedia.org/wiki/Enigma_machine), BioBombe represents an approach used to decipher hidden messages embedded in gene expression data.
+We use the BioBombe approach to study different biological representations learned across compression algorithms and various latent dimensionalities.
 
-In this repository, we sequentially compress three different gene expression data sets (TCGA, GTEx, and TARGET) across 28 different latent dimensions (_k_) using five different algorithms (PCA, ICA, NMF, DAE, and VAE).
+In this repository, we compress three different gene expression data sets (TCGA, GTEx, and TARGET) across 28 different latent dimensions (_k_) using five different algorithms (PCA, ICA, NMF, DAE, and VAE).
 We evaluate each algorithm and dimension using a variety of metrics.
 Our goal is to construct reproducible gene expression signatures with unsupervised learning.
+
+## Citation
+
+> Sequential compression across latent space dimensions enhances gene expression signatures
+Way, G.P., Zietz, M., Himmelstein, D.S., Greene, C.S.
+biorXiv preprint (2019) doi:10.1101/573782
+
+## Approach
 
 Our approach is outlined below:
 

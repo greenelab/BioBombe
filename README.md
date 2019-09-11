@@ -1,4 +1,4 @@
-![logo](https://raw.githubusercontent.com/greenelab/BioBombe/docs/master/logo.png)
+![logo](https://raw.githubusercontent.com/greenelab/BioBombe/master/docs/logo.png)
 
 # Sequential Compression of Gene Expression Data Across Latent Space Dimensions
 

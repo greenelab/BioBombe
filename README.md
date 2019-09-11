@@ -17,6 +17,8 @@ In this repository, we compress three different gene expression data sets (TCGA,
 We evaluate each algorithm and dimension using a variety of metrics.
 Our goal is to construct reproducible gene expression signatures with unsupervised learning.
 
+Links to access data and archived results can be found here: https://greenelab.github.io/BioBombe/
+
 ## Citation
 
 > Sequential compression across latent space dimensions enhances gene expression signatures

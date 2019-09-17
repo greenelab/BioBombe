@@ -34,7 +34,7 @@ subset_mad_genes = 8000
 data_dir = os.path.join('..', '0.expression-download', 'data')
 
 
-# In[ ]:
+# In[4]:
 
 
 time_results = []
@@ -143,7 +143,7 @@ for dataset in datasets:
         time_results.append(result)
 
 
-# In[ ]:
+# In[5]:
 
 
 # Combine and output the time analysis results

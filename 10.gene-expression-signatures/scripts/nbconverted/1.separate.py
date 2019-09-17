@@ -1,4 +1,4 @@
-
+#!/usr/bin/env python
 # coding: utf-8
 
 # # Detect Separation Between Two Phenotypes in TCGA, GTEx, and TARGET Data
@@ -81,7 +81,7 @@ def get_ttest_results(z_matrix_dict, group_a_ids, group_b_ids, train_or_test='te
                 full_results.append(result_df)
     
     full_results_df = pd.concat(full_results)
-    full_results_df = full_results_df.assign(neg_log_p=-np.log10(full_results_df.t_p))
+    full_results_df = full_results_df.assign(neg_log_p=-np.log10(full_results_df.t_p + 1e-300))
     full_results_df = full_results_df.sort_values(by='neg_log_p', ascending=False)
     return full_results_df
 
@@ -100,12 +100,24 @@ gtex_pheno_df.head()
 # In[4]:
 
 
+# Load GTEx Sample Attribute Data
+file = os.path.join("..", "0.expression-download", "download", "GTEx_v7_Annotations_SampleAttributesDS.txt")
+gtex_sample_df = pd.read_table(file)
+
+print(gtex_sample_df.shape)
+gtex_sample_df.head(2)
+
+
+# In[5]:
+
+
+# Load compressed matrix
 gtex_z_matrix_dict = build_feature_dictionary(dataset="GTEX",
                                               load_data=True,
                                               store_train_test='test')
 
 
-# In[5]:
+# In[6]:
 
 
 # Extract male and female ids from the dataset using one matrix as an example
@@ -125,14 +137,64 @@ patient_id_df = pd.concat(
     axis='columns'
 )
 
-gtex_males = patient_id_df.query("SEX == 1").sample_id.tolist()
-gtex_females = patient_id_df.query("SEX == 2").sample_id.tolist()
+patient_id_df = (
+    patient_id_df.merge(
+        gtex_sample_df,
+        left_on="sample_id",
+        right_on="SAMPID",
+        how="left"
+    )
+)
 
 print(patient_id_df.shape)
-patient_id_df.head()
+patient_id_df.head(3)
 
 
-# In[6]:
+# In[7]:
+
+
+# Get gender ratio across samples
+gender_type_ratio = pd.crosstab(patient_id_df.SMTS, patient_id_df.SEX)
+gender_type_ratio = (
+    gender_type_ratio
+    .assign(ratio=((gender_type_ratio.loc[:, 2] + 1) / (gender_type_ratio.loc[:, 1] + 1)))
+)
+
+fudge_factor = 0.5
+balanced= (
+    gender_type_ratio
+    .loc[
+        (gender_type_ratio.ratio < (1 + fudge_factor)) &
+        (gender_type_ratio.ratio > (1 - fudge_factor)),
+        :]
+)
+
+balanced
+
+
+# In[8]:
+
+
+balanced_tissue_types = balanced.index.tolist()
+
+gtex_males = (
+    patient_id_df
+    .query("SEX == 1")
+    .query("SMTS in @balanced_tissue_types")
+    .sample_id.tolist()
+)
+gtex_females = (
+    patient_id_df
+    .query("SEX == 2")
+    .query("SMTS in @balanced_tissue_types")
+    .sample_id.tolist()
+)
+
+print(len(gtex_males))
+print(len(gtex_females))
+
+
+# In[9]:
 
 
 # Perform t-test for all compressed features
@@ -141,7 +203,7 @@ gtex_full_results_df = get_ttest_results(z_matrix_dict=gtex_z_matrix_dict,
                                          group_b_ids=gtex_females)
 
 
-# In[7]:
+# In[10]:
 
 
 # Output results
@@ -154,7 +216,7 @@ gtex_full_results_df.head()
 
 # ## 2. TCGA Sex Analysis
 
-# In[8]:
+# In[11]:
 
 
 # Load TCGA phenotype data
@@ -164,7 +226,7 @@ tcga_pheno_df = pd.read_excel(file)
 tcga_pheno_df.head()
 
 
-# In[9]:
+# In[12]:
 
 
 tcga_z_matrix_dict = build_feature_dictionary(dataset="TCGA",
@@ -172,7 +234,7 @@ tcga_z_matrix_dict = build_feature_dictionary(dataset="TCGA",
                                               store_train_test='test')
 
 
-# In[10]:
+# In[13]:
 
 
 # Extract male and female ids from the dataset
@@ -191,14 +253,54 @@ patient_id_df = pd.concat(
     axis='columns'
 )
 
-tcga_males = patient_id_df.query("gender == 'MALE'").sample_id.tolist()
-tcga_females = patient_id_df.query("gender == 'FEMALE'").sample_id.tolist()
-
 print(patient_id_df.shape)
 patient_id_df.head()
 
 
-# In[11]:
+# In[14]:
+
+
+gender_type_ratio = pd.crosstab(patient_id_df.loc[:, "type"], patient_id_df.gender)
+gender_type_ratio = (
+    gender_type_ratio
+    .assign(ratio=((gender_type_ratio.FEMALE + 1) / (gender_type_ratio.MALE + 1)))
+)
+
+fudge_factor = 0.5
+balanced= (
+    gender_type_ratio
+    .loc[
+        (gender_type_ratio.ratio < (1 + fudge_factor)) &
+        (gender_type_ratio.ratio > (1 - fudge_factor)),
+        :]
+)
+
+balanced
+
+
+# In[15]:
+
+
+balanced_cancer_types = balanced.index.tolist()
+
+tcga_males = (
+    patient_id_df
+    .query("gender == 'MALE'")
+    .query("type in @balanced_cancer_types")
+    .sample_id.tolist()
+)
+tcga_females = (
+    patient_id_df
+    .query("gender == 'FEMALE'")
+    .query("type in @balanced_cancer_types")
+    .sample_id.tolist()
+)
+
+print(len(tcga_males))
+print(len(tcga_females))
+
+
+# In[16]:
 
 
 # Perform t-test for all compressed features
@@ -207,7 +309,7 @@ tcga_full_results_df = get_ttest_results(z_matrix_dict=tcga_z_matrix_dict,
                                          group_b_ids=tcga_females)
 
 
-# In[12]:
+# In[17]:
 
 
 # Output results
@@ -220,7 +322,7 @@ tcga_full_results_df.head()
 
 # ## 3. TARGET NBL MYCN Status Analysis
 
-# In[13]:
+# In[18]:
 
 
 # Load TARGET phenotype data
@@ -229,7 +331,7 @@ nbl_pheno_df = pd.read_table(file)
 nbl_pheno_df.head()
 
 
-# In[14]:
+# In[19]:
 
 
 # Load TARGET matrices
@@ -238,10 +340,10 @@ target_z_matrix_dict = build_feature_dictionary(dataset="TARGET",
                                                 store_train_test='train')
 
 
-# In[15]:
+# In[20]:
 
 
-# Extract male and female ids from the dataset
+# Extract amplified and not amplified samples from the dataset
 example_matrix_df = target_z_matrix_dict['signal']['8']['451283']['train']
 
 patient_id_df = pd.concat(
@@ -264,7 +366,7 @@ print(patient_id_df.shape)
 patient_id_df.head()
 
 
-# In[16]:
+# In[21]:
 
 
 # Perform t-test for all compressed features
@@ -274,7 +376,7 @@ target_full_results_df = get_ttest_results(z_matrix_dict=target_z_matrix_dict,
                                            train_or_test='train')
 
 
-# In[17]:
+# In[22]:
 
 
 file = os.path.join("results", "nbl_mycn_separation_target_t_test.tsv")

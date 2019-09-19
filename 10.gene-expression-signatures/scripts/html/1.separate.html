@@ -13129,7 +13129,7 @@ div#notebook {
     <span class="n">b_activation</span> <span class="o">=</span> <span class="n">feature_series</span><span class="p">[</span><span class="n">feature_series</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">group_b_ids</span><span class="p">)]</span>
     
     <span class="c1"># Perform t-test on two groups</span>
-    <span class="n">t_stat</span><span class="p">,</span> <span class="n">t_p</span> <span class="o">=</span> <span class="n">ttest_ind</span><span class="p">(</span><span class="n">a_activation</span><span class="p">,</span> <span class="n">b_activation</span><span class="p">)</span>
+    <span class="n">t_stat</span><span class="p">,</span> <span class="n">t_p</span> <span class="o">=</span> <span class="n">ttest_ind</span><span class="p">(</span><span class="n">a_activation</span><span class="p">,</span> <span class="n">b_activation</span><span class="p">,</span> <span class="n">equal_var</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
     
     <span class="k">return</span><span class="p">([</span><span class="n">t_stat</span><span class="p">,</span> <span class="n">t_p</span><span class="p">,</span> <span class="n">feature_algorithm</span><span class="p">,</span> <span class="n">feature_num</span><span class="p">])</span>
 
@@ -13645,6 +13645,9 @@ div#notebook {
         <span class="p">:]</span>
 <span class="p">)</span>
 
+<span class="n">out_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;results&quot;</span><span class="p">,</span> <span class="s2">&quot;balanced_gtex_tissues.tsv&quot;</span><span class="p">)</span>
+<span class="n">balanced</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">out_file</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)</span>
+        
 <span class="n">balanced</span>
 </pre></div>
 
@@ -13838,7 +13841,8 @@ div#notebook {
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Perform t-test for all compressed features</span>
 <span class="n">gtex_full_results_df</span> <span class="o">=</span> <span class="n">get_ttest_results</span><span class="p">(</span><span class="n">z_matrix_dict</span><span class="o">=</span><span class="n">gtex_z_matrix_dict</span><span class="p">,</span>
                                          <span class="n">group_a_ids</span><span class="o">=</span><span class="n">gtex_males</span><span class="p">,</span>
-                                         <span class="n">group_b_ids</span><span class="o">=</span><span class="n">gtex_females</span><span class="p">)</span>
+                                         <span class="n">group_b_ids</span><span class="o">=</span><span class="n">gtex_females</span><span class="p">,</span>
+                                         <span class="n">train_or_test</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -13915,59 +13919,59 @@ div#notebook {
   </thead>
   <tbody>
     <tr>
-      <th>708</th>
-      <td>-43.711096</td>
-      <td>2.032291e-214</td>
-      <td>vae</td>
-      <td>108</td>
-      <td>200</td>
-      <td>signal</td>
-      <td>486191</td>
-      <td>213.692014</td>
-    </tr>
-    <tr>
-      <th>590</th>
-      <td>-37.265821</td>
-      <td>3.509756e-177</td>
-      <td>vae</td>
-      <td>140</td>
-      <td>150</td>
-      <td>signal</td>
-      <td>978124</td>
-      <td>176.454723</td>
-    </tr>
-    <tr>
       <th>511</th>
-      <td>34.695955</td>
-      <td>8.241419e-162</td>
+      <td>44.507291</td>
+      <td>7.302909e-176</td>
       <td>nmf</td>
       <td>111</td>
       <td>200</td>
       <td>signal</td>
       <td>451283</td>
-      <td>161.083998</td>
+      <td>175.136504</td>
     </tr>
     <tr>
       <th>411</th>
-      <td>33.986135</td>
-      <td>1.602271e-157</td>
+      <td>43.596212</td>
+      <td>2.655225e-172</td>
       <td>nmf</td>
       <td>111</td>
       <td>150</td>
       <td>signal</td>
       <td>486191</td>
-      <td>156.795264</td>
+      <td>171.575899</td>
     </tr>
     <tr>
       <th>361</th>
-      <td>33.870699</td>
-      <td>8.012848e-157</td>
+      <td>43.448300</td>
+      <td>1.021953e-171</td>
       <td>nmf</td>
       <td>111</td>
       <td>125</td>
       <td>signal</td>
       <td>486191</td>
-      <td>156.096213</td>
+      <td>170.990569</td>
+    </tr>
+    <tr>
+      <th>411</th>
+      <td>43.297948</td>
+      <td>4.074371e-171</td>
+      <td>nmf</td>
+      <td>111</td>
+      <td>150</td>
+      <td>signal</td>
+      <td>165158</td>
+      <td>170.389939</td>
+    </tr>
+    <tr>
+      <th>411</th>
+      <td>42.894468</td>
+      <td>1.614220e-169</td>
+      <td>nmf</td>
+      <td>111</td>
+      <td>150</td>
+      <td>signal</td>
+      <td>978124</td>
+      <td>168.792037</td>
     </tr>
   </tbody>
 </table>
@@ -14448,6 +14452,9 @@ div#notebook {
         <span class="p">:]</span>
 <span class="p">)</span>
 
+<span class="n">out_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;results&quot;</span><span class="p">,</span> <span class="s2">&quot;balanced_tcga_tissues.tsv&quot;</span><span class="p">)</span>
+<span class="n">balanced</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">out_file</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)</span>
+
 <span class="n">balanced</span>
 </pre></div>
 
@@ -14659,7 +14666,8 @@ div#notebook {
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Perform t-test for all compressed features</span>
 <span class="n">tcga_full_results_df</span> <span class="o">=</span> <span class="n">get_ttest_results</span><span class="p">(</span><span class="n">z_matrix_dict</span><span class="o">=</span><span class="n">tcga_z_matrix_dict</span><span class="p">,</span>
                                          <span class="n">group_a_ids</span><span class="o">=</span><span class="n">tcga_males</span><span class="p">,</span>
-                                         <span class="n">group_b_ids</span><span class="o">=</span><span class="n">tcga_females</span><span class="p">)</span>
+                                         <span class="n">group_b_ids</span><span class="o">=</span><span class="n">tcga_females</span><span class="p">,</span>
+                                         <span class="n">train_or_test</span><span class="o">=</span><span class="s2">&quot;test&quot;</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -14736,59 +14744,59 @@ div#notebook {
   </thead>
   <tbody>
     <tr>
-      <th>134</th>
-      <td>-4.917736</td>
-      <td>0.000001</td>
-      <td>ica</td>
-      <td>44</td>
-      <td>90</td>
-      <td>signal</td>
-      <td>451283</td>
-      <td>5.920055</td>
-    </tr>
-    <tr>
       <th>143</th>
-      <td>4.893661</td>
-      <td>0.000001</td>
+      <td>4.864065</td>
+      <td>0.000002</td>
       <td>ica</td>
       <td>53</td>
       <td>90</td>
       <td>signal</td>
       <td>165158</td>
-      <td>5.869316</td>
+      <td>5.798404</td>
+    </tr>
+    <tr>
+      <th>134</th>
+      <td>-4.857106</td>
+      <td>0.000002</td>
+      <td>ica</td>
+      <td>44</td>
+      <td>90</td>
+      <td>signal</td>
+      <td>451283</td>
+      <td>5.779352</td>
     </tr>
     <tr>
       <th>105</th>
-      <td>-4.848366</td>
+      <td>-4.797379</td>
       <td>0.000002</td>
       <td>ica</td>
       <td>15</td>
       <td>90</td>
       <td>signal</td>
       <td>908341</td>
-      <td>5.774418</td>
+      <td>5.657098</td>
     </tr>
     <tr>
       <th>104</th>
-      <td>4.823725</td>
-      <td>0.000002</td>
+      <td>4.766643</td>
+      <td>0.000003</td>
       <td>ica</td>
       <td>14</td>
       <td>90</td>
       <td>signal</td>
       <td>486191</td>
-      <td>5.723102</td>
+      <td>5.593012</td>
     </tr>
     <tr>
       <th>132</th>
-      <td>4.678127</td>
-      <td>0.000004</td>
+      <td>4.621749</td>
+      <td>0.000005</td>
       <td>ica</td>
       <td>42</td>
       <td>90</td>
       <td>signal</td>
       <td>978124</td>
-      <td>5.424366</td>
+      <td>5.299861</td>
     </tr>
   </tbody>
 </table>
@@ -15337,59 +15345,59 @@ div#notebook {
   </thead>
   <tbody>
     <tr>
-      <th>711</th>
-      <td>17.452038</td>
-      <td>2.988269e-37</td>
-      <td>vae</td>
-      <td>111</td>
-      <td>200</td>
+      <th>488</th>
+      <td>-13.979762</td>
+      <td>3.886965e-25</td>
+      <td>dae</td>
+      <td>88</td>
+      <td>100</td>
       <td>signal</td>
       <td>451283</td>
-      <td>36.524580</td>
+      <td>24.410389</td>
     </tr>
     <tr>
-      <th>325</th>
-      <td>16.118447</td>
-      <td>5.746450e-34</td>
+      <th>530</th>
+      <td>-12.759128</td>
+      <td>4.343456e-25</td>
       <td>vae</td>
-      <td>55</td>
-      <td>90</td>
-      <td>signal</td>
-      <td>451283</td>
-      <td>33.240600</td>
-    </tr>
-    <tr>
-      <th>440</th>
-      <td>15.863525</td>
-      <td>2.493347e-33</td>
-      <td>vae</td>
-      <td>65</td>
-      <td>125</td>
-      <td>signal</td>
-      <td>978124</td>
-      <td>32.603217</td>
-    </tr>
-    <tr>
-      <th>516</th>
-      <td>15.157871</td>
-      <td>1.499645e-31</td>
-      <td>vae</td>
-      <td>66</td>
+      <td>80</td>
       <td>150</td>
       <td>signal</td>
       <td>165158</td>
-      <td>30.824012</td>
+      <td>24.362165</td>
     </tr>
     <tr>
-      <th>315</th>
-      <td>14.840073</td>
-      <td>9.637579e-31</td>
-      <td>nmf</td>
-      <td>15</td>
+      <th>430</th>
+      <td>-12.770938</td>
+      <td>4.808223e-24</td>
+      <td>vae</td>
+      <td>55</td>
+      <td>125</td>
+      <td>signal</td>
+      <td>451283</td>
+      <td>23.318015</td>
+    </tr>
+    <tr>
+      <th>598</th>
+      <td>-11.964911</td>
+      <td>5.395353e-23</td>
+      <td>vae</td>
+      <td>148</td>
       <td>150</td>
       <td>signal</td>
       <td>486191</td>
-      <td>30.016032</td>
+      <td>22.267980</td>
+    </tr>
+    <tr>
+      <th>84</th>
+      <td>-12.538324</td>
+      <td>5.796144e-23</td>
+      <td>vae</td>
+      <td>9</td>
+      <td>25</td>
+      <td>signal</td>
+      <td>451283</td>
+      <td>22.236861</td>
     </tr>
   </tbody>
 </table>

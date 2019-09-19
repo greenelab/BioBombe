@@ -176,8 +176,8 @@ gtex_sex_gg <- ggplot(top_gtex_feature_df,
   geom_boxplot(alpha = 0.5,
                outlier.alpha = 0) +
   geom_jitter(aes(color = SEX),
-              size = 0.15,
-              alpha = 0.2,
+              size = 0.2,
+              alpha = 0.6,
               width = 0.3) +
   scale_fill_manual(labels = c("Male" = "Male",
                                "Female" = "Female"),
@@ -305,8 +305,8 @@ tcga_sex_gg <- ggplot(top_tcga_feature_df,
   geom_boxplot(alpha = 0.5,
                outlier.alpha = 0) +
   geom_jitter(aes(color = gender),
-              size = 0.15,
-              alpha = 0.2,
+              size = 0.2,
+              alpha = 0.6,
               width = 0.3) +
   scale_fill_manual(labels = c("Male" = "Male",
                                "Female" = "Female",

@@ -44,7 +44,7 @@ def ttest_difference(feature_series, group_a_ids, group_b_ids):
     b_activation = feature_series[feature_series.index.isin(group_b_ids)]
     
     # Perform t-test on two groups
-    t_stat, t_p = ttest_ind(a_activation, b_activation)
+    t_stat, t_p = ttest_ind(a_activation, b_activation, equal_var=False)
     
     return([t_stat, t_p, feature_algorithm, feature_num])
 
@@ -169,6 +169,9 @@ balanced= (
         :]
 )
 
+out_file = os.path.join("results", "balanced_gtex_tissues.tsv")
+balanced.to_csv(out_file, sep='\t')
+        
 balanced
 
 
@@ -200,7 +203,8 @@ print(len(gtex_females))
 # Perform t-test for all compressed features
 gtex_full_results_df = get_ttest_results(z_matrix_dict=gtex_z_matrix_dict,
                                          group_a_ids=gtex_males,
-                                         group_b_ids=gtex_females)
+                                         group_b_ids=gtex_females,
+                                         train_or_test="test")
 
 
 # In[10]:
@@ -275,6 +279,9 @@ balanced= (
         :]
 )
 
+out_file = os.path.join("results", "balanced_tcga_tissues.tsv")
+balanced.to_csv(out_file, sep='\t')
+
 balanced
 
 
@@ -306,7 +313,8 @@ print(len(tcga_females))
 # Perform t-test for all compressed features
 tcga_full_results_df = get_ttest_results(z_matrix_dict=tcga_z_matrix_dict,
                                          group_a_ids=tcga_males,
-                                         group_b_ids=tcga_females)
+                                         group_b_ids=tcga_females,
+                                         train_or_test="test")
 
 
 # In[17]:

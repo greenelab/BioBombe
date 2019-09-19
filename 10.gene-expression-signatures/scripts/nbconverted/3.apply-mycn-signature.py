@@ -51,7 +51,7 @@ nbl_df.head(2)
 
 # Identify the top performing feature
 file = os.path.join("results", "nbl_mycn_separation_target_t_test.tsv")
-target_full_results_df = pd.read_table(file).head(1)
+target_full_results_df = pd.read_table(file).head(5)
 target_full_results_df
 
 
@@ -139,8 +139,8 @@ sns.boxplot(x="MYCN status", y=top_feature, data=merged_df);
 
 
 # Perform t-test on the result
-amplified_scores = merged_df.loc[merged_df['MYCN status'] == "Amplified", "vae_111"]
-notamplified_scores = merged_df.loc[merged_df['MYCN status'] != "Amplified", "vae_111"]
+amplified_scores = merged_df.loc[merged_df['MYCN status'] == "Amplified", top_feature]
+notamplified_scores = merged_df.loc[merged_df['MYCN status'] != "Amplified", top_feature]
 
-ttest_ind(amplified_scores, notamplified_scores)
+ttest_ind(amplified_scores, notamplified_scores, equal_var=False)
 

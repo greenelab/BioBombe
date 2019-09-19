@@ -1,0 +1,41 @@
+Cell Line	MYCN status	1p36 del	3p26 del	11q23 del	17q21-qter unbal gain	ALK mutation	p53 mutation
+CHP134	Amplified	LOH p32.3-pter; Gain p34.3-p36.22; Loss p36.22-pter	Gain/AI p26.3	None	Gain q12-qter	WT	WT
+CHP212	Amplified	Loss p13.2-pter	Gain/AI p26.3	cnLOH 23.3	Gain q12-qter	WT	WT
+COGN415	Amplified	Unknown	Unknown	Unknown	Unknown	F1174L	WT
+COGN440	Amplified	Unknown	Unknown	Unknown	Unknown	WT	WT
+COGN453	Amplified	Unknown	Unknown	Unknown	Unknown	F1174L	WT
+COGN471nb	Amplified	Unknown	Unknown	Unknown	Unknown	WT	WT
+COGN496	Amplified	Unknown	Unknown	Unknown	Unknown	Unknown	Unknown
+COGN519	Amplified	Unknown	Unknown	Unknown	Unknown	Unknown	Unknown
+COGN534	Non-amplified	Unknown	Unknown	Unknown	Unknown	Unknown	Unknown
+COGN549	Non-amplified	Unknown	Unknown	Unknown	Unknown	Unknown	Unknown
+COGN557nb	Amplified	Unknown	Unknown	Unknown	Unknown	Unknown	Unknown
+COGN561	Amplified	Unknown	Unknown	Unknown	Unknown	Unknown	Unknown
+COGN573	Amplified	Unknown	Unknown	Unknown	Unknown	Unknown	Unknown
+FELIX (COGN426)	Non-amplified	Unknown	Unknown	Unknown	Unknown	F1245C	WT
+IMR05	Amplified	Gain+LOH p32.3-pter	Gain/AI p24.3-26.3	Loss q22.1-qter	Gain q21.2-qter	WT	WT
+IMR32	Amplified	Loss p32.3-pter	Loss p12.3	cnLOH q23.1	Gain q21.2-qter	WT	WT
+KELLY	Amplified	LOH p21.3-pter; Loss p36.32; Gain p36.33	Loss p26.2	Loss q23.3-qter	Gain q21.2-qter	F1174L	P177T
+LAN5	Amplified	Loss p33-pter	None	None	Gain q21.2-qter	R1275Q	WT
+LAN6	Non-amplified	p36.12-pter; cnLOH p35.3-p36.11	Loss p14.3-pter	Loss q13.4-qter	Gain q12-qter	WT	WT
+NB1	Amplified	Loss p32.2-pter	Gain p24.1-pter	cnLOH q23.1	Gain q22-qter	WT; amplified	WT
+NB16	Non-amplified	None	None	None	Unresolvable	WT	R248W, R175H
+NB1,643	Amplified	Loss p34.2-pter	None	Loss q23.1-qter	Gain q21.31-qter	R1275Q	WT
+NB1,691	Amplified	None	Loss p26.1	LOH q11-qter; Loss q22.1-q24.3	None?	WT	WT
+NB69	Non-amplified	Loss p13.3-pter	None	cnLOH q23.1, q23.3	Gain q12-qter	WT	WT
+NBEBc1	Non-amplified	Loss p35.2-pter	Gain p26.1-pter	Loss q21-24.2	Gain q21.31-qter	WT	WT
+NBSD	Amplified	Loss p21.3-pter	Loss p13-pter	cnLOH q23.2-23.3	Gain q12-qter	F1174L	C176F
+NBLS	Non-amplified	None	None	Loss q14.1-qter	None	WT	WT
+NGP	Amplified	cnLOH p32.3-pter	Gain p25.3-pter	Loss q22.1-qter	Gain q21.1-qter	WT	A159D, C141W
+NLF	Amplified	Loss p32.2-pter	Loss/AI p26.1; AI p26.2; Gain 26.3	Loss/AI q23.3-qter	Gain q21.2-qter	WT	V203M
+NMB	Amplified	cnLOH p34.2-pter	None	Loss q21-qter	LOH/Gain q11.2-qter	WT	G245S
+RPE1	Non-amplified	Unknown	Unknown	Unknown	Unknown	WT	WT
+SHSY5Y	Non-amplified	None	None	Loss q22.1-q24.2	Gain q21.31-qter	F1174L	WT
+SKNAS	Non-amplified	Loss p36.22-36.32	Loss p14.2-pter	q13.4-qter	Gain q21.31-qter	WT	H168R
+SKNBE(2)	Amplified	cnLOH p21.3-pter	Loss p14.2-pter	Gain/AI q13.1-qter	Gain q12-qter	WT	C135F
+SKNBE(2)C	Amplified	cnLOH p21.3-pter	Loss p14.2-pter	LOH q11-qter; Gain q13.4-qter	Gain q12-qter	WT	C135F
+SKNDZ	Amplified	None	Gain/AI p26.1-pter	Loss q21-qter	Gain q21.2-qter	WT	R110L
+SKNFI	Non-amplified	None	None	None	Gain q21.31-qter	WT	M246R
+SKNSH	Non-amplified	None	None	None	Gain q21.31-qter	F1174L	WT
+SMSKAN	Amplified	Loss p13.3-pter	None	Loss q14.2-q23.3	Gain q11.1-qter	WT	WT
+SMSSAN	Amplified	Loss p32.3-pter	None	Loss q25	Gain q21.2-qter	F1174L	WT

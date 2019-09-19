@@ -1,31 +1,31 @@
-	vae_111	Cell Line	MYCN status	1p36 del	3p26 del	11q23 del	17q21-qter unbal gain	ALK mutation	p53 mutation
-0	6.2535210389801605	CHP134	Amplified	LOH p32.3-pter; Gain p34.3-p36.22; Loss p36.22-pter	Gain/AI p26.3	None	Gain q12-qter	WT	WT
-1	3.720754971584685	CHP212	Amplified	Loss p13.2-pter	Gain/AI p26.3	cnLOH 23.3	Gain q12-qter	WT	WT
-2	4.6585287640605415	COGN415	Amplified	Unknown	Unknown	Unknown	Unknown	F1174L	WT
-3	5.322958181312064	COGN440	Amplified	Unknown	Unknown	Unknown	Unknown	WT	WT
-4	5.996784654918624	COGN453	Amplified	Unknown	Unknown	Unknown	Unknown	F1174L	WT
-5	2.9205779539437198	COGN496	Amplified	Unknown	Unknown	Unknown	Unknown	Unknown	Unknown
-6	4.31451601644515	COGN519	Amplified	Unknown	Unknown	Unknown	Unknown	Unknown	Unknown
-7	4.618327996252203	COGN534	Non-amplified	Unknown	Unknown	Unknown	Unknown	Unknown	Unknown
-8	0.5026096029697165	COGN549	Non-amplified	Unknown	Unknown	Unknown	Unknown	Unknown	Unknown
-9	6.521142958282991	COGN561	Amplified	Unknown	Unknown	Unknown	Unknown	Unknown	Unknown
-10	2.788649940091749	COGN573	Amplified	Unknown	Unknown	Unknown	Unknown	Unknown	Unknown
-11	2.8262726896993287	IMR32	Amplified	Loss p32.3-pter	Loss p12.3	cnLOH q23.1	Gain q21.2-qter	WT	WT
-12	3.3322286924277096	KELLY	Amplified	LOH p21.3-pter; Loss p36.32; Gain p36.33	Loss p26.2	Loss q23.3-qter	Gain q21.2-qter	F1174L	P177T
-13	6.05176374296287	LAN5	Amplified	Loss p33-pter	None	None	Gain q21.2-qter	R1275Q	WT
-14	2.066052610338665	LAN6	Non-amplified	p36.12-pter; cnLOH p35.3-p36.11	Loss p14.3-pter	Loss q13.4-qter	Gain q12-qter	WT	WT
-15	6.959814501080495	NB1	Amplified	Loss p32.2-pter	Gain p24.1-pter	cnLOH q23.1	Gain q22-qter	WT; amplified	WT
-16	4.888588114372714	NB69	Non-amplified	Loss p13.3-pter	None	cnLOH q23.1, q23.3	Gain q12-qter	WT	WT
-17	3.4507878865582886	NBLS	Non-amplified	None	None	Loss q14.1-qter	None	WT	WT
-18	5.249221496659604	NBSD	Amplified	Loss p21.3-pter	Loss p13-pter	cnLOH q23.2-23.3	Gain q12-qter	F1174L	C176F
-19	7.733387072609603	NGP	Amplified	cnLOH p32.3-pter	Gain p25.3-pter	Loss q22.1-qter	Gain q21.1-qter	WT	A159D, C141W
-20	4.758437841441052	NLF	Amplified	Loss p32.2-pter	Loss/AI p26.1; AI p26.2; Gain 26.3	Loss/AI q23.3-qter	Gain q21.2-qter	WT	V203M
-21	3.389675354926716	NMB	Amplified	cnLOH p34.2-pter	None	Loss q21-qter	LOH/Gain q11.2-qter	WT	G245S
-22	-0.6057913097742388	RPE1	Non-amplified	Unknown	Unknown	Unknown	Unknown	WT	WT
-23	5.872549313309574	SHSY5Y	Non-amplified	None	None	Loss q22.1-q24.2	Gain q21.31-qter	F1174L	WT
-24	1.9609609717231447	SKNAS	Non-amplified	Loss p36.22-36.32	Loss p14.2-pter	q13.4-qter	Gain q21.31-qter	WT	H168R
-25	5.999025641441866	SKNDZ	Amplified	None	Gain/AI p26.1-pter	Loss q21-qter	Gain q21.2-qter	WT	R110L
-26	-0.966567052075833	SKNFI	Non-amplified	None	None	None	Gain q21.31-qter	WT	M246R
-27	6.629928018975049	SKNSH	Non-amplified	None	None	None	Gain q21.31-qter	F1174L	WT
-28	5.4238228846357766	SMSKAN	Amplified	Loss p13.3-pter	None	Loss q14.2-q23.3	Gain q11.1-qter	WT	WT
-29	8.348093718130619	SMSSAN	Amplified	Loss p32.3-pter	None	Loss q25	Gain q21.2-qter	F1174L	WT
+	dae_88	Cell Line	MYCN status	1p36 del	3p26 del	11q23 del	17q21-qter unbal gain	ALK mutation	p53 mutation
+0	0.6054114662842642	CHP134	Amplified	LOH p32.3-pter; Gain p34.3-p36.22; Loss p36.22-pter	Gain/AI p26.3	None	Gain q12-qter	WT	WT
+1	-4.847080787873656	CHP212	Amplified	Loss p13.2-pter	Gain/AI p26.3	cnLOH 23.3	Gain q12-qter	WT	WT
+2	1.0997167566053394	COGN415	Amplified	Unknown	Unknown	Unknown	Unknown	F1174L	WT
+3	1.5273593207164478	COGN440	Amplified	Unknown	Unknown	Unknown	Unknown	WT	WT
+4	1.1379300868857032	COGN453	Amplified	Unknown	Unknown	Unknown	Unknown	F1174L	WT
+5	0.6925246636711762	COGN496	Amplified	Unknown	Unknown	Unknown	Unknown	Unknown	Unknown
+6	0.8265171142744074	COGN519	Amplified	Unknown	Unknown	Unknown	Unknown	Unknown	Unknown
+7	4.497237758845956	COGN534	Non-amplified	Unknown	Unknown	Unknown	Unknown	Unknown	Unknown
+8	2.6995051316527734	COGN549	Non-amplified	Unknown	Unknown	Unknown	Unknown	Unknown	Unknown
+9	-0.8214858293485738	COGN561	Amplified	Unknown	Unknown	Unknown	Unknown	Unknown	Unknown
+10	0.4777850525435718	COGN573	Amplified	Unknown	Unknown	Unknown	Unknown	Unknown	Unknown
+11	-1.289863294089043	IMR32	Amplified	Loss p32.3-pter	Loss p12.3	cnLOH q23.1	Gain q21.2-qter	WT	WT
+12	2.7998353233697686	KELLY	Amplified	LOH p21.3-pter; Loss p36.32; Gain p36.33	Loss p26.2	Loss q23.3-qter	Gain q21.2-qter	F1174L	P177T
+13	-0.20984966934674096	LAN5	Amplified	Loss p33-pter	None	None	Gain q21.2-qter	R1275Q	WT
+14	8.891880888831585	LAN6	Non-amplified	p36.12-pter; cnLOH p35.3-p36.11	Loss p14.3-pter	Loss q13.4-qter	Gain q12-qter	WT	WT
+15	-0.14797148334302107	NB1	Amplified	Loss p32.2-pter	Gain p24.1-pter	cnLOH q23.1	Gain q22-qter	WT; amplified	WT
+16	1.6274777712519897	NB69	Non-amplified	Loss p13.3-pter	None	cnLOH q23.1, q23.3	Gain q12-qter	WT	WT
+17	3.3475658300910913	NBLS	Non-amplified	None	None	Loss q14.1-qter	None	WT	WT
+18	-0.7199839103021811	NBSD	Amplified	Loss p21.3-pter	Loss p13-pter	cnLOH q23.2-23.3	Gain q12-qter	F1174L	C176F
+19	-0.30829797501860284	NGP	Amplified	cnLOH p32.3-pter	Gain p25.3-pter	Loss q22.1-qter	Gain q21.1-qter	WT	A159D, C141W
+20	-2.0775222111705407	NLF	Amplified	Loss p32.2-pter	Loss/AI p26.1; AI p26.2; Gain 26.3	Loss/AI q23.3-qter	Gain q21.2-qter	WT	V203M
+21	-0.10229671508803168	NMB	Amplified	cnLOH p34.2-pter	None	Loss q21-qter	LOH/Gain q11.2-qter	WT	G245S
+22	-3.9249044446053816	RPE1	Non-amplified	Unknown	Unknown	Unknown	Unknown	WT	WT
+23	-0.5719784689659726	SHSY5Y	Non-amplified	None	None	Loss q22.1-q24.2	Gain q21.31-qter	F1174L	WT
+24	-1.1589225120062077	SKNAS	Non-amplified	Loss p36.22-36.32	Loss p14.2-pter	q13.4-qter	Gain q21.31-qter	WT	H168R
+25	0.041970550191492303	SKNDZ	Amplified	None	Gain/AI p26.1-pter	Loss q21-qter	Gain q21.2-qter	WT	R110L
+26	2.708286987331639	SKNFI	Non-amplified	None	None	None	Gain q21.31-qter	WT	M246R
+27	2.492844126324981	SKNSH	Non-amplified	None	None	None	Gain q21.31-qter	F1174L	WT
+28	1.9129272288269326	SMSKAN	Amplified	Loss p13.3-pter	None	Loss q14.2-q23.3	Gain q11.1-qter	WT	WT
+29	-2.3682694581300554	SMSSAN	Amplified	Loss p32.3-pter	None	Loss q25	Gain q21.2-qter	F1174L	WT

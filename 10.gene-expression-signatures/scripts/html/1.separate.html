@@ -13145,7 +13145,12 @@ div#notebook {
     <span class="k">for</span> <span class="n">signal</span> <span class="ow">in</span> <span class="n">z_matrix_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
         <span class="k">for</span> <span class="n">z_dim</span> <span class="ow">in</span> <span class="n">z_matrix_dict</span><span class="p">[</span><span class="n">signal</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="k">for</span> <span class="n">seed</span> <span class="ow">in</span> <span class="n">z_matrix_dict</span><span class="p">[</span><span class="n">signal</span><span class="p">][</span><span class="n">z_dim</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-                <span class="n">z_df</span> <span class="o">=</span> <span class="n">z_matrix_dict</span><span class="p">[</span><span class="n">signal</span><span class="p">][</span><span class="n">z_dim</span><span class="p">][</span><span class="n">seed</span><span class="p">][</span><span class="n">train_or_test</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">train_or_test</span> <span class="o">==</span> <span class="s2">&quot;both&quot;</span><span class="p">:</span>
+                    <span class="n">z_train_df</span> <span class="o">=</span> <span class="n">z_matrix_dict</span><span class="p">[</span><span class="n">signal</span><span class="p">][</span><span class="n">z_dim</span><span class="p">][</span><span class="n">seed</span><span class="p">][</span><span class="s2">&quot;train&quot;</span><span class="p">]</span>
+                    <span class="n">z_test_df</span> <span class="o">=</span> <span class="n">z_matrix_dict</span><span class="p">[</span><span class="n">signal</span><span class="p">][</span><span class="n">z_dim</span><span class="p">][</span><span class="n">seed</span><span class="p">][</span><span class="s2">&quot;test&quot;</span><span class="p">]</span>
+                    <span class="n">z_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">z_train_df</span><span class="p">,</span> <span class="n">z_test_df</span><span class="p">])</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">z_df</span> <span class="o">=</span> <span class="n">z_matrix_dict</span><span class="p">[</span><span class="n">signal</span><span class="p">][</span><span class="n">z_dim</span><span class="p">][</span><span class="n">seed</span><span class="p">][</span><span class="n">train_or_test</span><span class="p">]</span>
 
                 <span class="n">result_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">z_df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span>
                                                     <span class="n">ttest_difference</span><span class="p">(</span><span class="n">feature_series</span><span class="o">=</span><span class="n">x</span><span class="p">,</span>
@@ -15024,7 +15029,7 @@ div#notebook {
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Load TARGET matrices</span>
 <span class="n">target_z_matrix_dict</span> <span class="o">=</span> <span class="n">build_feature_dictionary</span><span class="p">(</span><span class="n">dataset</span><span class="o">=</span><span class="s2">&quot;TARGET&quot;</span><span class="p">,</span>
                                                 <span class="n">load_data</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-                                                <span class="n">store_train_test</span><span class="o">=</span><span class="s1">&#39;train&#39;</span><span class="p">)</span>
+                                                <span class="n">store_train_test</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -15038,20 +15043,27 @@ div#notebook {
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Extract amplified and not amplified samples from the dataset</span>
-<span class="n">example_matrix_df</span> <span class="o">=</span> <span class="n">target_z_matrix_dict</span><span class="p">[</span><span class="s1">&#39;signal&#39;</span><span class="p">][</span><span class="s1">&#39;8&#39;</span><span class="p">][</span><span class="s1">&#39;451283&#39;</span><span class="p">][</span><span class="s1">&#39;train&#39;</span><span class="p">]</span>
+<span class="n">example_train_matrix_df</span> <span class="o">=</span> <span class="n">target_z_matrix_dict</span><span class="p">[</span><span class="s1">&#39;signal&#39;</span><span class="p">][</span><span class="s1">&#39;8&#39;</span><span class="p">][</span><span class="s1">&#39;451283&#39;</span><span class="p">][</span><span class="s1">&#39;train&#39;</span><span class="p">]</span>
+<span class="n">example_test_matrix_df</span> <span class="o">=</span> <span class="n">target_z_matrix_dict</span><span class="p">[</span><span class="s1">&#39;signal&#39;</span><span class="p">][</span><span class="s1">&#39;8&#39;</span><span class="p">][</span><span class="s1">&#39;451283&#39;</span><span class="p">][</span><span class="s1">&#39;test&#39;</span><span class="p">]</span>
+<span class="n">example_matrix_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">example_train_matrix_df</span><span class="p">,</span> <span class="n">example_test_matrix_df</span><span class="p">])</span>
 
-<span class="n">patient_id_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
-    <span class="p">[</span>
-    <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">example_matrix_df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)],</span>
-                 <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;patient_id&#39;</span><span class="p">])</span>
-        <span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">nbl_pheno_df</span><span class="p">,</span>
-               <span class="n">how</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span>
-               <span class="n">left_on</span><span class="o">=</span><span class="s1">&#39;patient_id&#39;</span><span class="p">,</span>
-               <span class="n">right_on</span><span class="o">=</span><span class="s1">&#39;usi&#39;</span><span class="p">),</span>
-    <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">example_matrix_df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
-    <span class="p">],</span>
-    <span class="n">axis</span><span class="o">=</span><span class="s1">&#39;columns&#39;</span>
-<span class="p">)</span><span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;usi&#39;</span><span class="p">])</span>
+<span class="n">patient_id_df</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">(</span>
+        <span class="p">[</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">([</span><span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">example_matrix_df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">str</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)],</span>
+                         <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;patient_id&#39;</span><span class="p">])</span>
+            <span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">nbl_pheno_df</span><span class="p">,</span>
+                   <span class="n">how</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span>
+                   <span class="n">left_on</span><span class="o">=</span><span class="s1">&#39;patient_id&#39;</span><span class="p">,</span>
+                   <span class="n">right_on</span><span class="o">=</span><span class="s1">&#39;usi&#39;</span><span class="p">),</span>
+            <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">example_matrix_df</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+        <span class="p">],</span>
+        <span class="n">axis</span><span class="o">=</span><span class="s1">&#39;columns&#39;</span>
+    <span class="p">)</span>
+    <span class="o">.</span><span class="n">dropna</span><span class="p">(</span><span class="n">subset</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;usi&#39;</span><span class="p">])</span>
+<span class="p">)</span>
+
+<span class="n">patient_id_df</span> <span class="o">=</span> <span class="n">patient_id_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">patient_id_df</span><span class="p">[</span><span class="s2">&quot;Diagnostic Category&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Neuroblastoma&quot;</span><span class="p">,</span> <span class="p">:]</span>
 
 <span class="n">mycn_amp</span> <span class="o">=</span> <span class="n">patient_id_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">patient_id_df</span><span class="p">[</span><span class="s2">&quot;MYCN status&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Amplified&quot;</span><span class="p">,</span> <span class="s2">&quot;sample_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
 <span class="n">mycn_nonamp</span> <span class="o">=</span> <span class="n">patient_id_df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">patient_id_df</span><span class="p">[</span><span class="s2">&quot;MYCN status&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Not Amplified&quot;</span><span class="p">,</span> <span class="s2">&quot;sample_id&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
@@ -15074,7 +15086,7 @@ div#notebook {
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>(146, 28)
+<pre>(130, 28)
 </pre>
 </div>
 </div>
@@ -15153,54 +15165,6 @@ div#notebook {
       <td>TARGET-30-PARSBI-01</td>
     </tr>
     <tr>
-      <th>3</th>
-      <td>PATBMM</td>
-      <td>PATBMM</td>
-      <td>Male</td>
-      <td>White</td>
-      <td>Not Hispanic or Latino</td>
-      <td>1112.0</td>
-      <td>Relapse</td>
-      <td>653.0</td>
-      <td>Alive</td>
-      <td>768.0</td>
-      <td>...</td>
-      <td>Undifferentiated or Poorly Differentiated</td>
-      <td>Low</td>
-      <td>Ganglioneuroblastoma, nodular</td>
-      <td>C74.9</td>
-      <td>Adrenal gland, NOS  Suprarenal gland  Adrenal,...</td>
-      <td>High Risk</td>
-      <td>Bone</td>
-      <td>NaN</td>
-      <td>old</td>
-      <td>TARGET-30-PATBMM-01</td>
-    </tr>
-    <tr>
-      <th>8</th>
-      <td>PANSBN</td>
-      <td>PANSBN</td>
-      <td>Male</td>
-      <td>White</td>
-      <td>Not Hispanic or Latino</td>
-      <td>2329.0</td>
-      <td>Relapse</td>
-      <td>505.0</td>
-      <td>Dead</td>
-      <td>836.0</td>
-      <td>...</td>
-      <td>Differentiating</td>
-      <td>High</td>
-      <td>Ganglioneuroblastoma, nodular</td>
-      <td>C38.3</td>
-      <td>Mediastinum, NOS</td>
-      <td>High Risk</td>
-      <td>Bone Marrow</td>
-      <td>NaN</td>
-      <td>old</td>
-      <td>TARGET-30-PANSBN-01</td>
-    </tr>
-    <tr>
       <th>11</th>
       <td>PARNNC</td>
       <td>PARNNC</td>
@@ -15248,6 +15212,54 @@ div#notebook {
       <td>old</td>
       <td>TARGET-30-PASVRU-01</td>
     </tr>
+    <tr>
+      <th>22</th>
+      <td>PALTEG</td>
+      <td>PALTEG</td>
+      <td>Male</td>
+      <td>White</td>
+      <td>Not Hispanic or Latino</td>
+      <td>1367.0</td>
+      <td>Relapse</td>
+      <td>523.0</td>
+      <td>Dead</td>
+      <td>551.0</td>
+      <td>...</td>
+      <td>Undifferentiated or Poorly Differentiated</td>
+      <td>Intermediate</td>
+      <td>Neuroblastoma</td>
+      <td>C76.2</td>
+      <td>Abdomen, NOS  Abdominal wall, NOS  Intra-abdom...</td>
+      <td>High Risk</td>
+      <td>Other Metastatic Sites</td>
+      <td>NaN</td>
+      <td>old</td>
+      <td>TARGET-30-PALTEG-01</td>
+    </tr>
+    <tr>
+      <th>24</th>
+      <td>PASJZC</td>
+      <td>PASJZC</td>
+      <td>Female</td>
+      <td>White</td>
+      <td>Not Hispanic or Latino</td>
+      <td>74.0</td>
+      <td>Relapse</td>
+      <td>367.0</td>
+      <td>Alive</td>
+      <td>2631.0</td>
+      <td>...</td>
+      <td>Undifferentiated or Poorly Differentiated</td>
+      <td>Low</td>
+      <td>Neuroblastoma</td>
+      <td>C22.0</td>
+      <td>Liver\n\nHepatic, NOS</td>
+      <td>High Risk</td>
+      <td>Primary site</td>
+      <td>NaN</td>
+      <td>old</td>
+      <td>TARGET-30-PASJZC-01</td>
+    </tr>
   </tbody>
 </table>
 <p>5 rows × 28 columns</p>
@@ -15269,7 +15281,7 @@ div#notebook {
 <span class="n">target_full_results_df</span> <span class="o">=</span> <span class="n">get_ttest_results</span><span class="p">(</span><span class="n">z_matrix_dict</span><span class="o">=</span><span class="n">target_z_matrix_dict</span><span class="p">,</span>
                                            <span class="n">group_a_ids</span><span class="o">=</span><span class="n">mycn_amp</span><span class="p">,</span>
                                            <span class="n">group_b_ids</span><span class="o">=</span><span class="n">mycn_nonamp</span><span class="p">,</span>
-                                           <span class="n">train_or_test</span><span class="o">=</span><span class="s1">&#39;train&#39;</span><span class="p">)</span>
+                                           <span class="n">train_or_test</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">)</span>
 </pre></div>
 
     </div>
@@ -15345,59 +15357,59 @@ div#notebook {
   </thead>
   <tbody>
     <tr>
+      <th>162</th>
+      <td>-18.539478</td>
+      <td>6.613869e-38</td>
+      <td>vae</td>
+      <td>12</td>
+      <td>50</td>
+      <td>signal</td>
+      <td>451283</td>
+      <td>37.179544</td>
+    </tr>
+    <tr>
       <th>488</th>
-      <td>-13.979762</td>
-      <td>3.886965e-25</td>
+      <td>-17.652445</td>
+      <td>7.166732e-36</td>
       <td>dae</td>
       <td>88</td>
       <td>100</td>
       <td>signal</td>
       <td>451283</td>
-      <td>24.410389</td>
+      <td>35.144679</td>
     </tr>
     <tr>
-      <th>530</th>
-      <td>-12.759128</td>
-      <td>4.343456e-25</td>
+      <th>155</th>
+      <td>-17.324506</td>
+      <td>9.638913e-35</td>
       <td>vae</td>
-      <td>80</td>
+      <td>5</td>
+      <td>50</td>
+      <td>signal</td>
+      <td>978124</td>
+      <td>34.015972</td>
+    </tr>
+    <tr>
+      <th>545</th>
+      <td>-16.472087</td>
+      <td>6.465500e-32</td>
+      <td>vae</td>
+      <td>95</td>
       <td>150</td>
       <td>signal</td>
-      <td>165158</td>
-      <td>24.362165</td>
+      <td>908341</td>
+      <td>31.189398</td>
     </tr>
     <tr>
-      <th>430</th>
-      <td>-12.770938</td>
-      <td>4.808223e-24</td>
-      <td>vae</td>
-      <td>55</td>
-      <td>125</td>
-      <td>signal</td>
-      <td>451283</td>
-      <td>23.318015</td>
-    </tr>
-    <tr>
-      <th>598</th>
-      <td>-11.964911</td>
-      <td>5.395353e-23</td>
-      <td>vae</td>
-      <td>148</td>
-      <td>150</td>
+      <th>72</th>
+      <td>-16.650011</td>
+      <td>9.533733e-31</td>
+      <td>nmf</td>
+      <td>2</td>
+      <td>35</td>
       <td>signal</td>
       <td>486191</td>
-      <td>22.267980</td>
-    </tr>
-    <tr>
-      <th>84</th>
-      <td>-12.538324</td>
-      <td>5.796144e-23</td>
-      <td>vae</td>
-      <td>9</td>
-      <td>25</td>
-      <td>signal</td>
-      <td>451283</td>
-      <td>22.236861</td>
+      <td>30.020737</td>
     </tr>
   </tbody>
 </table>

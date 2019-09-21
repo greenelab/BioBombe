@@ -433,10 +433,10 @@ mycn_amp_gg <- ggplot(top_mycn_feature_df,
                                 "Not Amplified" = "#1b9e77",
                                 "Unknown" = "grey25")) +
     theme_bw() +
-    ylab("DAE Feature 88 (k = 100)") +
+    ylab("VAE Feature 12 (k = 50)") +
     xlab("") +
     ggtitle("TARGET NBL MYCN Status") +
-    ylim(c(-0.5, 21)) +
+    ylim(c(-0.5, 8.0)) +
     theme(axis.title.x = element_text(size = 7),
        axis.title.y = element_text(size = 7),
        axis.text.x = element_text(size = 6),
@@ -460,7 +460,7 @@ mycn_amp_gg <- ggplot(top_mycn_feature_df,
                      yend=max(top_mycn_feature_df[, best_target_feature]) + 0.3),
                  size=0.4) +
     geom_text(x=1.5,
-              y = (max(top_mycn_feature_df[, best_target_feature]) + 1.75),
+              y = (max(top_mycn_feature_df[, best_target_feature]) + 1.25),
               size = 3.0,
               label = paste0("t = ",
                             round(mycn_ttest_result$statistic, 1),
@@ -509,10 +509,10 @@ mycn_validation_gg <-
                                 "Not Amplified" = "Not Amplified"),
                      values = c("Amplified" = "#d95f02",
                                 "Not Amplified" = "#1b9e77")) +
-    ylab("DAE Feature 88 (k = 100)") +
+    ylab("VAE Feature 12 (k = 50)") +
     xlab("") +
     ggtitle("NBL Cell Lines MYCN Status") +
-    ylim(c(-10, 15)) +
+    ylim(c(8, 36.5)) +
     theme(axis.title.x = element_text(size = 7),
        axis.title.y = element_text(size = 7),
        axis.text.x = element_text(size = 6),
@@ -536,7 +536,7 @@ mycn_validation_gg <-
                      yend=max(mycn_validation_df[, best_target_feature]) + 0.4),
                  size=0.4) +
     geom_text(x=1.5,
-              y = (max(mycn_validation_df[, best_target_feature]) + 2),
+              y = (max(mycn_validation_df[, best_target_feature]) + 2.75),
               size = 3.0,
               label = paste0("t = ",
                             round(mycn_val_ttest_result$statistic, 1),

@@ -98,25 +98,43 @@ for (t_test_file in t_test_results_files) {
 }
 
 file <- file.path("..", "0.expression-download", "download", "GTEx_v7_Annotations_SubjectPhenotypesDS.txt")
-gtex_pheno_df <- readr::read_tsv(file)
+gtex_sex_df <- readr::read_tsv(file)
+head(gtex_sex_df, 2)
 
-best_k_dim <- paste(best_result_list[[t_test_results_files[2]]]$z_dim)
-best_seed <- paste(best_result_list[[t_test_results_files[2]]]$seed)
-best_feature <- paste0(paste(best_result_list[[t_test_results_files[2]]]$algorithm),
-                       "_", 
-                       paste(best_result_list[[t_test_results_files[2]]]$feature_num))
+file <- file.path("..", "0.expression-download", "download", "GTEx_v7_Annotations_SampleAttributesDS.txt")
+gtex_pheno_df <- readr::read_tsv(file, col_types = readr::cols(.default = readr::col_character(),
+                                                               "SMGTC" = readr::col_character()))
 
-print(best_k_dim)
-print(best_seed)
-print(best_feature)
+full_gtex_ids <- c()
+for (gtex_id in strsplit(gtex_pheno_df$SAMPID, "-")) {
+  gtex_id_unlist <- unlist(gtex_id)
+  sample_id <- paste0(gtex_id_unlist[1], "-", gtex_id_unlist[2])
+  full_gtex_ids <- c(full_gtex_ids, sample_id)
+}
+
+gtex_pheno_df$SUBJID <- full_gtex_ids
+gtex_pheno_df <- gtex_pheno_df %>%
+    dplyr::left_join(gtex_sex_df, by = "SUBJID")
+
+head(gtex_pheno_df, 2)
+
+best_gtex_k_dim <- paste(best_result_list[[t_test_results_files[2]]]$z_dim[1])
+best_gtex_seed <- paste(best_result_list[[t_test_results_files[2]]]$seed[1])
+best_gtex_feature <- paste0(paste(best_result_list[[t_test_results_files[2]]]$algorithm[1]),
+                            "_", 
+                            paste(best_result_list[[t_test_results_files[2]]]$feature_num[1]))
+
+print(best_gtex_k_dim)
+print(best_gtex_seed)
+print(best_gtex_feature)
 
 feature_file <- file.path("..",
                           "2.sequential-compression",
                           "results",
                           "GTEX_results",
                           "ensemble_z_matrices",
-                          paste0("gtex_components_", best_k_dim),
-                          paste0("model_", best_seed, "_z_matrix.tsv.gz"))
+                          paste0("gtex_components_", best_gtex_k_dim),
+                          paste0("model_", best_gtex_seed, "_z_test_matrix.tsv.gz"))
 
 top_gtex_feature_df <- readr::read_tsv(feature_file,
                                        col_types = readr::cols(
@@ -124,37 +142,42 @@ top_gtex_feature_df <- readr::read_tsv(feature_file,
                                            sample_id = readr::col_character()
                                        )
                                       ) %>%
-    dplyr::select(sample_id, !!best_feature)
+    dplyr::select(sample_id, !!best_gtex_feature)
 
-full_gtex_ids <- c()
-for (gtex_id in strsplit(top_gtex_feature_df$sample_id, "-")) {
-  gtex_id_unlist <- unlist(gtex_id)
-  sample_id <- paste0(gtex_id_unlist[1], "-", gtex_id_unlist[2])
-  full_gtex_ids <- c(full_gtex_ids, sample_id)
-}
+head(top_gtex_feature_df)
 
-top_gtex_feature_df$gtex_id <- full_gtex_ids
+balance_file <- file.path("results", "balanced_gtex_tissues.tsv")
+balanced_gtex_tissues <- readr::read_tsv(balance_file, col_types = readr::cols()) %>%
+    dplyr::pull(SMTS)
+
+balanced_gtex_tissues
+
 top_gtex_feature_df <- top_gtex_feature_df %>%
-  dplyr::left_join(gtex_pheno_df, by = c("gtex_id" = "SUBJID"))
+    dplyr::left_join(gtex_pheno_df, by = c("sample_id" = "SAMPID")) %>%
+    dplyr::filter(SMTS %in% balanced_gtex_tissues)
 
 top_gtex_feature_df$SEX <- dplyr::recode_factor(top_gtex_feature_df$SEX, `1` = "Male", `2` = "Female")
 top_gtex_feature_df$SEX <- factor(top_gtex_feature_df$SEX, levels = c("Female", "Male"))
 
-male_scores <- top_gtex_feature_df %>% dplyr::filter(SEX == "Male") %>% dplyr::pull(vae_108)
-female_scores <- top_gtex_feature_df %>% dplyr::filter(SEX == "Female") %>% dplyr::pull(vae_108)
+male_scores <- top_gtex_feature_df %>%
+    dplyr::filter(SEX == "Male") %>%
+    dplyr::pull(!!best_gtex_feature)
+female_scores <- top_gtex_feature_df %>%
+    dplyr::filter(SEX == "Female") %>%
+    dplyr::pull(!!best_gtex_feature)
 
-gtex_ttest_result <- t.test(female_scores, male_scores, var.equal = FALSE, paired = FALSE)
+gtex_ttest_result <- t.test(male_scores, female_scores, var.equal = FALSE, paired = FALSE)
 gtex_ttest_result
 
 gtex_sex_gg <- ggplot(top_gtex_feature_df,
-                      aes(y = vae_108,
-                          x = SEX,
-                          fill = SEX)) +
+                      aes_string(y = best_gtex_feature,
+                                 x = "SEX",
+                                 fill = "SEX")) +
   geom_boxplot(alpha = 0.5,
                outlier.alpha = 0) +
   geom_jitter(aes(color = SEX),
-              size = 0.15,
-              alpha = 0.2,
+              size = 0.2,
+              alpha = 0.6,
               width = 0.3) +
   scale_fill_manual(labels = c("Male" = "Male",
                                "Female" = "Female"),
@@ -165,9 +188,9 @@ gtex_sex_gg <- ggplot(top_gtex_feature_df,
                      values = c("Male" = "#42c8f4",
                                 "Female" = "#f489c9")) +
   theme_bw() +
-  ylab("VAE Feature 108 (k = 200)") +
+  ylab("NMF Feature 111 (k = 200)") +
   xlab("") +
-  ylim(c(-0.5, 12)) +
+  ylim(c(-0.5, 1.7)) +
   ggtitle("GTEx Sex") +
   theme(axis.title.x = element_text(size = 7),
         axis.title.y = element_text(size = 7),
@@ -177,22 +200,22 @@ gtex_sex_gg <- ggplot(top_gtex_feature_df,
                                   hjust = 0.5),
         legend.position = "none") +
     geom_segment(aes(x=1,
-                     y=max(top_gtex_feature_df$vae_108) + 0.25,
+                     y=max(top_gtex_feature_df[, best_gtex_feature]) + 0.15,
                      xend=2,
-                     yend=max(top_gtex_feature_df$vae_108) + 0.25),
+                     yend=max(top_gtex_feature_df[, best_gtex_feature]) + 0.15),
                  size=0.4) +
     geom_segment(aes(x=1,
-                     y=max(top_gtex_feature_df$vae_108) + 0.25,
+                     y=max(top_gtex_feature_df[, best_gtex_feature]) + 0.15,
                      xend=1,
-                     yend=max(top_gtex_feature_df$vae_108)),
+                     yend=max(top_gtex_feature_df[, best_gtex_feature])),
                  size=0.4) +
     geom_segment(aes(x=2,
-                     y=max(top_gtex_feature_df$vae_108) + 0.25,
+                     y=max(top_gtex_feature_df[, best_gtex_feature]) + 0.15,
                      xend=2,
-                     yend=max(top_gtex_feature_df$vae_108)),
+                     yend=max(top_gtex_feature_df[, best_gtex_feature])),
                  size=0.4) +
     geom_text(x=1.5,
-              y = (max(top_gtex_feature_df$vae_108) + 1.1),
+              y = (max(top_gtex_feature_df[, best_gtex_feature]) + 0.25),
               size = 3.0,
               label = paste0("t = ",
                             round(gtex_ttest_result$statistic, 1),
@@ -208,23 +231,23 @@ tcga_pheno_df <- readxl::read_xlsx(file, sheet=1, col_types = "text")
 print(dim(tcga_pheno_df))
 head(tcga_pheno_df)
 
-best_k_dim <- paste(best_result_list[[t_test_results_files[3]]]$z_dim)
-best_seed <- paste(best_result_list[[t_test_results_files[3]]]$seed)
-best_feature <- paste0(paste(best_result_list[[t_test_results_files[3]]]$algorithm),
-                       "_", 
-                       paste(best_result_list[[t_test_results_files[3]]]$feature_num))
+best_tcga_k_dim <- paste(best_result_list[[t_test_results_files[3]]]$z_dim)
+best_tcga_seed <- paste(best_result_list[[t_test_results_files[3]]]$seed)
+best_tcga_feature <- paste0(paste(best_result_list[[t_test_results_files[3]]]$algorithm),
+                            "_", 
+                            paste(best_result_list[[t_test_results_files[3]]]$feature_num))
 
-print(best_k_dim)
-print(best_seed)
-print(best_feature)
+print(best_tcga_k_dim)
+print(best_tcga_seed)
+print(best_tcga_feature)
 
 feature_file <- file.path("..",
                           "2.sequential-compression",
                           "results",
                           "TCGA_results",
                           "ensemble_z_matrices",
-                          paste0("tcga_components_", best_k_dim),
-                          paste0("model_", best_seed, "_z_matrix.tsv.gz"))
+                          paste0("tcga_components_", best_tcga_k_dim),
+                          paste0("model_", best_tcga_seed, "_z_test_matrix.tsv.gz"))
 
 top_tcga_feature_df <- readr::read_tsv(feature_file,
                                        col_types = readr::cols(
@@ -232,9 +255,15 @@ top_tcga_feature_df <- readr::read_tsv(feature_file,
                                            sample_id = readr::col_character()
                                        )
 ) %>%
-  dplyr::select(sample_id, !!best_feature)
+  dplyr::select(sample_id, !!best_tcga_feature)
 
 head(top_tcga_feature_df)
+
+balance_file <- file.path("results", "balanced_tcga_tissues.tsv")
+balanced_tcga_tissues <- readr::read_tsv(balance_file, col_types = readr::cols()) %>%
+    dplyr::pull(type)
+
+balanced_tcga_tissues
 
 full_tcga_ids <- c()
 for (tcga_id in strsplit(top_tcga_feature_df$sample_id, "-")) {
@@ -254,23 +283,30 @@ top_tcga_feature_df$gender <- dplyr::recode_factor(top_tcga_feature_df$gender,
 top_tcga_feature_df$gender <- factor(top_tcga_feature_df$gender,
                                      levels = c("Female", "Male", "Unlabeled"))
 
+top_tcga_feature_df <- top_tcga_feature_df %>%
+    dplyr::filter(type %in% balanced_tcga_tissues)
+
 head(top_tcga_feature_df, 3)
 
-male_scores <- top_tcga_feature_df %>% dplyr::filter(gender == "Male") %>% dplyr::pull(ica_44)
-female_scores <- top_tcga_feature_df %>% dplyr::filter(gender == "Female") %>% dplyr::pull(ica_44)
+male_scores <- top_tcga_feature_df %>%
+    dplyr::filter(gender == "Male") %>%
+    dplyr::pull(!!best_tcga_feature)
+female_scores <- top_tcga_feature_df %>%
+    dplyr::filter(gender == "Female") %>%
+    dplyr::pull(!!best_tcga_feature)
 
-tcga_ttest_result <- t.test(female_scores, male_scores, var.equal = FALSE, paired = FALSE)
+tcga_ttest_result <- t.test(male_scores, female_scores, var.equal = FALSE, paired = FALSE)
 tcga_ttest_result
 
 tcga_sex_gg <- ggplot(top_tcga_feature_df,
-                      aes(y = ica_44,
-                          x = gender,
-                          fill = gender)) +
+                      aes_string(y = best_tcga_feature,
+                                 x = "gender",
+                                 fill = "gender")) +
   geom_boxplot(alpha = 0.5,
                outlier.alpha = 0) +
   geom_jitter(aes(color = gender),
-              size = 0.15,
-              alpha = 0.2,
+              size = 0.2,
+              alpha = 0.6,
               width = 0.3) +
   scale_fill_manual(labels = c("Male" = "Male",
                                "Female" = "Female",
@@ -286,7 +322,7 @@ tcga_sex_gg <- ggplot(top_tcga_feature_df,
                                 "Unlabeled" = "grey25")) +
   theme_bw() +
   ylim(c(-0.075, 0.075)) +
-  ylab("ICA Feature 44 (k = 90)") +
+  ylab("ICA Feature 53 (k = 90)") +
   xlab("") +
   ggtitle("TCGA Sex") +
   theme(axis.title.x = element_text(size = 7),
@@ -297,22 +333,22 @@ tcga_sex_gg <- ggplot(top_tcga_feature_df,
                                   hjust = 0.5),
         legend.position = "none") +
     geom_segment(aes(x=1,
-                     y=max(top_tcga_feature_df$ica_44) + 0.002,
+                     y=max(top_tcga_feature_df[, best_tcga_feature]) + 0.005,
                      xend=2,
-                     yend=max(top_tcga_feature_df$ica_44) + 0.002),
+                     yend=max(top_tcga_feature_df[, best_tcga_feature]) + 0.005),
                  size=0.4) +
     geom_segment(aes(x=1,
-                     y=max(top_tcga_feature_df$ica_44) + 0.002,
+                     y=max(top_tcga_feature_df[, best_tcga_feature]) + 0.005,
                      xend=1,
-                     yend=max(top_tcga_feature_df$ica_44)),
+                     yend=max(top_tcga_feature_df[, best_tcga_feature])),
                  size=0.4) +
     geom_segment(aes(x=2,
-                     y=max(top_tcga_feature_df$ica_44) + 0.002,
+                     y=max(top_tcga_feature_df[, best_tcga_feature]) + 0.005,
                      xend=2,
-                     yend=max(top_tcga_feature_df$ica_44)),
+                     yend=max(top_tcga_feature_df[, best_tcga_feature])),
                  size=0.4) +
     geom_text(x=1.5,
-              y = (max(top_tcga_feature_df$ica_44) + 0.012),
+              y = (max(top_tcga_feature_df[, best_tcga_feature]) + 0.012),
               size = 3.0,
               label = paste0("t = ",
                             round(tcga_ttest_result$statistic, 1),
@@ -321,23 +357,23 @@ tcga_sex_gg <- ggplot(top_tcga_feature_df,
 
 tcga_sex_gg
 
-best_k_dim <- paste(best_result_list[[t_test_results_files[1]]]$z_dim)
-best_seed <- paste(best_result_list[[t_test_results_files[1]]]$seed)
-best_feature <- paste0(paste(best_result_list[[t_test_results_files[1]]]$algorithm),
-                       "_", 
-                       paste(best_result_list[[t_test_results_files[1]]]$feature_num))
+best_target_k_dim <- paste(best_result_list[[t_test_results_files[1]]]$z_dim)
+best_target_seed <- paste(best_result_list[[t_test_results_files[1]]]$seed)
+best_target_feature <- paste0(paste(best_result_list[[t_test_results_files[1]]]$algorithm),
+                              "_",
+                              paste(best_result_list[[t_test_results_files[1]]]$feature_num))
 
-print(best_k_dim)
-print(best_seed)
-print(best_feature)
+print(best_target_k_dim)
+print(best_target_seed)
+print(best_target_feature)
 
 feature_file <- file.path("..",
                           "2.sequential-compression",
                           "results",
                           "TARGET_results",
                           "ensemble_z_matrices",
-                          paste0("target_components_", best_k_dim),
-                          paste0("model_", best_seed, "_z_matrix.tsv.gz"))
+                          paste0("target_components_", best_target_k_dim),
+                          paste0("model_", best_target_seed, "_z_matrix.tsv.gz"))
 
 top_mycn_feature_df <- readr::read_tsv(feature_file,
                                        col_types = readr::cols(
@@ -345,7 +381,7 @@ top_mycn_feature_df <- readr::read_tsv(feature_file,
                                            sample_id = readr::col_character()
                                        )
                                       ) %>%
-  dplyr::select(sample_id, !!best_feature)
+  dplyr::select(sample_id, !!best_target_feature)
 
 # Load TARGET phenotype data
 file <- file.path("..", "0.expression-download", "data", "2017-09-30-TARGET update harmonized.txt")
@@ -359,29 +395,34 @@ for (target_id in strsplit(top_mycn_feature_df$sample_id, "-")) {
 
 top_mycn_feature_df$target_id <- full_target_ids
 top_mycn_feature_df <- top_mycn_feature_df %>% 
-  dplyr::inner_join(nbl_pheno_df, by = c("target_id" = "usi"))
+  dplyr::inner_join(nbl_pheno_df, by = c("target_id" = "usi")) %>%
+    dplyr::rename("mycn_status" = "MYCN status")
 
 head(top_mycn_feature_df, 2)
 
-amp_scores <- top_mycn_feature_df %>% dplyr::filter(`MYCN status` == "Amplified") %>% dplyr::pull(vae_111)
-noamp_scores <- top_mycn_feature_df %>% dplyr::filter(`MYCN status` == "Not Amplified") %>% dplyr::pull(vae_111)
+amp_scores <- top_mycn_feature_df %>%
+    dplyr::filter(mycn_status == "Amplified") %>%
+    dplyr::pull(!!best_target_feature)
+noamp_scores <- top_mycn_feature_df %>%
+    dplyr::filter(mycn_status == "Not Amplified") %>%
+    dplyr::pull(!!best_target_feature)
 
 mycn_ttest_result <- t.test(amp_scores, noamp_scores, var.equal = FALSE, paired = FALSE)
 mycn_ttest_result
 
 mycn_amp_gg <- ggplot(top_mycn_feature_df,
-                      aes(y = vae_111,
-                          x = `MYCN status`,
-                          fill = `MYCN status`)) +
+                      aes_string(y = best_target_feature,
+                                 x = "mycn_status",
+                                 fill = "mycn_status")) +
     geom_boxplot(alpha = 0.5,
                outlier.alpha = 0) +
-    geom_jitter(aes(color = `MYCN status`),
+    geom_jitter(aes(color = mycn_status),
               alpha = 0.7,
               size = 0.9,
               width = 0.2) +
     scale_fill_manual(labels = c("Amplified" = "Amplified",
-                               "Not Amplified" = "Not Amplified",
-                               "Unknown" = "Unknown"),
+                                 "Not Amplified" = "Not Amplified",
+                                 "Unknown" = "Unknown"),
                     values = c("Amplified" = "#d95f02",
                                "Not Amplified" = "#1b9e77",
                                "Unknown" = "grey25")) +
@@ -392,10 +433,10 @@ mycn_amp_gg <- ggplot(top_mycn_feature_df,
                                 "Not Amplified" = "#1b9e77",
                                 "Unknown" = "grey25")) +
     theme_bw() +
-    ylab("VAE Feature 111 (k = 200)") +
+    ylab("VAE Feature 12 (k = 50)") +
     xlab("") +
     ggtitle("TARGET NBL MYCN Status") +
-    ylim(c(-0.5, 6)) +
+    ylim(c(-0.5, 8.0)) +
     theme(axis.title.x = element_text(size = 7),
        axis.title.y = element_text(size = 7),
        axis.text.x = element_text(size = 6),
@@ -404,22 +445,22 @@ mycn_amp_gg <- ggplot(top_mycn_feature_df,
                                  hjust = 0.5),
        legend.position = "none") +
     geom_segment(aes(x=1,
-                     y=max(top_mycn_feature_df$vae_111) + 0.4,
+                     y=max(top_mycn_feature_df[, best_target_feature]) + 0.8,
                      xend=2,
-                     yend=max(top_mycn_feature_df$vae_111) + 0.4),
+                     yend=max(top_mycn_feature_df[, best_target_feature]) + 0.8),
                  size=0.4) +
     geom_segment(aes(x=1,
-                     y=max(top_mycn_feature_df$vae_111) + 0.4,
+                     y=max(top_mycn_feature_df[, best_target_feature]) + 0.8,
                      xend=1,
-                     yend=max(top_mycn_feature_df$vae_111) + 0.2),
+                     yend=max(top_mycn_feature_df[, best_target_feature]) + 0.3),
                  size=0.4) +
     geom_segment(aes(x=2,
-                     y=max(top_mycn_feature_df$vae_111) + 0.4,
+                     y=max(top_mycn_feature_df[, best_target_feature]) + 0.8,
                      xend=2,
-                     yend=max(top_mycn_feature_df$vae_111) + 0.2),
+                     yend=max(top_mycn_feature_df[, best_target_feature]) + 0.3),
                  size=0.4) +
     geom_text(x=1.5,
-              y = (max(top_mycn_feature_df$vae_111) + 0.75),
+              y = (max(top_mycn_feature_df[, best_target_feature]) + 1.25),
               size = 3.0,
               label = paste0("t = ",
                             round(mycn_ttest_result$statistic, 1),
@@ -429,28 +470,33 @@ mycn_amp_gg <- ggplot(top_mycn_feature_df,
 mycn_amp_gg
 
 file <- file.path("results", "mycn_nbl_scores.tsv")
-mycn_validation_df <- readr::read_tsv(file)
+mycn_validation_df <- readr::read_tsv(file) %>%
+    dplyr::rename("mycn_status" = "MYCN status")
 
-mycn_validation_df$`MYCN status` <- dplyr::recode_factor(mycn_validation_df$`MYCN status`,
-                                                         "Non-amplified" = "Not Amplified")
-mycn_validation_df$`MYCN status` <- factor(mycn_validation_df$`MYCN status`,
-                                           levels = c("Amplified", "Not Amplified"))
+mycn_validation_df$mycn_status <- dplyr::recode_factor(mycn_validation_df$mycn_status,
+                                                       "Non-amplified" = "Not Amplified")
+mycn_validation_df$mycn_status <- factor(mycn_validation_df$mycn_status,
+                                         levels = c("Amplified", "Not Amplified"))
 head(mycn_validation_df)
 
-amp_scores <- mycn_validation_df %>% dplyr::filter(`MYCN status` == "Amplified") %>% dplyr::pull(vae_111)
-noamp_scores <- mycn_validation_df %>% dplyr::filter(`MYCN status` == "Not Amplified") %>% dplyr::pull(vae_111)
+amp_scores <- mycn_validation_df %>%
+    dplyr::filter(mycn_status == "Amplified") %>%
+    dplyr::pull(!!best_target_feature)
+noamp_scores <- mycn_validation_df %>%
+    dplyr::filter(mycn_status == "Not Amplified") %>%
+    dplyr::pull(!!best_target_feature)
 
 mycn_val_ttest_result <- t.test(amp_scores, noamp_scores, var.equal = FALSE, paired = FALSE)
 mycn_val_ttest_result
 
 mycn_validation_gg <-
     ggplot(mycn_validation_df,
-           aes(y = vae_111,
-               x = `MYCN status`,
-               fill = `MYCN status`)) +
+           aes_string(y = best_target_feature,
+                      x = "mycn_status",
+                      fill = "mycn_status")) +
     geom_boxplot(alpha = 0.5,
                outlier.alpha = 0) +
-    geom_jitter(aes(color = `MYCN status`),
+    geom_jitter(aes(color = mycn_status),
               alpha = 0.7,
               size = 0.9,
               width = 0.2) +
@@ -463,10 +509,10 @@ mycn_validation_gg <-
                                 "Not Amplified" = "Not Amplified"),
                      values = c("Amplified" = "#d95f02",
                                 "Not Amplified" = "#1b9e77")) +
-    ylab("VAE Feature 111 (k = 200)") +
+    ylab("VAE Feature 12 (k = 50)") +
     xlab("") +
     ggtitle("NBL Cell Lines MYCN Status") +
-    ylim(c(-1, 9)) +
+    ylim(c(8, 36.5)) +
     theme(axis.title.x = element_text(size = 7),
        axis.title.y = element_text(size = 7),
        axis.text.x = element_text(size = 6),
@@ -475,22 +521,22 @@ mycn_validation_gg <-
                                  hjust = 0.5),
        legend.position = "none") +
     geom_segment(aes(x=1,
-                     y=max(mycn_validation_df$vae_111) + 0.4,
+                     y=max(mycn_validation_df[, best_target_feature]) + 1.2,
                      xend=2,
-                     yend=max(mycn_validation_df$vae_111) + 0.4),
+                     yend=max(mycn_validation_df[, best_target_feature]) + 1.2),
                  size=0.4) +
     geom_segment(aes(x=1,
-                     y=max(mycn_validation_df$vae_111) + 0.4,
+                     y=max(mycn_validation_df[, best_target_feature]) + 1.2,
                      xend=1,
-                     yend=max(mycn_validation_df$vae_111) + 0.2),
+                     yend=max(mycn_validation_df[, best_target_feature]) + 0.4),
                  size=0.4) +
     geom_segment(aes(x=2,
-                     y=max(mycn_validation_df$vae_111) + 0.4,
+                     y=max(mycn_validation_df[, best_target_feature]) + 1.2,
                      xend=2,
-                     yend=max(mycn_validation_df$vae_111) + 0.2),
+                     yend=max(mycn_validation_df[, best_target_feature]) + 0.4),
                  size=0.4) +
     geom_text(x=1.5,
-              y = (max(mycn_validation_df$vae_111) + 0.85),
+              y = (max(mycn_validation_df[, best_target_feature]) + 2.75),
               size = 3.0,
               label = paste0("t = ",
                             round(mycn_val_ttest_result$statistic, 1),

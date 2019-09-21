@@ -44,7 +44,7 @@ def ttest_difference(feature_series, group_a_ids, group_b_ids):
     b_activation = feature_series[feature_series.index.isin(group_b_ids)]
     
     # Perform t-test on two groups
-    t_stat, t_p = ttest_ind(a_activation, b_activation)
+    t_stat, t_p = ttest_ind(a_activation, b_activation, equal_var=False)
     
     return([t_stat, t_p, feature_algorithm, feature_num])
 
@@ -60,7 +60,12 @@ def get_ttest_results(z_matrix_dict, group_a_ids, group_b_ids, train_or_test='te
     for signal in z_matrix_dict.keys():
         for z_dim in z_matrix_dict[signal].keys():
             for seed in z_matrix_dict[signal][z_dim].keys():
-                z_df = z_matrix_dict[signal][z_dim][seed][train_or_test]
+                if train_or_test == "both":
+                    z_train_df = z_matrix_dict[signal][z_dim][seed]["train"]
+                    z_test_df = z_matrix_dict[signal][z_dim][seed]["test"]
+                    z_df = pd.concat([z_train_df, z_test_df])
+                else:
+                    z_df = z_matrix_dict[signal][z_dim][seed][train_or_test]
 
                 result_df = pd.DataFrame(z_df.apply(lambda x:
                                                     ttest_difference(feature_series=x,
@@ -169,6 +174,9 @@ balanced= (
         :]
 )
 
+out_file = os.path.join("results", "balanced_gtex_tissues.tsv")
+balanced.to_csv(out_file, sep='\t')
+        
 balanced
 
 
@@ -200,7 +208,8 @@ print(len(gtex_females))
 # Perform t-test for all compressed features
 gtex_full_results_df = get_ttest_results(z_matrix_dict=gtex_z_matrix_dict,
                                          group_a_ids=gtex_males,
-                                         group_b_ids=gtex_females)
+                                         group_b_ids=gtex_females,
+                                         train_or_test="test")
 
 
 # In[10]:
@@ -275,6 +284,9 @@ balanced= (
         :]
 )
 
+out_file = os.path.join("results", "balanced_tcga_tissues.tsv")
+balanced.to_csv(out_file, sep='\t')
+
 balanced
 
 
@@ -306,7 +318,8 @@ print(len(tcga_females))
 # Perform t-test for all compressed features
 tcga_full_results_df = get_ttest_results(z_matrix_dict=tcga_z_matrix_dict,
                                          group_a_ids=tcga_males,
-                                         group_b_ids=tcga_females)
+                                         group_b_ids=tcga_females,
+                                         train_or_test="test")
 
 
 # In[17]:
@@ -337,27 +350,34 @@ nbl_pheno_df.head()
 # Load TARGET matrices
 target_z_matrix_dict = build_feature_dictionary(dataset="TARGET",
                                                 load_data=True,
-                                                store_train_test='train')
+                                                store_train_test='both')
 
 
 # In[20]:
 
 
 # Extract amplified and not amplified samples from the dataset
-example_matrix_df = target_z_matrix_dict['signal']['8']['451283']['train']
+example_train_matrix_df = target_z_matrix_dict['signal']['8']['451283']['train']
+example_test_matrix_df = target_z_matrix_dict['signal']['8']['451283']['test']
+example_matrix_df = pd.concat([example_train_matrix_df, example_test_matrix_df])
 
-patient_id_df = pd.concat(
-    [
-    pd.DataFrame([x[2] for x in example_matrix_df.index.str.split('-')],
-                 columns=['patient_id'])
-        .merge(nbl_pheno_df,
-               how='left',
-               left_on='patient_id',
-               right_on='usi'),
-    pd.DataFrame(example_matrix_df.index)
-    ],
-    axis='columns'
-).dropna(subset=['usi'])
+patient_id_df = (
+    pd.concat(
+        [
+            pd.DataFrame([x[2] for x in example_matrix_df.index.str.split('-')],
+                         columns=['patient_id'])
+            .merge(nbl_pheno_df,
+                   how='left',
+                   left_on='patient_id',
+                   right_on='usi'),
+            pd.DataFrame(example_matrix_df.index)
+        ],
+        axis='columns'
+    )
+    .dropna(subset=['usi'])
+)
+
+patient_id_df = patient_id_df.loc[patient_id_df["Diagnostic Category"] == "Neuroblastoma", :]
 
 mycn_amp = patient_id_df.loc[patient_id_df["MYCN status"] == "Amplified", "sample_id"].tolist()
 mycn_nonamp = patient_id_df.loc[patient_id_df["MYCN status"] == "Not Amplified", "sample_id"].tolist()
@@ -373,7 +393,7 @@ patient_id_df.head()
 target_full_results_df = get_ttest_results(z_matrix_dict=target_z_matrix_dict,
                                            group_a_ids=mycn_amp,
                                            group_b_ids=mycn_nonamp,
-                                           train_or_test='train')
+                                           train_or_test='both')
 
 
 # In[22]:

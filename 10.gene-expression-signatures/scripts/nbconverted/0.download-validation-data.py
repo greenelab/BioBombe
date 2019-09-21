@@ -53,7 +53,7 @@ get_ipython().system(' md5sum "download/2019-01-22-CellLineSTAR-fpkm-2pass_matri
 # In[6]:
 
 
-url = "https://www.nature.com/articles/sdata201733/tables/3"
+url = "https://www.nature.com/articles/sdata201733/tables/4"
 name = "nbl_cellline_phenotype.txt"
 path = os.path.join("download", name)
 
@@ -61,12 +61,16 @@ path = os.path.join("download", name)
 # In[7]:
 
 
-html = requests.get(url).content
+if not os.path.isfile(path):
+    html = requests.get(url).content
 
-pheno_df = pd.read_html(html)[0]
-pheno_df['Cell Line'] = pheno_df['Cell Line'].str.replace("-", "")
+    pheno_df = pd.read_html(html)[0]
+    pheno_df['Cell Line'] = pheno_df['Cell Line'].str.replace("-", "")
 
-pheno_df.to_csv(path, sep='\t', index=False)
+    pheno_df.to_csv(path, sep='\t', index=False)
+
+else:
+    pheno_df = pd.read_csv(path, sep="\t")
 
 pheno_df.head()
 

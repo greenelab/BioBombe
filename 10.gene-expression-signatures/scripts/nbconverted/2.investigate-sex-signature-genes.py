@@ -134,9 +134,9 @@ sex_gene_df.neg_log_p.hist(bins=100)
 # In[7]:
 
 
-gtex_seed = '486191'
+gtex_seed = '451283'
 gtex_k = 200
-gtex_feature = "vae_108"
+gtex_feature = "nmf_111"
 
 
 # In[8]:
@@ -198,9 +198,9 @@ gtex_sex_feature.plot(kind="scatter", x=gtex_feature, y="neg_log_p")
 # In[11]:
 
 
-tcga_seed = '451283'
-tcga_k = 90
-tcga_feature = "ica_44"
+tcga_seed = '165158'
+tcga_k = 200
+tcga_feature = "ica_151"
 
 
 # In[12]:
@@ -246,7 +246,7 @@ tcga_sex_feature = (
 )
 
 print(tcga_sex_feature.shape)
-tcga_sex_feature.head(10)
+tcga_sex_feature.head(20)
 
 
 # In[14]:

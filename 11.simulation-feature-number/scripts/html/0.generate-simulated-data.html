@@ -13240,6 +13240,115 @@ The second group of features has lower correlation than the first group.</p>
 <div class="prompt input_prompt">In&nbsp;[6]:</div>
 <div class="inner_cell">
     <div class="input_area">
+<div class=" highlight hl-r"><pre><span></span><span class="n">cov_mat</span> <span class="o">%&gt;%</span>
+    <span class="n">dplyr</span><span class="o">::</span><span class="nf">as_tibble</span><span class="p">(</span><span class="n">.name_repair</span> <span class="o">=</span> <span class="s">&quot;minimal&quot;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+<div class="output_html rendered_html output_subarea ">
+<table>
+<thead><tr><th scope=col></th><th scope=col></th><th scope=col></th><th scope=col></th><th scope=col></th><th scope=col></th><th scope=col></th><th scope=col></th><th scope=col></th><th scope=col></th></tr></thead>
+<tbody>
+	<tr><td>1.00</td><td>0.95</td><td>0.93</td><td>0   </td><td>0.00</td><td>0.00</td><td>0.00</td><td>0   </td><td>0   </td><td>0   </td></tr>
+	<tr><td>0.95</td><td>1.00</td><td>0.90</td><td>0   </td><td>0.00</td><td>0.00</td><td>0.00</td><td>0   </td><td>0   </td><td>0   </td></tr>
+	<tr><td>0.93</td><td>0.90</td><td>1.00</td><td>0   </td><td>0.00</td><td>0.00</td><td>0.00</td><td>0   </td><td>0   </td><td>0   </td></tr>
+	<tr><td>0.00</td><td>0.00</td><td>0.00</td><td>1   </td><td>0.00</td><td>0.00</td><td>0.00</td><td>0   </td><td>0   </td><td>0   </td></tr>
+	<tr><td>0.00</td><td>0.00</td><td>0.00</td><td>0   </td><td>1.00</td><td>0.90</td><td>0.88</td><td>0   </td><td>0   </td><td>0   </td></tr>
+	<tr><td>0.00</td><td>0.00</td><td>0.00</td><td>0   </td><td>0.90</td><td>1.00</td><td>0.85</td><td>0   </td><td>0   </td><td>0   </td></tr>
+	<tr><td>0.00</td><td>0.00</td><td>0.00</td><td>0   </td><td>0.88</td><td>0.85</td><td>1.00</td><td>0   </td><td>0   </td><td>0   </td></tr>
+	<tr><td>0.00</td><td>0.00</td><td>0.00</td><td>0   </td><td>0.00</td><td>0.00</td><td>0.00</td><td>1   </td><td>0   </td><td>0   </td></tr>
+	<tr><td>0.00</td><td>0.00</td><td>0.00</td><td>0   </td><td>0.00</td><td>0.00</td><td>0.00</td><td>0   </td><td>1   </td><td>0   </td></tr>
+	<tr><td>0.00</td><td>0.00</td><td>0.00</td><td>0   </td><td>0.00</td><td>0.00</td><td>0.00</td><td>0   </td><td>0   </td><td>1   </td></tr>
+</tbody>
+</table>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[7]:</div>
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-r"><pre><span></span><span class="n">feature_ids</span> <span class="o">&lt;-</span> <span class="nf">paste0</span><span class="p">(</span><span class="s">&quot;feature_&quot;</span><span class="p">,</span> <span class="nf">seq</span><span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="nf">nrow</span><span class="p">(</span><span class="n">cov_mat</span><span class="p">)))</span>
+
+<span class="n">cov_mat_df</span> <span class="o">&lt;-</span> <span class="n">cov_mat</span> <span class="o">%&gt;%</span>
+    <span class="n">dplyr</span><span class="o">::</span><span class="nf">as_tibble</span><span class="p">(</span><span class="n">.name_repair</span> <span class="o">=</span> <span class="s">&quot;minimal&quot;</span><span class="p">)</span>
+
+<span class="nf">colnames</span><span class="p">(</span><span class="n">cov_mat_df</span><span class="p">)</span> <span class="o">&lt;-</span> <span class="n">feature_ids</span>
+
+<span class="n">cov_mat_df</span> <span class="o">&lt;-</span> <span class="n">cov_mat_df</span> <span class="o">%&gt;%</span>
+    <span class="n">dplyr</span><span class="o">::</span><span class="nf">mutate</span><span class="p">(</span><span class="n">feature_num</span> <span class="o">=</span> <span class="n">feature_ids</span><span class="p">)</span> <span class="o">%&gt;%</span>
+    <span class="n">dplyr</span><span class="o">::</span><span class="nf">select</span><span class="p">(</span><span class="n">feature_num</span><span class="p">,</span> <span class="n">dplyr</span><span class="o">::</span><span class="nf">everything</span><span class="p">())</span>
+
+<span class="n">out_file</span> <span class="o">&lt;-</span> <span class="nf">file.path</span><span class="p">(</span><span class="s">&quot;data&quot;</span><span class="p">,</span> <span class="s">&quot;simulated_covariance_structure.tsv&quot;</span><span class="p">)</span>
+<span class="n">cov_mat_df</span> <span class="o">%&gt;%</span> <span class="n">readr</span><span class="o">::</span><span class="nf">write_tsv</span><span class="p">(</span><span class="n">out_file</span><span class="p">)</span>
+
+<span class="n">cov_mat_df</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+
+<div class="output_area">
+
+    <div class="prompt"></div>
+
+
+
+<div class="output_html rendered_html output_subarea ">
+<table>
+<thead><tr><th scope=col>feature_num</th><th scope=col>feature_1</th><th scope=col>feature_2</th><th scope=col>feature_3</th><th scope=col>feature_4</th><th scope=col>feature_5</th><th scope=col>feature_6</th><th scope=col>feature_7</th><th scope=col>feature_8</th><th scope=col>feature_9</th><th scope=col>feature_10</th></tr></thead>
+<tbody>
+	<tr><td>feature_1 </td><td>1.00      </td><td>0.95      </td><td>0.93      </td><td>0         </td><td>0.00      </td><td>0.00      </td><td>0.00      </td><td>0         </td><td>0         </td><td>0         </td></tr>
+	<tr><td>feature_2 </td><td>0.95      </td><td>1.00      </td><td>0.90      </td><td>0         </td><td>0.00      </td><td>0.00      </td><td>0.00      </td><td>0         </td><td>0         </td><td>0         </td></tr>
+	<tr><td>feature_3 </td><td>0.93      </td><td>0.90      </td><td>1.00      </td><td>0         </td><td>0.00      </td><td>0.00      </td><td>0.00      </td><td>0         </td><td>0         </td><td>0         </td></tr>
+	<tr><td>feature_4 </td><td>0.00      </td><td>0.00      </td><td>0.00      </td><td>1         </td><td>0.00      </td><td>0.00      </td><td>0.00      </td><td>0         </td><td>0         </td><td>0         </td></tr>
+	<tr><td>feature_5 </td><td>0.00      </td><td>0.00      </td><td>0.00      </td><td>0         </td><td>1.00      </td><td>0.90      </td><td>0.88      </td><td>0         </td><td>0         </td><td>0         </td></tr>
+	<tr><td>feature_6 </td><td>0.00      </td><td>0.00      </td><td>0.00      </td><td>0         </td><td>0.90      </td><td>1.00      </td><td>0.85      </td><td>0         </td><td>0         </td><td>0         </td></tr>
+	<tr><td>feature_7 </td><td>0.00      </td><td>0.00      </td><td>0.00      </td><td>0         </td><td>0.88      </td><td>0.85      </td><td>1.00      </td><td>0         </td><td>0         </td><td>0         </td></tr>
+	<tr><td>feature_8 </td><td>0.00      </td><td>0.00      </td><td>0.00      </td><td>0         </td><td>0.00      </td><td>0.00      </td><td>0.00      </td><td>1         </td><td>0         </td><td>0         </td></tr>
+	<tr><td>feature_9 </td><td>0.00      </td><td>0.00      </td><td>0.00      </td><td>0         </td><td>0.00      </td><td>0.00      </td><td>0.00      </td><td>0         </td><td>1         </td><td>0         </td></tr>
+	<tr><td>feature_10</td><td>0.00      </td><td>0.00      </td><td>0.00      </td><td>0         </td><td>0.00      </td><td>0.00      </td><td>0.00      </td><td>0         </td><td>0         </td><td>1         </td></tr>
+</tbody>
+</table>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="inner_cell">
+    <div class="input_area">
 <div class=" highlight hl-r"><pre><span></span><span class="n">simulated_data</span> <span class="o">&lt;-</span> <span class="n">MASS</span><span class="o">::</span><span class="nf">mvrnorm</span><span class="p">(</span><span class="n">n</span> <span class="o">=</span> <span class="n">n</span><span class="p">,</span> <span class="n">mu</span> <span class="o">=</span> <span class="nf">rep</span><span class="p">(</span><span class="m">0</span><span class="p">,</span> <span class="n">p</span><span class="p">),</span> <span class="n">Sigma</span> <span class="o">=</span> <span class="n">cov_mat</span><span class="p">)</span> 
 <span class="nf">colnames</span><span class="p">(</span><span class="n">simulated_data</span><span class="p">)</span> <span class="o">&lt;-</span> <span class="nf">paste0</span><span class="p">(</span><span class="s">&quot;feature_&quot;</span><span class="p">,</span> <span class="m">1</span><span class="o">:</span><span class="nf">ncol</span><span class="p">(</span><span class="n">simulated_data</span><span class="p">))</span>
 <span class="n">simulated_data</span> <span class="o">&lt;-</span> <span class="n">simulated_data</span> <span class="o">%&gt;%</span> <span class="n">dplyr</span><span class="o">::</span><span class="nf">as_tibble</span><span class="p">(</span><span class="n">.name_repair</span> <span class="o">=</span> <span class="s">&quot;minimal&quot;</span><span class="p">)</span>
@@ -13296,7 +13405,7 @@ The second group of features has lower correlation than the first group.</p>
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[7]:</div>
+<div class="prompt input_prompt">In&nbsp;[9]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-r"><pre><span></span><span class="n">out_file</span> <span class="o">&lt;-</span> <span class="nf">file.path</span><span class="p">(</span><span class="s">&quot;data&quot;</span><span class="p">,</span> <span class="s">&quot;simulated_signal_n1000_p10.tsv&quot;</span><span class="p">)</span>

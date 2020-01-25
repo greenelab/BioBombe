@@ -35,9 +35,9 @@ Furthermore, the top compressed feature (`pca_0`) isolates signal from the top c
 We see a similar pattern (although flipped by artificial signal strength) in NMF models.
 
 We observe that most ICA, DAE, and VAE models successfully isolate both artificial signals.
-DAE with k = 3, k = 4, and k = 5 and a VAE with k = 3 are the only suboptimal models.
-In these three algorithms, the **top compressed feature number** is not consistent.
-For example, for VAE k = 6 the top feature isolating signal group 1 is represented by VAE compressed feature 3, while VAE compressed feature 0 represents signal group 2.
+DAE with k = 5 and k = 6, and VAE with k = 4 and k = 6 are the only suboptimal models.
+In these three algorithms, the **top compressed feature number** is also not consistent.
+For example, for VAE k = 5 the top feature isolating signal group 1 is represented by VAE compressed feature 2, while VAE compressed feature 1 represents signal group 2.
 We see a similar randomized pattern for other initializations of these models.
 
 ## Conclusion

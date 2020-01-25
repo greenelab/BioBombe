@@ -23,6 +23,25 @@ cov_mat[upper.tri(cov_mat)] <- t(cov_mat)[upper.tri(cov_mat)]
 
 cov_mat
 
+cov_mat %>%
+    dplyr::as_tibble(.name_repair = "minimal")
+
+feature_ids <- paste0("feature_", seq(1, nrow(cov_mat)))
+
+cov_mat_df <- cov_mat %>%
+    dplyr::as_tibble(.name_repair = "minimal")
+
+colnames(cov_mat_df) <- feature_ids
+
+cov_mat_df <- cov_mat_df %>%
+    dplyr::mutate(feature_num = feature_ids) %>%
+    dplyr::select(feature_num, dplyr::everything())
+
+out_file <- file.path("data", "simulated_covariance_structure.tsv")
+cov_mat_df %>% readr::write_tsv(out_file)
+
+cov_mat_df
+
 simulated_data <- MASS::mvrnorm(n = n, mu = rep(0, p), Sigma = cov_mat) 
 colnames(simulated_data) <- paste0("feature_", 1:ncol(simulated_data))
 simulated_data <- simulated_data %>% dplyr::as_tibble(.name_repair = "minimal")

@@ -18,7 +18,6 @@ The second group of features (features 5, 6, 7) is simulated to be correlated to
 ## Experimental Design
 
 For this experiment we apply the BioBombe suite of algorithms (PCA, ICA, NMF, DAE, VAE) across 6 different latent dimensionalities (k = 1, 2, 3, 4, 5, 6).
-
 We fit each model and extract the resulting weight matrix.
 We observe the contributions (weights or importance scores) of each input raw feature to each compressed feature.
 

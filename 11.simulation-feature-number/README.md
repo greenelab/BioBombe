@@ -22,7 +22,7 @@ For this experiment we apply the BioBombe suite of algorithms (PCA, ICA, NMF, DA
 We fit each model and extract the resulting weight matrix.
 We observe the contributions (weights or importance scores) of each input raw feature to each compressed feature.
 
-Our goal is to determine the **top compressed feature number** that represents each simulated feature in both groups.
+Our goal is to determine the **number** of the compressed feature that best represents each simulated feature in both groups.
 
 ## Results
 

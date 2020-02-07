@@ -13,13 +13,26 @@ data_df <- readr::read_tsv(data_file, col_types = readr::cols()) %>%
     dplyr::top_n(n = 1, wt = abs_feature_importance) %>%
     tidyr::separate(compressed_feature, into = c("alg", "feature_num"), sep = "_", remove = FALSE)
 
+data_df <- data_df %>%
+    dplyr::mutate(feature_num_recode = paste(as.numeric(paste(feature_num)) + 1))
+
 data_df$feature_num <- factor(paste(data_df$feature_num),
                               levels = c("0", "1", "2", "3", "4", "5"))
 
 data_df$algorithm <- factor(data_df$algorithm, levels = c("PCA", "ICA", "NMF", "DAE", "VAE"))
 
+data_df$feature_block <- dplyr::recode(
+    data_df$feature,
+    feature_1 = "feature_block_1",
+    feature_2 = "feature_block_1",
+    feature_3 = "feature_block_1",
+    feature_5 = "feature_block_2",
+    feature_6 = "feature_block_2",
+    feature_7 = "feature_block_2",
+)
+
 print(dim(data_df))
-head(data_df, 3)
+head(data_df, 10)
 
 feature_colors = c(
     "feature_1" = "#9B4A34",
@@ -39,9 +52,20 @@ feature_labels = c(
     "feature_7" = "7"
 )
 
+
+feature_block_colors = c(
+    "feature_block_1" = "#C77A39",
+    "feature_block_2" = "#2A2930"
+)
+
+feature_block_labels = c(
+    "feature_block_1" = "Block 1",
+    "feature_block_2" = "Block 2"
+)
+
+
 simulation_theme <- theme_bw() + 
-  theme(axis.text.x = element_text(size = 5.5, angle = 90),
-        axis.text.y = element_text(size = 5.5),
+  theme(axis.text = element_text(size = 5.5),
         axis.title = element_text(size = 6.5),
         legend.text = element_text(size = 7),
         legend.title = element_text(size = 7.5),
@@ -57,7 +81,7 @@ simulation_theme <- theme_bw() +
 append_k <- function(string) paste0("k=", string)
 
 plot_gg <- ggplot(data_df,
-       aes(x = compressed_feature, y = feature_importance)) +
+       aes(x = feature_num_recode, y = feature_importance)) +
     geom_bar(stat="identity", aes(fill=feature), position = position_dodge()) +
     facet_wrap(k~algorithm,
                scales = "free",
@@ -76,6 +100,39 @@ for(extension in c('.png', '.pdf')) {
     ggsave(filename = fig_file,
            plot = plot_gg,
            height = 150,
+           width = 125,
+           units = "mm",
+           dpi = 400)
+}
+
+data_count_df <- data_df %>%
+    dplyr::group_by(algorithm, feature_block, feature_num_recode) %>%
+    dplyr::count() %>%
+    tidyr::drop_na() %>%
+    dplyr::mutate(n_divide = floor(n / 3)) %>%
+    dplyr::filter(n_divide > 0)
+
+head(data_count_df)
+
+plot_count_gg <- ggplot(data_count_df,
+       aes(x = feature_num_recode, y = n_divide, fill = feature_block)) +
+    geom_bar(stat="identity", position = position_dodge()) +
+    facet_wrap(~algorithm,
+               scales = "fixed",
+               ncol = 5) +
+    scale_fill_manual(values = feature_block_colors, labels = feature_block_labels, name = "") +
+    xlab("Compressed Feature Number (Top Scoring Feature)") +
+    ylab("Number of Times\nFeature Block Grouped Together") +
+    simulation_theme
+
+plot_count_gg
+
+for(extension in c('.png', '.pdf')) {
+    fig_file <- paste0("simulated_feature_number_feature_block_summary", extension)
+    fig_file <- file.path("figures", fig_file)
+    ggsave(filename = fig_file,
+           plot = plot_count_gg,
+           height = 50,
            width = 125,
            units = "mm",
            dpi = 400)

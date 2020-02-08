@@ -78,3 +78,12 @@ cd ../10.gene-expression-signatures
 
 # Train several models and visualize results
 bash signature_analysis.sh
+
+##############################
+# Step 9: Perform a simulation experiment to determine if feature number is associated
+# with feature importance
+##############################
+cd ../11.simulation-feature-number
+
+# Train several models and visualize results
+bash simulation_analysis.sh

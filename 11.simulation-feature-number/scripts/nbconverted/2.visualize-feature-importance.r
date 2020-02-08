@@ -1,5 +1,5 @@
-library(dplyr)
-library(ggplot2)
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(ggplot2))
 
 data_file <- file.path("results", "compression_simulation_results.tsv")
 data_df <- readr::read_tsv(data_file, col_types = readr::cols()) %>%
@@ -106,16 +106,15 @@ for(extension in c('.png', '.pdf')) {
 }
 
 data_count_df <- data_df %>%
+    dplyr::filter(k == 6) %>%
     dplyr::group_by(algorithm, feature_block, feature_num_recode) %>%
     dplyr::count() %>%
-    tidyr::drop_na() %>%
-    dplyr::mutate(n_divide = floor(n / 3)) %>%
-    dplyr::filter(n_divide > 0)
+    tidyr::drop_na()
 
-head(data_count_df)
+data_count_df
 
 plot_count_gg <- ggplot(data_count_df,
-       aes(x = feature_num_recode, y = n_divide, fill = feature_block)) +
+       aes(x = feature_num_recode, y = n, fill = feature_block)) +
     geom_bar(stat="identity", position = position_dodge()) +
     facet_wrap(~algorithm,
                scales = "fixed",

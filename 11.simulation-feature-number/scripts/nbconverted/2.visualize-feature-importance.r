@@ -121,7 +121,7 @@ plot_count_gg <- ggplot(data_count_df,
                ncol = 5) +
     scale_fill_manual(values = feature_block_colors, labels = feature_block_labels, name = "") +
     xlab("Compressed Feature Number (Top Scoring Feature)") +
-    ylab("Number of Times\nFeature Block Grouped Together") +
+    ylab("Feature Count") +
     simulation_theme
 
 plot_count_gg

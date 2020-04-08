@@ -21,8 +21,8 @@ Links to access data and archived results can be found here: https://greenelab.g
 
 ## Citation
 
-> Sequential compression across latent space dimensions enhances gene expression signatures
-Way, G.P., Zietz, M., Himmelstein, D.S., Greene, C.S.
+> Sequential compression of gene expression across dimensionalities and methods reveals no single best method or dimensionality.
+Way, G.P., Zietz, M., Rubinetti, V., Himmelstein, D.S., Greene, C.S.
 biorXiv preprint (2019) doi:10.1101/573782
 
 ## Approach

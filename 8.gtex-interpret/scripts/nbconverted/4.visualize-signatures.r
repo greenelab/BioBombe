@@ -1,16 +1,18 @@
-
 suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(ggplot2))
 suppressPackageStartupMessages(library(ggrepel))
 suppressPackageStartupMessages(library(cowplot))
 suppressPackageStartupMessages(library(RColorBrewer))
 suppressPackageStartupMessages(library(ggpmisc))
+suppressPackageStartupMessages(library(svglite))
 
 # Load custom plotting functions
 util_file = file.path("..", "6.biobombe-projection", "scripts", "utils.R")
 source(util_file)
 
 set.seed(123)
+
+fig_extensions <- c('.png', '.pdf', '.svg')
 
 # Setup plotting logic
 vae_labels <- c("vae_0_two" = "k = 2 (0)",
@@ -202,7 +204,7 @@ color_logic <- ((geneset_weights_df$z_score_z3 < -9 | geneset_weights_df$z_score
                 (geneset_weights_df$z_score_z14 < -10 | geneset_weights_df$z_score_z14 > 10))
 
 # Formula to plot linear model
-formula <- x ~ y
+formula <- y ~ x
 
 sup_panel_c_gg <- ggplot(geneset_weights_df,
                      aes(x = z_score_z3, y = z_score_z14)) +
@@ -211,6 +213,7 @@ sup_panel_c_gg <- ggplot(geneset_weights_df,
                shape = 16,
                color = ifelse(color_logic, "red", "grey50")) +
     geom_smooth(method = "lm",
+                formula = formula,
                 se = TRUE,
                 color = "grey20",
                 alpha = 0.4,
@@ -234,7 +237,7 @@ sup_panel_c_gg <- ggplot(geneset_weights_df,
                     aes(x = z_score_z3,
                         y = z_score_z14,
                         label = variable)) +
-    stat_poly_eq(aes(label = paste(..rr.label..)),
+    ggpmisc::stat_poly_eq(aes(label = paste(..rr.label..)),
                  label.x.npc = 0.8,
                  label.y.npc = 0.88,
                  formula = formula,
@@ -242,7 +245,7 @@ sup_panel_c_gg <- ggplot(geneset_weights_df,
                  size = 2,
                  na.rm = TRUE,
                  rr.digits = 1) +
-    stat_fit_glance(method = "lm",
+    ggpmisc::stat_fit_glance(method = "lm",
                     geom = "text",
                     label.x.npc = 0.8,
                     label.y.npc = 0.97,
@@ -396,14 +399,15 @@ sup_gg <- cowplot::plot_grid(
 
 sup_gg
 
-for(extension in c('.png', '.pdf')) {
+for(extension in fig_extensions) {
     gg_file <- paste0("gtex_biobombe_supplementary_figure", extension)
     gg_file <- file.path("figures", gg_file)
     cowplot::save_plot(filename = gg_file,
                        plot = sup_gg,
                        base_height = 130,
                        base_width = 170,
-                       units = "mm")
+                       units = "mm",
+                       dpi = 500)
 }
 
 cell_types <- c(
@@ -619,14 +623,15 @@ sup_fig_2_panel_a_and_b_gg <- cowplot::plot_grid(
 
 sup_fig_2_panel_a_and_b_gg
 
-for(extension in c('.png', '.pdf')) {
+for(extension in fig_extensions) {
     gg_file <- paste0("gtex_biobombe_supplementary_validation_figure", extension)
     gg_file <- file.path("figures", gg_file)
     cowplot::save_plot(filename = gg_file,
                        plot = sup_fig_2_panel_a_and_b_gg,
                        base_height = 110,
                        base_width = 170,
-                       units = "mm")
+                       units = "mm",
+                       dpi = 500)
 }
 
 # Load and process data
@@ -989,12 +994,13 @@ full_gg <- cowplot::plot_grid(
 
 full_gg
 
-for(extension in c('.png', '.pdf')) {
+for(extension in fig_extensions) {
     gg_file <- paste0("gtex_biobombe_main_figure", extension)
     gg_file <- file.path("figures", gg_file)
     cowplot::save_plot(filename = gg_file,
                        plot = full_gg,
                        base_height = 170,
                        base_width = 170,
-                       units = "mm")
+                       units = "mm",
+                       dpi = 500)
 }

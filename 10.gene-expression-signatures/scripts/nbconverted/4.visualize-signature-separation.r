@@ -1,6 +1,7 @@
 suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(ggplot2))
 suppressPackageStartupMessages(library(cowplot))
+suppressPackageStartupMessages(library(svglite))
 
 # Store t test results and identify top features
 t_test_results_files <- list.files("results", full.names = TRUE)
@@ -593,12 +594,13 @@ main_plot <- cowplot::plot_grid(
 
 main_plot
 
-for(extension in c('.png', '.pdf')) {
+for(extension in c('.png', '.pdf', '.svg')) {
   fig_file <- paste0("full_separation_plot", extension)
   fig_file <- file.path("figures", fig_file)
   cowplot::save_plot(filename = fig_file,
                      plot = main_plot,
                      base_height = 180,
                      base_width = 170,
-                     units = "mm")
+                     units = "mm",
+                     dpi = 500)
 }

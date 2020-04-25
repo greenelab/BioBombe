@@ -307,7 +307,7 @@ main_plot <- main_plot + annotation_custom(grob = across_z_legend,
 main_plot
 
 for(extension in fig_extensions) {
-    fig_file <- paste0("stability_summary_TCGA_update", extension)
+    fig_file <- paste0("stability_summary_TCGA", extension)
     fig_file <- file.path("figures", fig_file)
     cowplot::save_plot(filename = fig_file,
                        plot = main_plot,

@@ -1,4 +1,3 @@
-
 suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(readr))
 suppressPackageStartupMessages(library(ggplot2))
@@ -7,6 +6,8 @@ suppressPackageStartupMessages(library(RColorBrewer))
 suppressPackageStartupMessages(library(ggrepel))
 
 source(file.path("scripts", "viz_util.R"))
+
+fig_extensions <- c(".png", ".pdf", ".svg")
 
 # Load individual models
 cancertype_path <- file.path("results", "cancer-type")
@@ -137,7 +138,7 @@ for (plot_idx in 1:length(gg_list)) {
         theme(legend.position = "bottom")
 
     # Save Figure
-    for (extension in c(".png", ".pdf")) {
+    for (extension in fig_extensions) {
 
         # Save figure with the index and name of the plot - will present in this
         # order in the supplementary figure
@@ -153,7 +154,8 @@ for (plot_idx in 1:length(gg_list)) {
                         plot = g,
                         height = sup_fig_height,
                         width = sup_fig_width,
-                        units = "mm")
+                        units = "mm",
+                        dpi = 500)
     }
 }
 
@@ -897,13 +899,13 @@ full_gg <- cowplot::plot_grid(
 
 full_gg
 
-for(extension in c('.png', '.pdf')) {
+for(extension in fig_extensions) {
     gg_file <- paste0("tcga_biobombe_main_figure", extension)
     gg_file <- file.path("figures", gg_file)
     cowplot::save_plot(filename = gg_file,
                        plot = full_gg,
-                       dpi = 300,
                        base_height = 200,
                        base_width = 170,
-                       units = "mm")
+                       units = "mm",
+                       dpi = 500)
 }

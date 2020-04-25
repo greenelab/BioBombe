@@ -1,7 +1,7 @@
-
 suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(ggplot2))
 suppressPackageStartupMessages(library(cowplot))
+suppressPackageStartupMessages(library(svglite))
 
 count_gmt <- function(gmt_name) {
     # Count the number of genesets in a collection
@@ -17,6 +17,8 @@ count_gmt <- function(gmt_name) {
     close(con)
     return(length(genesets))
 }
+
+fig_extensions <- c('.png', '.pdf', '.svg')
 
 # Set ggplot theme
 coverage_theme <- theme_bw() + 
@@ -383,14 +385,15 @@ sup_plot <- cowplot::plot_grid(sup_plot,
 
 sup_plot
 
-for(extension in c('.png', '.pdf')) {
+for(extension in fig_extensions) {
     fig_file <- paste0("supplemental_coverage", extension)
     fig_file <- file.path("figures", fig_file)
     cowplot::save_plot(filename = fig_file,
                        plot = sup_plot,
                        base_height = 200,
                        base_width = 170,
-                       units = "mm")
+                       units = "mm",
+                       dpi = 500)
 }
 
 legend <- get_legend(plot_list[['TCGAGpC2CPREACTOME']][['all_gg']] +
@@ -464,12 +467,13 @@ main_plot <- cowplot::plot_grid(main_plot,
 
 main_plot
 
-for(extension in c('.png', '.pdf')) {
+for(extension in fig_extensions) {
     fig_file <- paste0("main_coverage", extension)
     fig_file <- file.path("figures", fig_file)
     cowplot::save_plot(filename = fig_file,
                        plot = main_plot,
                        base_height = 150,
                        base_width = 170,
-                       units = "mm")
+                       units = "mm",
+                       dpi = 500)
 }

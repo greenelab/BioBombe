@@ -1,8 +1,10 @@
-
 suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(svglite))
 suppressPackageStartupMessages(library(RColorBrewer))
 suppressPackageStartupMessages(library(cowplot))
+
+fig_extensions <- c('.png', '.pdf', '.svg')
 
 # Define the dataset to compile results for
 svcca_file <- file.path("results", "svcca_within_mean_correlation_weights.tsv.gz")
@@ -105,13 +107,14 @@ for(dataset in c("TARGET", "TCGA", "GTEX")) {
 
     across_algorithm_plots[[dataset]] <- g
 
-    for(extension in c('.png', '.pdf')) {
+    for(extension in fig_extensions) {
         gg_file <- paste0(out_figure, extension)
         ggsave(plot = g,
                filename = gg_file,
                height = 120,
                width = 170,
-               units = "mm")
+               units = "mm",
+               dpi = 500)
     }
 
     print(g)
@@ -167,13 +170,14 @@ across_algorithm_plots[['signal_difference']] <- g
 
 out_figure = file.path("figures", "within_z_signal_difference")
 
-for(extension in c('.png', '.pdf')) {
+for(extension in fig_extensions) {
     gg_file <- paste0(out_figure, extension)
     ggsave(plot = g,
            filename = gg_file,
            height = 120,
            width = 170,
-           units = "mm")
+           units = "mm",
+           dpi = 500)
 }
 
 print(g)
@@ -240,7 +244,6 @@ for (dataset in c("TARGET", "TCGA", "GTEX")) {
     # Plot and save results
     g <- ggplot(svcca_df, aes(z_dim_a, z_dim_b)) +
             geom_tile(aes(fill = svcca_mean), colour = "white") +
-            coord_equal() +
             scale_fill_gradientn(name = "SVCCA Mean Similarity",
                                  colours = myPalette(100),
                                  values = scales::rescale(c(1, 0.99, 0.9)),
@@ -256,13 +259,14 @@ for (dataset in c("TARGET", "TCGA", "GTEX")) {
 
     across_dimension_plots[[dataset]] <- g
 
-    for(extension in c('.png', '.pdf')) {
+    for(extension in fig_extensions) {
         gg_file <- paste0(out_figure, extension)
         ggsave(plot = g,
                filename = gg_file,
                height = 100,
                width = 170,
-               units = "mm")
+               units = "mm",
+               dpi = 500)
     }
 
     print(g)
@@ -302,14 +306,15 @@ main_plot <- main_plot + annotation_custom(grob = across_z_legend,
 
 main_plot
 
-for(extension in c('.png', '.pdf')) {
+for(extension in fig_extensions) {
     fig_file <- paste0("stability_summary_TCGA", extension)
     fig_file <- file.path("figures", fig_file)
     cowplot::save_plot(filename = fig_file,
                        plot = main_plot,
                        base_height = 200,
                        base_width = 170,
-                       units = "mm")
+                       units = "mm",
+                       dpi = 500)
 }
 
 gtex_across_gg <- across_algorithm_plots[["GTEX"]] +
@@ -332,7 +337,7 @@ main_plot <- (
 
 main_plot
 
-for(extension in c('.png', '.pdf')) {
+for(extension in fig_extensions) {
     fig_file <- paste0("supplementary_stability_across_algorithm_GTEX_TARGET",
                        extension)
     fig_file <- file.path("figures", fig_file)
@@ -340,7 +345,8 @@ for(extension in c('.png', '.pdf')) {
                        plot = main_plot,
                        base_height = 200,
                        base_width = 170,
-                       units = "mm")
+                       units = "mm",
+                       dpi = 500)
 }
 
 gtex_z_gg <- across_dimension_plots[["GTEX"]] +
@@ -370,7 +376,7 @@ main_plot <- main_plot + annotation_custom(grob = across_z_legend,
 
 main_plot
 
-for(extension in c('.png', '.pdf')) {
+for(extension in fig_extensions) {
     fig_file <- paste0("supplementary_stability_across_dimension_GTEX_TARGET",
                        extension)
     fig_file <- file.path("figures", fig_file)
@@ -378,5 +384,6 @@ for(extension in c('.png', '.pdf')) {
                        plot = main_plot,
                        base_height = 200,
                        base_width = 170,
-                       units = "mm")
+                       units = "mm",
+                       dpi = 500)
 }

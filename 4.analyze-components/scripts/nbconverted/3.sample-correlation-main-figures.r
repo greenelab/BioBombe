@@ -1,11 +1,13 @@
-
 suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(ggplot2))
 suppressPackageStartupMessages(library(cowplot))
 suppressPackageStartupMessages(library(RColorBrewer))
+suppressPackageStartupMessages(library(svglite))
 
 # Load helper functions
 source(file.path("scripts", "util.R"))
+
+fig_extensions <- c('.png', '.pdf', '.svg')
 
 # Create theme
 correlation_theme <- theme(axis.text.x = element_text(angle = 90, size = 5),
@@ -113,14 +115,15 @@ main_plot <- (
 main_plot = cowplot::plot_grid(main_plot, legend, rel_widths = c(1, 0.15), ncol = 2)
 main_plot
 
-for(extension in c('.png', '.pdf')) {
+for(extension in fig_extensions) {
     sup_file <- paste0("correlation_summary", extension)
     sup_file <- file.path("figures", sup_file)
     cowplot::save_plot(filename = sup_file,
                        plot = main_plot,
                        base_height = 150,
                        base_width = 170,
-                       unit = "mm")
+                       unit = "mm",
+                       dpi = 500)
 }
 
 file <- file.path("results", "GTEX_sample_correlation_phenotype.tsv.gz")
@@ -277,12 +280,13 @@ main_plot = cowplot::plot_grid(main_plot,
                                ncol = 2)
 main_plot
 
-for(extension in c('.png', '.pdf')) {
+for(extension in fig_extensions) {
     sup_file <- paste0("supplemental_correlation_summary", extension)
     sup_file <- file.path("figures", sup_file)
     cowplot::save_plot(filename = sup_file,
                        plot = main_plot,
                        base_height = 150,
                        base_width = 170,
-                       unit = "mm")
+                       unit = "mm",
+                       dpi = 500)
 }

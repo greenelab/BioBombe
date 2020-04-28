@@ -42,18 +42,18 @@ compile_reconstruction_data <- function(dataset_name, data_focus = "all") {
     component_dirs <- list.dirs(results_dir, recursive = FALSE)
     component_dir_list[[result_type]] <- component_dirs
   }
-  
+
   # Load and process reconstruction costs across folders
   component_list <- list()
   for (component_dir in names(component_dir_list)) {
     # Retreive the appropriate directory (shuffled or signal)
     component_dirs <- component_dir_list[[component_dir]]
-    
+
     # Loop over the results directory and store results
     for (component_path in component_dirs) {
       # Extract the bottleneck dimensionality estimate
       num_component <- unlist(strsplit(basename(component_path), "_"))[1]
-      
+
       # Find the reconstruction cost file
       component_files <- list.files(path = component_path,
                                     full.names = TRUE,
@@ -97,7 +97,7 @@ compile_reconstruction_data <- function(dataset_name, data_focus = "all") {
             measure.vars = c("recon", "kl"),
             variable.name = "loss_type",
             value.name = "partial_loss")
-        
+
         levels(component_df$loss_type) <- c("Reconstruction", "KL Divergence")
       }
 
@@ -106,23 +106,23 @@ compile_reconstruction_data <- function(dataset_name, data_focus = "all") {
       component_list[[list_name]] <- component_df
     }
   }
-  
+
   # Combine long dataframe of reconstruction results
   reconstruction_cost_df <- dplyr::bind_rows(component_list)
-  
+
   # Make sure factors are in order
   reconstruction_cost_df$num_comp <-
     factor(reconstruction_cost_df$num_comp,
            levels =
              sort(as.numeric(paste(unique(reconstruction_cost_df$num_comp))))
            )
-  
+
   if (data_focus == "all") {
     reconstruction_cost_df$algorithm <-
       factor(reconstruction_cost_df$algorithm,
              levels = c("pca", "ica", "nmf", "dae", "vae"))
-    
-    reconstruction_cost_df$algorithm <- 
+
+    reconstruction_cost_df$algorithm <-
       reconstruction_cost_df$algorithm %>% dplyr::recode_factor("pca" = "PCA",
                                                                 "ica" = "ICA",
                                                                 "nmf" = "NMF",
@@ -148,7 +148,7 @@ plot_reconstruction_loss <- function(data_df) {
   #
   # Output:
   # A ggplot object to be saved and viewed
-  
+
   options(repr.plot.width = 9, repr.plot.height = 4)
   p <- ggplot(data = data_df,
               aes(x = num_comp,
@@ -184,7 +184,7 @@ plot_reconstruction_loss <- function(data_df) {
           legend.text = element_text(size = 6.5),
           strip.background = element_rect(colour = "black", fill = "#fdfff4"),
           legend.key.size = unit(0.7, "lines"))
-  
+
   return(p)
 }
 
@@ -220,7 +220,7 @@ plot_vae_training <- function(data_df) {
           strip.background = element_rect(colour = "black", fill = "#fdfff4"),
           strip.text = element_text(size = 6),
           legend.key.size = unit(0.7, "lines"))
-  
+
   return(p)
 }
 
@@ -236,7 +236,7 @@ compile_sample_correlation <- function(dataset_name) {
   # Determine each component directory
   component_dir_list <- list()
   results_types <- c("signal", "shuffled")
-  
+
   for (result_type in results_types) {
     if (result_type == "signal") {
       results_suffix <- "_results"
@@ -249,23 +249,23 @@ compile_sample_correlation <- function(dataset_name) {
     component_dirs <- list.dirs(results_dir, recursive = FALSE)
     component_dir_list[[result_type]] <- component_dirs
   }
-  
+
   # Load and process reconstruction costs across folders
   component_list <- list()
   for (component_dir in names(component_dir_list)) {
     # Retreive the appropriate directory (shuffled or signal)
     component_dirs <- component_dir_list[[component_dir]]
-    
+
     # Loop over the results directory and store results
     for (component_path in component_dirs) {
       # Extract the bottleneck dimensionality estimate
       num_component <- unlist(strsplit(basename(component_path), "_"))[1]
-      
+
       # Find the reconstruction cost file
       component_files <- list.files(path = component_path,
                                     full.names = TRUE,
                                     pattern = "_sample_corr.tsv.gz")
-      
+
       # Load and process the reconstruction file - convert to wide format
       component_df <- readr::read_tsv(
         component_files,
@@ -278,32 +278,32 @@ compile_sample_correlation <- function(dataset_name) {
         dplyr::mutate(num_comp = num_component,
                       dataset_id = dataset_name,
                       shuffled = component_dir)
-      
+
       # Store in list for future concatenation
       list_name <- paste0(num_component, component_dir)
       component_list[[list_name]] <- component_df
     }
   }
-  
+
   # Combine long dataframe of reconstruction results
   sample_corr_df <- dplyr::bind_rows(component_list)
-  
+
   # Make sure factors are in order
   sample_corr_df$num_comp <-
     factor(sample_corr_df$num_comp,
            levels = sort(as.numeric(paste(unique(sample_corr_df$num_comp)))))
-  
+
   sample_corr_df$algorithm <-
     factor(sample_corr_df$algorithm,
            levels = c("pca", "ica", "nmf", "dae", "vae"))
-  
+
   sample_corr_df$correlation <-
     as.numeric(paste(sample_corr_df$correlation))
-  
+
   sample_corr_df$data <-
     factor(sample_corr_df$data,
            levels = c("training", "testing"))
-  
+
   return(sample_corr_df)
 }
 
@@ -496,7 +496,7 @@ plot_sample_correlation <- function(data_df,
 subset_correlations <- function(df, cor_type, data_type, signal_type) {
   # Given a correlations dataframe, subset based on correlation, data
   # and signal types
-  # 
+  #
   # Arguments:
   # df - the dataframe of interest to subset
   # cor_type - a string of correlation to subset ("pearson" or "spearman")
@@ -505,25 +505,25 @@ subset_correlations <- function(df, cor_type, data_type, signal_type) {
   #
   # Output:
   # a subset dataframe with correlations summarized across all 5 seeds (median)
-  
+
   subset_df <- df %>%
     dplyr::filter(cor_type == !!cor_type,
                   data == !!data_type,
                   shuffled == !!signal_type) %>%
     dplyr::group_by(id, data, num_comp, algorithm, sample_type) %>%
     dplyr::summarise(median_corr = median(correlation, na.rm = TRUE))
-  
+
   subset_df$num_comp <-
     factor(subset_df$num_comp,
            levels = sort(as.numeric(paste(unique(subset_df$num_comp)))))
-  
+
   subset_df$algorithm <-
     factor(subset_df$algorithm,
            levels = c("pca", "ica", "nmf", "dae", "vae"))
-  
+
   subset_df$correlation <-
     as.numeric(paste(subset_df$median_corr))
-  
+
   return(subset_df)
 }
 
@@ -539,13 +539,13 @@ plot_correlation_summary <- function(df,
   #
   # Output:
   # a ggplot2 object plot describing sample correlations across models
-  
-  full_corr_gg <- 
+
+  full_corr_gg <-
     ggplot(data = df, aes(x = num_comp,
                           y = median_corr)) +
     geom_boxplot(aes(fill = algorithm),
-                 size = 0.1,
-                 outlier.size = 0.03,
+                 size = 0.05,
+                 outlier.size = 0.02,
                  outlier.color = "lightgrey") +
     scale_fill_manual(name = "Algorithm",
                       values = c("#e41a1c",
@@ -583,46 +583,46 @@ process_capacity <- function(summary_df, select_sample_types) {
   #
   # Output:
   # A dataframe storing how correlation increases with capacity + 1
-  
+
   capacity_gain_df <- summary_df %>%
     dplyr::group_by(algorithm, sample_type, cor_type, shuffled, data) %>%
     dplyr::arrange(num_comp, .by_group = TRUE) %>%
-    dplyr::mutate(capacity_diff = 
-                    mean_cor - dplyr::lag(mean_cor, 
+    dplyr::mutate(capacity_diff =
+                    mean_cor - dplyr::lag(mean_cor,
                                           default = dplyr::first(mean_cor)))
-  
+
   capacity_gain_df <- capacity_gain_df %>%
     dplyr::filter(cor_type == "pearson", shuffled == "signal") %>%
     dplyr::filter(sample_type %in% select_sample_types)
-  
+
   capacity_gain_df$sample_type <- (
     factor(capacity_gain_df$sample_type, levels = select_sample_types)
   )
-  
+
   capacity_gain_df$num_comp <-
     factor(capacity_gain_df$num_comp,
            levels = as.character(
              sort(as.numeric(paste(unique(capacity_gain_df$num_comp))))
              ))
-  
-  capacity_gain_df$algorithm <- 
+
+  capacity_gain_df$algorithm <-
     capacity_gain_df$algorithm %>%
     dplyr::recode("pca" = "PCA",
                   "ica" = "ICA",
                   "nmf" = "NMF",
                   "dae" = "DAE",
                   "vae" = "VAE")
-  
+
   capacity_gain_df$algorithm <-
     factor(capacity_gain_df$algorithm,
            levels = c("PCA", "ICA", "NMF", "DAE", "VAE"))
-  
+
   capacity_gain_df <- capacity_gain_df %>%
     dplyr::mutate(group_var = paste0(algorithm, "_", data))
 
     factor(capacity_gain_df$algorithm,
            levels = c("PCA", "ICA", "NMF", "DAE", "VAE"))
-  
+
   return(capacity_gain_df)
 }
 
@@ -634,7 +634,7 @@ plot_capacity_difference <- function(capacity_df) {
   #
   # Output:
   # A ggplot object plot
-  
+
   gg <- ggplot(capacity_df,
          aes(x = num_comp,
              y = capacity_diff,
@@ -680,7 +680,7 @@ plot_capacity_difference <- function(capacity_df) {
          y = expression(paste("Correlation Gain ",
                               '(z'['i'], ' - ', 'z'['i - 1'], ')'))) +
     scale_x_discrete(expand = c(0, 0))
-  
+
   return(gg)
 }
 
@@ -698,35 +698,35 @@ process_summary_df <- function(summary_df, select_sample_types, cor_type,
   #
   # Output:
   # Subset data ready for plotting
-  
+
   subset_summary_df <- summary_df %>%
     dplyr::filter(cor_type == !!cor_type,
                   shuffled == !!signal_type,
                   data == !!data_type)
-  
+
   subset_summary_df$num_comp <-
     factor(subset_summary_df$num_comp,
            levels = as.character(sort(as.numeric(
              paste(unique(subset_summary_df$num_comp)))
              )))
-  
+
   subset_summary_df$algorithm <- subset_summary_df$algorithm %>%
     dplyr::recode("pca" = "PCA",
                   "ica" = "ICA",
                   "nmf" = "NMF",
                   "dae" = "DAE",
                   "vae" = "VAE")
-  
+
   subset_summary_df$algorithm <-
     factor(subset_summary_df$algorithm,
            levels = rev(c("PCA", "ICA", "NMF", "DAE", "VAE")))
-  
+
   subset_summary_df <- subset_summary_df %>%
     dplyr::filter(sample_type %in% select_sample_types)
-  
+
   subset_summary_df$sample_type <- factor(subset_summary_df$sample_type,
                                           levels = select_sample_types)
-  
+
   return(subset_summary_df)
 }
 
@@ -738,7 +738,7 @@ plot_subset_summary <- function(subset_summary_df, palette) {
   #
   # Output:
   # a ggplot object of median correlations across algorithms and dimensionality
-  
+
   select_sampletype_gg <-
     ggplot(subset_summary_df, aes(x = num_comp,
                                   y = algorithm)) +
@@ -765,7 +765,7 @@ plot_subset_summary <- function(subset_summary_df, palette) {
     ylab("Algorithm") +
     scale_x_discrete(expand = c(0, 0)) +
     scale_y_discrete(expand = c(0, 0))
-  
+
   return(select_sampletype_gg)
 }
 
@@ -780,7 +780,7 @@ save_png_pdf <- function(p, path_prefix, height, width) {
   #
   # Output:
   # Will save a pdf and png of the plot of interest
-  
+
   for (extension in c(".png", ".pdf")) {
     full_path <- paste0(path_prefix, extension)
     cowplot::save_plot(filename = full_path,

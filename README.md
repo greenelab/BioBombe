@@ -21,9 +21,9 @@ Links to access data and archived results can be found here: https://greenelab.g
 
 ## Citation
 
-> Sequential compression of gene expression across dimensionalities and methods reveals no single best method or dimensionality.
+> Compressing gene expression data using multiple latent space dimensionalities learns complementary biological representations
 Way, G.P., Zietz, M., Rubinetti, V., Himmelstein, D.S., Greene, C.S.
-biorXiv preprint (2019) doi:10.1101/573782
+Genome Biology (2020) [doi:10.1186/s13059-020-02021-3](http://doi.org/10.1186/s13059-020-02021-3)
 
 ## Approach
 

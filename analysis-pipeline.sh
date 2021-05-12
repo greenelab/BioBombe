@@ -20,7 +20,7 @@ conda activate biobombe
 ##############################
 cd 2.sequential-compression
 
-python download-results-archive.py
+python download-biobombe-archive.py
 
 ##############################
 # Step 2: Analyze Components (Module 4)
